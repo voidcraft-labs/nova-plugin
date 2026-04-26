@@ -1,0 +1,10 @@
+{
+  "name": "nova",
+  "version": "1.0.0",
+  "description": "Build, edit, compile, and deploy CommCare apps from Claude Code",
+  "author": { "name": "voidcraft-labs" },
+  "homepage": "https://docs.commcare.app/claude-code",
+  "repository": "https://github.com/voidcraft-labs/nova-plugin",
+  "license": "Apache-2.0",
+  "keywords": ["commcare", "nova", "mcp", "agents", "low-code"]
+}

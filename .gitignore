@@ -1,0 +1,9 @@
+.DS_Store
+node_modules/
+.serena/
+
+# Overlay rebuilt by commcare-nova's scripts/nova-plugin-dev.sh on each
+# launch. Points .mcp.json at a local dev Nova server; must never be
+# committed so the shipped plugin stays immutable against env-based URL
+# redirection attacks.
+.dev-plugin/

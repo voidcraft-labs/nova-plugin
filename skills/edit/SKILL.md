@@ -14,6 +14,14 @@ Call `mcp__plugin_nova_nova__get_agent_prompt` with `mode: "edit"` and `app_id: 
 
 Always fetch fresh in edit mode — the inlined summary reflects the current blueprint, which may have changed since any earlier fetch in this conversation.
 
+The nova mutation tools (`mcp__plugin_nova_nova__*`) are deferred — their schemas only appear in your context after a ToolSearch call. Don't rely on training memory of these tool shapes; pre-load the edit-path set in one ToolSearch call before continuing:
+
+```
+ToolSearch({query: "select:mcp__plugin_nova_nova__get_app,mcp__plugin_nova_nova__search_blueprint,mcp__plugin_nova_nova__add_fields,mcp__plugin_nova_nova__add_field,mcp__plugin_nova_nova__edit_field,mcp__plugin_nova_nova__remove_field,mcp__plugin_nova_nova__update_form,mcp__plugin_nova_nova__update_module,mcp__plugin_nova_nova__validate_app", max_results: 9})
+```
+
+Load any additional tools (`create_form`, `remove_form`, `create_module`, `remove_module`, `get_module`, `get_form`, `get_field`) on demand if a follow-up step needs them.
+
 ## 2. Confirm the change (if unsure)
 
 Most edit instructions are specific enough to act on directly. If the instruction is clear, proceed.

@@ -14,6 +14,14 @@ If you have not already fetched the nova-architect operating instructions in thi
 
 If you already fetched it earlier in this conversation, reuse what you have — don't fetch again.
 
+The nova mutation tools (`mcp__plugin_nova_nova__*`) are deferred — calling one before its schema is loaded fails with a Zod error. Pre-load the build-path set in a single ToolSearch call before continuing:
+
+```
+ToolSearch({query: "select:mcp__plugin_nova_nova__create_app,mcp__plugin_nova_nova__generate_schema,mcp__plugin_nova_nova__generate_scaffold,mcp__plugin_nova_nova__add_module,mcp__plugin_nova_nova__add_fields,mcp__plugin_nova_nova__validate_app", max_results: 6})
+```
+
+Load any additional read or edit tools (`get_app`, `edit_field`, `remove_field`, etc.) on demand if a follow-up step needs them.
+
 ## 2. Resolve ambiguities first
 
 Short or generic specs almost always hide design ambiguities. Don't assume you know what shape the user wants — they often have a specific vision that doesn't match the canonical pattern.

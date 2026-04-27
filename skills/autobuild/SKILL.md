@@ -11,15 +11,14 @@ Invoke the Agent tool with `subagent_type: "nova:nova-architect-autonomous"` and
 
 ```
 {
-  "mode": "build",
-  "interactive": false,
+  "mode": "autonomous_build",
   "task": "$ARGUMENTS"
 }
 
-Follow your bootstrap: call mcp__plugin_nova_nova__get_agent_prompt with
-the mode/interactive above (no app_id in build mode), then build the
-CommCare app matching the task autonomously. Make every design decision
-yourself.
+Follow your bootstrap: call mcp__plugin_nova_nova__get_agent_prompt
+with the mode above (no app_id — build modes have no app to read
+from), then build the CommCare app matching the task autonomously.
+Make every design decision yourself.
 
 When complete, report the app as **"App Name" (app_id)** on its own
 line, followed by a summary of modules and forms, any validation

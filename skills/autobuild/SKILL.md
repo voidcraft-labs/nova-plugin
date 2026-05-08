@@ -15,12 +15,16 @@ Invoke the Agent tool with `subagent_type: "nova:nova-architect-autonomous"` and
   "task": "$ARGUMENTS"
 }
 
-Follow your bootstrap: call mcp__plugin_nova_nova__get_agent_prompt
-with the mode above (no app_id — build modes have no app to read
-from). The nova mutation tools are deferred — pre-load their schemas
-in one ToolSearch call before your first mutation: select
-mcp__plugin_nova_nova__create_app, generate_schema, generate_scaffold,
-add_module, add_fields, validate_app (max_results: 6). Then build the
+Follow your bootstrap: call Nova's `get_agent_prompt` tool with the
+mode above (no app_id — build modes have no app to read from). The
+Nova mutation tools are deferred — pre-load their schemas in one
+ToolSearch call before your first mutation:
+
+ToolSearch({query: "+nova create_app generate_schema generate_scaffold add_module add_fields validate_app", max_results: 6})
+
+The `+nova` filter matches whichever Nova namespace is live in this
+session (`mcp__plugin_nova_nova__*` for the plugin's OAuth, or
+`mcp__nova__*` for a user-scope API-key override). Then build the
 CommCare app matching the task autonomously. Make every design
 decision yourself.
 

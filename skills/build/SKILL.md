@@ -10,15 +10,17 @@ The user wants to build a CommCare app from this spec: $ARGUMENTS.
 
 ## 1. Operating instructions
 
-If you have not already fetched the nova-architect operating instructions in this conversation, call `mcp__plugin_nova_nova__get_agent_prompt` with `mode: "build"`. Treat the returned text as your operating instructions for this build.
+If you have not already fetched the nova-architect operating instructions in this conversation, call Nova's `get_agent_prompt` tool with `mode: "build"`. Treat the returned text as your operating instructions for this build.
 
 If you already fetched it earlier in this conversation, reuse what you have — don't fetch again.
 
-The nova mutation tools (`mcp__plugin_nova_nova__*`) are deferred — calling one before its schema is loaded fails with a Zod error. Pre-load the build-path set in a single ToolSearch call before continuing:
+The Nova mutation tools are deferred — calling one before its schema is loaded fails with a Zod error. Pre-load the build-path set in a single ToolSearch call before continuing:
 
 ```
-ToolSearch({query: "select:mcp__plugin_nova_nova__create_app,mcp__plugin_nova_nova__generate_schema,mcp__plugin_nova_nova__generate_scaffold,mcp__plugin_nova_nova__add_module,mcp__plugin_nova_nova__add_fields,mcp__plugin_nova_nova__validate_app", max_results: 6})
+ToolSearch({query: "+nova create_app generate_schema generate_scaffold add_module add_fields validate_app", max_results: 6})
 ```
+
+The `+nova` filter matches whichever Nova namespace is live (`mcp__plugin_nova_nova__*` when using the plugin's OAuth, `mcp__nova__*` when an API-key override is in user-scope).
 
 Load any additional read or edit tools (`get_app`, `edit_field`, `remove_field`, etc.) on demand if a follow-up step needs them.
 
@@ -49,7 +51,7 @@ Use TaskCreate to track the build phases:
 
 ## 4. Build
 
-Work through each phase per the fetched instructions. The mutation tools live under `mcp__plugin_nova_nova__*` — `generate_schema`, `generate_scaffold`, `add_module`, `add_fields`, `validate_app`, plus the read and edit tools the instructions reference. Mark each task `in_progress` when you start it and `completed` when it's done.
+Work through each phase per the fetched instructions, using the Nova mutation tools you pre-loaded — `generate_schema`, `generate_scaffold`, `add_module`, `add_fields`, `validate_app` — plus the read and edit tools the instructions reference. Mark each task `in_progress` when you start it and `completed` when it's done.
 
 If a new ambiguity surfaces mid-build that materially changes the design, ask via AskUserQuestion before committing to it.
 

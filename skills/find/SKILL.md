@@ -4,7 +4,7 @@ description: Search your Nova apps by name (fuzzy, case-insensitive, typo-tolera
 argument-hint: <search phrase>
 ---
 
-Call `mcp__plugin_nova_nova__search_apps({query: "$ARGUMENTS"})`.
+Call Nova's `search_apps` tool with `{query: "$ARGUMENTS"}`.
 
 Render the matches as a markdown table with columns: Name, Status,
 Last Updated, ID. Use the `app_id` value from each entry for the ID

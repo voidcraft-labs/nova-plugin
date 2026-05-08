@@ -13,8 +13,8 @@ The user wants to upload app "$ARGUMENTS" to CommCare HQ. Follow these steps.
 `$ARGUMENTS` may be either a Firestore app id (a short alphanumeric string,
 typically ~20 chars) or a search phrase for the app's name.
 
-- Looks like a Firestore id → call `mcp__plugin_nova_nova__get_app({app_id: "$ARGUMENTS"})`.
-- Otherwise → call `mcp__plugin_nova_nova__search_apps({query: "$ARGUMENTS"})`.
+- Looks like a Firestore id → call Nova's `get_app` tool with `{app_id: "$ARGUMENTS"}`.
+- Otherwise → call Nova's `search_apps` tool with `{query: "$ARGUMENTS"}`.
   - If the response has zero matches: tell the user no app matched and stop.
   - If multiple matches: show them as a numbered list with
     `<N>. **<App Name>** (<app_id>) — <N> modules, <M> forms, updated <date>`
@@ -26,7 +26,7 @@ so the user sees both the human-readable name and the stable identifier.
 
 ## 2. Check the HQ connection
 
-Call `mcp__plugin_nova_nova__get_hq_connection` with no arguments.
+Call Nova's `get_hq_connection` tool with no arguments.
 
 - `configured: false` → tell the user: "CommCare HQ isn't connected yet. Add
   your HQ API key in Settings before uploading." Stop.
@@ -48,7 +48,7 @@ Wait for their confirmation. If they decline, stop.
 
 ## 4. Upload
 
-Call `mcp__plugin_nova_nova__upload_app_to_hq({app_id: "<resolved app_id>"})`.
+Call Nova's `upload_app_to_hq` tool with `{app_id: "<resolved app_id>"}`.
 
 The tool derives the target domain from the user's stored credentials — do
 NOT pass a `domain` argument.

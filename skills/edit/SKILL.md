@@ -10,15 +10,17 @@ The user wants to edit Nova app `$0` with this instruction: $1.
 
 ## 1. Operating instructions
 
-Call `mcp__plugin_nova_nova__get_agent_prompt` with `mode: "edit"` and `app_id: "$0"`. The server inlines the app's current blueprint summary into the returned text — treat the full text as your operating instructions for this edit.
+Call Nova's `get_agent_prompt` tool with `mode: "edit"` and `app_id: "$0"`. The server inlines the app's current blueprint summary into the returned text — treat the full text as your operating instructions for this edit.
 
 Always fetch fresh in edit mode — the inlined summary reflects the current blueprint, which may have changed since any earlier fetch in this conversation.
 
-The nova mutation tools (`mcp__plugin_nova_nova__*`) are deferred — their schemas only appear in your context after a ToolSearch call. Don't rely on training memory of these tool shapes; pre-load the edit-path set in one ToolSearch call before continuing:
+The Nova mutation tools are deferred — their schemas only appear in your context after a ToolSearch call. Don't rely on training memory of these tool shapes; pre-load the edit-path set in one ToolSearch call before continuing:
 
 ```
-ToolSearch({query: "select:mcp__plugin_nova_nova__get_app,mcp__plugin_nova_nova__search_blueprint,mcp__plugin_nova_nova__add_fields,mcp__plugin_nova_nova__add_field,mcp__plugin_nova_nova__edit_field,mcp__plugin_nova_nova__remove_field,mcp__plugin_nova_nova__update_form,mcp__plugin_nova_nova__update_module,mcp__plugin_nova_nova__validate_app", max_results: 9})
+ToolSearch({query: "+nova get_app search_blueprint add_fields add_field edit_field remove_field update_form update_module validate_app", max_results: 9})
 ```
+
+The `+nova` filter matches whichever Nova namespace is live (`mcp__plugin_nova_nova__*` when using the plugin's OAuth, `mcp__nova__*` when an API-key override is in user-scope).
 
 Load any additional tools (`create_form`, `remove_form`, `create_module`, `remove_module`, `get_module`, `get_form`, `get_field`) on demand if a follow-up step needs them.
 
@@ -34,7 +36,7 @@ Use TaskCreate to outline the changes needed for this edit. Always include "Vali
 
 ## 4. Apply the edits
 
-Work through each task using the `mcp__plugin_nova_nova__*` tools per the fetched instructions. Mark each task `in_progress` when you start it and `completed` when it's done.
+Work through each task using the Nova tools per the fetched instructions. Mark each task `in_progress` when you start it and `completed` when it's done.
 
 If a new ambiguity surfaces mid-edit, ask via AskUserQuestion before applying it.
 

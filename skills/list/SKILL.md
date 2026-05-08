@@ -3,7 +3,7 @@ name: list
 description: Show your 10 most recently updated Nova apps.
 ---
 
-Call `mcp__plugin_nova_nova__list_apps` with no arguments.
+Call Nova's `list_apps` tool with no arguments.
 
 Render the apps as a markdown table with columns: Name, Status, Last
 Updated, ID. Use the `app_id` value from each entry for the ID column.

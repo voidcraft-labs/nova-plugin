@@ -9,8 +9,16 @@ Build, edit, compile, and deploy CommCare apps from Claude Code.
 
 ## Authenticate
 
-First use of any `/nova:*` skill opens your browser to sign in at commcare.app.
-Tokens are stored in Claude Code's credential store; revoke via `/mcp` → nova → Clear authentication.
+**Browser sign-in (default).** The first time you use a `/nova:*` skill, Claude Code
+opens your browser to sign in at commcare.app. Tokens are stored in Claude Code's
+credential store; revoke via `/mcp` → nova → Clear authentication.
+
+**API key.** For unattended runs, or several agents sharing one account, set
+`NOVA_API_KEY` in your environment to a key from
+[commcare.app/settings](https://commcare.app/settings). The plugin picks it up
+automatically — no browser, no extra setup. Unset it to fall back to browser sign-in.
+
+Full details: [docs.commcare.app/mcp/api-keys](https://docs.commcare.app/mcp/api-keys).
 
 ## Skills
 

@@ -24,23 +24,35 @@ typically ~20 chars) or a search phrase for the app's name.
 Throughout the rest of the flow, refer to the app as **"App Name" (app_id)**
 so the user sees both the human-readable name and the stable identifier.
 
-## 2. Check the HQ connection
+## 2. Check the HQ connection and resolve the target space
 
-Call Nova's `get_hq_connection` tool with no arguments.
+Call Nova's `get_hq_connection` tool with no arguments. The response has
+`configured`, `domain` (the active default space, or `null`), and
+`available_domains` (every project space this API key can upload to — an
+unscoped key reaches several).
 
 - `configured: false` → tell the user: "CommCare HQ isn't connected yet. Add
   your HQ API key in Settings before uploading." Stop.
-- `configured: true` → remember `domain.name` for the confirmation message.
+- `configured: true` → resolve which space to upload to:
+  - One entry in `available_domains` → that's the target.
+  - Multiple entries and `domain` is set → `domain` is the default; mention the
+    alternatives so the user can redirect if they meant a different space.
+  - Multiple entries and `domain` is `null` → the user hasn't picked a default.
+    Show the spaces as a numbered list — `<N>. **<displayName>** (<name>)` —
+    and ask which one to upload to. Wait for their answer before continuing.
+
+Remember the chosen space's `name` (the slug) for the upload call.
 
 ## 3. Confirm with the user
 
-Show this before uploading (substitute the real values):
+Show this before uploading (substitute the real values; `<space>` is the
+chosen space's `name`):
 
 > **"App Name"** (app_id) is already saved in Nova — this upload is not what
 > keeps it safe, you can edit it here anytime.
 >
-> Uploading creates a **new** app at `commcarehq.org/a/<domain.name>/` using
-> your API key. Your Nova copy stays put.
+> Uploading creates a **new** app at `commcarehq.org/a/<space>/` using your
+> API key. Your Nova copy stays put.
 >
 > Proceed?
 
@@ -48,10 +60,12 @@ Wait for their confirmation. If they decline, stop.
 
 ## 4. Upload
 
-Call Nova's `upload_app_to_hq` tool with `{app_id: "<resolved app_id>"}`.
+Call Nova's `upload_app_to_hq` tool with
+`{app_id: "<resolved app_id>", domain: "<chosen space name>"}`.
 
-The tool derives the target domain from the user's stored credentials — do
-NOT pass a `domain` argument.
+Always pass `domain` explicitly — it's the space you confirmed in step 3.
+(Omitting it uses the user's default; but for a multi-space key with no default
+the tool returns `domain_ambiguous` rather than guessing the target.)
 
 ## 5. Report
 
@@ -61,6 +75,11 @@ On success, the response has `{hq_app_id, url, warnings}`. Tell the user:
 >
 > (If `warnings` is non-empty, list them below as a short bullet list.)
 
-On a failed upload, surface `error_type` and `message` from the response so
-the user knows whether it's an HQ-side rejection, a connection issue, or a
-missing configuration.
+On a failed upload, surface `error_type` and `message` from the response:
+
+- `domain_ambiguous` / `domain_not_authorized` → the message names the spaces
+  the key reaches; re-confirm the target with the user and retry step 4 with a
+  valid `domain`.
+- `hq_not_configured` → the user needs to add their key in Settings.
+- `hq_upload_failed` → an HQ-side rejection; show the message so the user knows
+  what HQ rejected.

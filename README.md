@@ -27,4 +27,4 @@ Full details: [docs.commcare.app/mcp/api-keys](https://docs.commcare.app/mcp/api
 - `/nova:edit <app_id> "<instruction>"` — edit an existing app
 - `/nova:list` — list your apps
 - `/nova:show <app_id>` — blueprint summary
-- `/nova:upload <app_id> <domain> [app_name]` — deploy to CommCare HQ
+- `/nova:upload_to_hq <app_id or name> [project space]` — deploy to CommCare HQ (names a space to upload straight there, otherwise confirms the target first)

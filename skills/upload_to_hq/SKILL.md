@@ -27,19 +27,17 @@ so the user sees both the human-readable name and the stable identifier.
 ## 2. Check the HQ connection and resolve the target space
 
 Call Nova's `get_hq_connection` tool with no arguments. The response has
-`configured`, `domain` (the active default space, or `null`), and
-`available_domains` (every project space this API key can upload to — an
-unscoped key reaches several).
+`configured` and `available_domains` (every project space this API key can
+upload to — an unscoped key reaches several).
 
 - `configured: false` → tell the user: "CommCare HQ isn't connected yet. Add
   your HQ API key in Settings before uploading." Stop.
 - `configured: true` → resolve which space to upload to:
   - One entry in `available_domains` → that's the target.
-  - Multiple entries and `domain` is set → `domain` is the default; mention the
-    alternatives so the user can redirect if they meant a different space.
-  - Multiple entries and `domain` is `null` → the user hasn't picked a default.
-    Show the spaces as a numbered list — `<N>. **<displayName>** (<name>)` —
-    and ask which one to upload to. Wait for their answer before continuing.
+  - Multiple entries → the user chooses; never pick for them. Show the spaces as
+    a numbered list — `<N>. **<displayName>** (<name>)` — and ask which one to
+    upload to. Wait for their answer before continuing. (There is no stored
+    default: a multi-space key's target is a per-upload choice.)
 
 Remember the chosen space's `name` (the slug) for the upload call.
 
@@ -64,8 +62,8 @@ Call Nova's `upload_app_to_hq` tool with
 `{app_id: "<resolved app_id>", domain: "<chosen space name>"}`.
 
 Always pass `domain` explicitly — it's the space you confirmed in step 3.
-(Omitting it uses the user's default; but for a multi-space key with no default
-the tool returns `domain_ambiguous` rather than guessing the target.)
+(Omitting it works only for a single-space key; for a multi-space key the tool
+returns `domain_ambiguous` rather than guessing the target.)
 
 ## 5. Report
 

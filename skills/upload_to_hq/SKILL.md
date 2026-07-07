@@ -49,18 +49,23 @@ the friendly name and the stable id.
 - **No explicit target →** check the connection and confirm:
   - Call Nova's `get_hq_connection` (no arguments). `configured: false` → tell
     the user "CommCare HQ isn't connected yet. Add your HQ API key in Settings
+    (picking the CommCare server your account lives on — US, India, or EU)
     before uploading." and stop.
+  - A configured connection also carries `server_url` — which CommCare HQ
+    deployment the user's key belongs to (US, India, and EU are separate
+    servers). The upload lands there; use its host in the confirmation below.
   - One entry in `available_domains` → that's the target.
   - Multiple entries → the user chooses; never pick for them. Show the spaces as
     a numbered list — `<N>. **<displayName>** (<name>)` — and ask which one. Wait
     for their answer. (There is no stored default — a multi-space key's target is
     a per-upload choice.)
   - Then **confirm** before uploading (substitute real values; `<space>` is the
-    chosen `name`):
+    chosen `name`, `<host>` is `server_url` without the scheme, e.g.
+    `eu.commcarehq.org`):
 
     > **"App Name"** (app_id) is already saved in Nova and you can keep editing
     > it here anytime — this **also** uploads it as a **new** app to CommCare HQ
-    > at `commcarehq.org/a/<space>/`, using your API key. Your Nova copy stays put.
+    > at `<host>/a/<space>/`, using your API key. Your Nova copy stays put.
     >
     > Proceed?
 
@@ -91,6 +96,7 @@ On a failed upload, surface `error_type` and `message` from the response:
   those?" — then upload to their pick.
 - `domain_ambiguous` — only happens with no `domain`; resolve the target via
   step 3 and retry step 4.
-- `hq_not_configured` — the user needs to add their key in Settings.
+- `hq_not_configured` — the user needs to connect CommCare HQ in Settings
+  (pick the server their account lives on and add their API key).
 - `hq_upload_failed` — an HQ-side rejection; show the `message` so the user
   knows what HQ rejected.

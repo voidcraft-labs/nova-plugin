@@ -48,7 +48,7 @@ Use TaskCreate to track the build phases:
 
 ## 4. Build
 
-Work through each phase per the fetched instructions. Create the app first (`create_app` — its returned `app_id` threads through every other call), commit the data model with `generate_schema` (it writes the app name and the case-type catalog; modules reference the recorded case types by name), then build each module — with its forms and their fields — in one atomic `create_module` call. Every call is validated as it lands, so there is no separate validation step: a build whose calls all succeeded is already export-ready. Mark each task `in_progress` when you start it and `completed` when it's done.
+Work through each phase per the fetched instructions. Create the app first (`create_app` — pass the app's name there, and its returned `app_id` threads through every other call), commit the data model with `generate_schema` (the case-type catalog; modules reference the recorded types by name — the app's name is not its concern), then build each module — with its forms and their fields — in one atomic `create_module` call. Every call is validated as it lands, so there is no separate validation step: a build whose calls all succeeded is already export-ready. Mark each task `in_progress` when you start it and `completed` when it's done.
 
 If a new ambiguity surfaces mid-build that materially changes the design, ask via AskUserQuestion before committing to it.
 

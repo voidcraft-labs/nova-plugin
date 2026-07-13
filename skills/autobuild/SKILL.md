@@ -32,9 +32,9 @@ Every tool call is validated as it lands, so there is no separate
 validation step — when your last call succeeds, the app is already
 export-ready. Begin your completion message with the app on its OWN
 FIRST LINE, formatted as `**"<app_name>" (<app_id>)**` — `app_id`
-from `create_app`'s result, `app_name` as you set it with
-`generate_schema` — e.g. for app_name "Malaria ITN FGD" and app_id
-"1c9de4a2-7b31-4f2e-9a44-d0b6c58f3e7a", emit:
+from `create_app`'s result, `app_name` as you set it (`create_app`'s
+`app_name`, or `update_app`) — e.g. for app_name "Malaria ITN FGD"
+and app_id "1c9de4a2-7b31-4f2e-9a44-d0b6c58f3e7a", emit:
 
 **"Malaria ITN FGD" (1c9de4a2-7b31-4f2e-9a44-d0b6c58f3e7a)**
 

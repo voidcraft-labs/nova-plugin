@@ -17,7 +17,7 @@ If you already fetched it earlier in this conversation, reuse what you have — 
 The Nova mutation tools are deferred — calling one before its schema is loaded fails with a Zod error. Pre-load the build-path set in a single ToolSearch call before continuing:
 
 ```
-ToolSearch({query: "+nova create_app generate_schema generate_scaffold add_module add_fields validate_app", max_results: 6})
+ToolSearch({query: "+nova create_app generate_schema create_module update_app", max_results: 4})
 ```
 
 The `+nova` filter matches whichever Nova namespace is live (`mcp__plugin_nova_nova__*` when using the plugin's OAuth, `mcp__nova__*` when an API-key override is in user-scope).
@@ -43,15 +43,12 @@ Don't ask about field-level details (labels, hint text, validation specifics) �
 
 Use TaskCreate to track the build phases:
 
-1. Designing the data model
-2. Scaffolding modules and forms
-3. Configuring modules
-4. Adding fields to forms
-5. Validating
+1. Committing the data model
+2. Building each module with its forms and fields
 
 ## 4. Build
 
-Work through each phase per the fetched instructions, using the Nova mutation tools you pre-loaded — `generate_schema`, `generate_scaffold`, `add_module`, `add_fields`, `validate_app` — plus the read and edit tools the instructions reference. Mark each task `in_progress` when you start it and `completed` when it's done.
+Work through each phase per the fetched instructions. Create the app first (`create_app` — its returned `app_id` threads through every other call), commit the data model with `generate_schema` (it writes the app name and the case-type catalog; modules reference the recorded case types by name), then build each module — with its forms and their fields — in one atomic `create_module` call. Every call is validated as it lands, so there is no separate validation step: a build whose calls all succeeded is already export-ready. Mark each task `in_progress` when you start it and `completed` when it's done.
 
 If a new ambiguity surfaces mid-build that materially changes the design, ask via AskUserQuestion before committing to it.
 

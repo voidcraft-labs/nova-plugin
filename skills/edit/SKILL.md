@@ -17,12 +17,12 @@ Always fetch fresh in edit mode — the inlined summary reflects the current blu
 The Nova mutation tools are deferred — their schemas only appear in your context after a ToolSearch call. Don't rely on training memory of these tool shapes; pre-load the edit-path set in one ToolSearch call before continuing:
 
 ```
-ToolSearch({query: "+nova get_app search_blueprint add_fields add_field edit_field remove_field update_form update_module validate_app", max_results: 9})
+ToolSearch({query: "+nova get_app search_blueprint add_fields edit_field remove_field update_form update_module", max_results: 7})
 ```
 
 The `+nova` filter matches whichever Nova namespace is live (`mcp__plugin_nova_nova__*` when using the plugin's OAuth, `mcp__nova__*` when an API-key override is in user-scope).
 
-Load any additional tools (`create_form`, `remove_form`, `create_module`, `remove_module`, `get_module`, `get_form`, `get_field`) on demand if a follow-up step needs them.
+Load any additional tools (`create_form`, `remove_form`, `create_module`, `remove_module`, `generate_schema`, `get_module`, `get_form`, `get_field`) on demand if a follow-up step needs them. A new case type enters an existing app through `generate_schema` — record it there before creating a module or fields that use it.
 
 ## 2. Confirm the change (if unsure)
 
@@ -32,7 +32,7 @@ If real ambiguity remains — vague scope ("clean up the registration form"), an
 
 ## 3. Plan the work
 
-Use TaskCreate to outline the changes needed for this edit. Always include "Validating" as the final task.
+Use TaskCreate to outline the changes needed for this edit. There is no validation task — every mutation is checked as it lands, and a rejected call comes back with the reason so you can fix the input and re-issue it.
 
 ## 4. Apply the edits
 

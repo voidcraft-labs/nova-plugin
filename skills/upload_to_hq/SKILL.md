@@ -12,8 +12,9 @@ The user wants to upload an app to CommCare HQ. The input is `$ARGUMENTS`.
 
 `$ARGUMENTS` is the app to upload, optionally followed by a target project space:
 
-- **App** — a Firestore app id (a short alphanumeric string, ~20 chars) or a
-  search phrase for the app's name (a name may contain spaces).
+- **App** — an app id (a UUID like `47f25e32-c265-423f-8a10-e341ae82ef2d`;
+  some older apps have a compact ~20-char alphanumeric id) or a search
+  phrase for the app's name (a name may contain spaces).
 - **Project space (optional)** — a CommCare domain slug (lowercase, hyphenated,
   no spaces), given as the FINAL token. Treat a trailing token as the target
   space only when it reads like a domain slug and what precedes it is still a
@@ -26,9 +27,9 @@ Call the space parsed here the **explicit target** — it may be unset.
 
 ## 2. Resolve the argument to exactly one app
 
-The app reference may be a Firestore app id or a name search phrase.
+The app reference may be an app id or a name search phrase.
 
-- Looks like a Firestore id → call Nova's `get_app` tool with `{app_id: "<app>"}`.
+- Looks like an app id (a UUID, or a compact ~20-char alphanumeric token) → call Nova's `get_app` tool with `{app_id: "<app>"}`.
 - Otherwise → call Nova's `search_apps` tool with `{query: "<app>"}`.
   - Zero matches → tell the user no app matched and stop.
   - Multiple matches → show them as a numbered list with

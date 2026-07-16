@@ -17,12 +17,12 @@ Always fetch fresh in edit mode — the inlined summary reflects the current blu
 The Nova mutation tools are deferred — their schemas only appear in your context after a ToolSearch call. Don't rely on training memory of these tool shapes; pre-load the edit-path set in one ToolSearch call before continuing:
 
 ```
-ToolSearch({query: "+nova get_app search_blueprint add_fields edit_field remove_field update_form update_module", max_results: 7})
+ToolSearch({query: "+nova get_app search_blueprint add_fields edit_field move_field remove_field update_form update_module", max_results: 8})
 ```
 
 The `+nova` filter matches whichever Nova namespace is live (`mcp__plugin_nova_nova__*` when using the plugin's OAuth, `mcp__nova__*` when an API-key override is in user-scope).
 
-Load any additional tools (`create_form`, `remove_form`, `create_module`, `remove_module`, `generate_schema`, `get_module`, `get_form`, `get_field`) on demand if a follow-up step needs them. A new case type enters an existing app through `generate_schema` — record it there before creating a module or fields that use it.
+Load any additional tools (`create_form`, `remove_form`, `create_module`, `remove_module`, `generate_schema`, `get_module`, `get_form`, `get_field`) on demand if a follow-up step needs them. A new case type enters an existing app through `generate_schema` — record it there before creating a module or fields that use it. To reposition an existing field, use `move_field` — it keeps the field's identity and every reference to it; never remove and re-add a field to move it.
 
 ## 2. Confirm the change (if unsure)
 

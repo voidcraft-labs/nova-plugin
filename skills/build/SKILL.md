@@ -22,7 +22,7 @@ ToolSearch({query: "+nova create_app generate_schema create_module update_app", 
 
 The `+nova` filter matches whichever Nova namespace is live (`mcp__plugin_nova_nova__*` when using the plugin's OAuth, `mcp__nova__*` when an API-key override is in user-scope).
 
-Load any additional read or edit tools (`get_app`, `edit_field`, `remove_field`, etc.) on demand if a follow-up step needs them.
+Load any additional read or edit tools (`get_app`, `edit_field`, `move_field`, `remove_field`, etc.) on demand if a follow-up step needs them.
 
 ## 2. Resolve ambiguities first
 

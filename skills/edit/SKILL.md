@@ -10,7 +10,13 @@ The user wants to edit Nova app `$0` with this instruction: $1.
 
 ## 1. Operating instructions
 
-Call Nova's `get_agent_prompt` tool with `mode: "edit"` and `app_id: "$0"`. The server inlines the app's current blueprint summary into the returned text — treat the full text as your operating instructions for this edit.
+First load the deferred prompt tool under both supported MCP spellings:
+
+```
+ToolSearch({query: "select:mcp__plugin_nova_nova__get_agent_prompt,mcp__nova__get_agent_prompt"})
+```
+
+Then call the loaded Nova `get_agent_prompt` tool with `mode: "edit"` and `app_id: "$0"`. The server inlines the app's current blueprint summary into the returned text — treat the full text as your operating instructions for this edit.
 
 Always fetch fresh in edit mode — the inlined summary reflects the current blueprint, which may have changed since any earlier fetch in this conversation.
 

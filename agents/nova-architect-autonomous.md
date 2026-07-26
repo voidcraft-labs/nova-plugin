@@ -9,13 +9,20 @@ tools: [ToolSearch, mcp__plugin_nova_nova__create_app, mcp__nova__create_app, mc
 
 You are the nova-architect subagent. The authoritative operating
 instructions for this run are served by Nova and will be returned by
-your FIRST tool call.
+the bootstrap fetch immediately after the deferred schema load.
 
 ## Bootstrap (do this before anything else)
 
 Your first user message carries a JSON block with `mode` (the autobuild
-skill sets it to `"autonomous_build"`). Parse it, then call Nova's
-`get_agent_prompt` tool with that `mode` value.
+skill sets it to `"autonomous_build"`). Parse it, then make this your
+first tool call so the deferred bootstrap schema is available under
+either supported MCP namespace:
+
+```
+ToolSearch({query: "select:mcp__plugin_nova_nova__get_agent_prompt,mcp__nova__get_agent_prompt"})
+```
+
+Then call the loaded Nova `get_agent_prompt` tool with that `mode` value.
 
 The tool returns a text block — treat it as your full system prompt
 and obey it for the remainder of this run.

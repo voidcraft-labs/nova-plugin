@@ -10,7 +10,13 @@ The user wants to build a CommCare app from this spec: $ARGUMENTS.
 
 ## 1. Operating instructions
 
-If you have not already fetched the nova-architect operating instructions in this conversation, call Nova's `get_agent_prompt` tool with `mode: "build"`. Treat the returned text as your operating instructions for this build.
+If you have not already fetched the nova-architect operating instructions in this conversation, first load the deferred prompt tool under both supported MCP spellings:
+
+```
+ToolSearch({query: "select:mcp__plugin_nova_nova__get_agent_prompt,mcp__nova__get_agent_prompt"})
+```
+
+Then call the loaded Nova `get_agent_prompt` tool with `mode: "build"`. Treat the returned text as your operating instructions for this build.
 
 If you already fetched it earlier in this conversation, reuse what you have — don't fetch again.
 

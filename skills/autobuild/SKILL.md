@@ -15,10 +15,15 @@ Invoke the Agent tool with `subagent_type: "nova:nova-architect-autonomous"` and
   "task": "$ARGUMENTS"
 }
 
-Follow your bootstrap: call Nova's `get_agent_prompt` tool with the
-mode above (no app_id — build modes have no app to read from). The
-Nova mutation tools are deferred — pre-load their schemas in one
-ToolSearch call before your first mutation:
+Follow your bootstrap: first load the deferred prompt tool under either
+supported MCP namespace:
+
+ToolSearch({query: "select:mcp__plugin_nova_nova__get_agent_prompt,mcp__nova__get_agent_prompt"})
+
+Then call the loaded Nova `get_agent_prompt` tool with the mode above
+(no app_id — build modes have no app to read from). The Nova mutation
+tools are deferred — pre-load their schemas in one ToolSearch call
+before your first mutation:
 
 ToolSearch({query: "+nova create_app generate_schema create_module update_app", max_results: 4})
 

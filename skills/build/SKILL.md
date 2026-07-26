@@ -20,13 +20,13 @@ The Nova mutation tools are deferred — calling one before its schema is loaded
 ToolSearch({query: "+nova create_app generate_schema create_module update_app", max_results: 4})
 ```
 
-Pre-load the complete worker-information, role, and persona family in a separate search with enough capacity for every schema:
+Pre-load the complete worker-information, role, and persona family with a separate deterministic exact selection:
 
 ```
-ToolSearch({query: "+nova get_users add_user_properties update_user_property remove_user_property add_user_types update_user_type remove_user_type add_personas update_persona remove_persona", max_results: 10})
+ToolSearch({query: "select:mcp__plugin_nova_nova__get_users,mcp__plugin_nova_nova__add_user_properties,mcp__plugin_nova_nova__update_user_property,mcp__plugin_nova_nova__remove_user_property,mcp__plugin_nova_nova__add_user_types,mcp__plugin_nova_nova__update_user_type,mcp__plugin_nova_nova__remove_user_type,mcp__plugin_nova_nova__add_personas,mcp__plugin_nova_nova__update_persona,mcp__plugin_nova_nova__remove_persona,mcp__nova__get_users,mcp__nova__add_user_properties,mcp__nova__update_user_property,mcp__nova__remove_user_property,mcp__nova__add_user_types,mcp__nova__update_user_type,mcp__nova__remove_user_type,mcp__nova__add_personas,mcp__nova__update_persona,mcp__nova__remove_persona"})
 ```
 
-The `+nova` filter matches whichever Nova namespace is live (`mcp__plugin_nova_nova__*` when using the plugin's OAuth, `mcp__nova__*` when an API-key override is in user-scope).
+`+nova` keeps the core search namespace-neutral. The exact family selection lists both supported spellings without ranking: `mcp__plugin_nova_nova__*` for plugin OAuth and `mcp__nova__*` for a user-scope API-key override.
 
 When the spec requests worker information, roles, or personas, call `get_users` before mutating them and target its stable UUIDs. Add properties first and use their returned UUIDs as role/persona value keys; add roles (`add_user_types`) before personas and link personas with the returned role UUIDs. Rename a property with `update_user_property` on that same UUID. In updates, omitted fields keep their values; in persona values, an omitted property inherits from the role while an explicitly present `""` overrides it with blank. The server-fetched prompt remains authoritative; use the loaded schemas for exact arguments.
 

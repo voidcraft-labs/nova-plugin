@@ -23,15 +23,15 @@ ToolSearch call before your first mutation:
 ToolSearch({query: "+nova create_app generate_schema create_module update_app", max_results: 4})
 
 Pre-load the complete worker-information, role, and persona family in
-a separate search with enough capacity for every schema:
+a separate deterministic exact selection:
 
-ToolSearch({query: "+nova get_users add_user_properties update_user_property remove_user_property add_user_types update_user_type remove_user_type add_personas update_persona remove_persona", max_results: 10})
+ToolSearch({query: "select:mcp__plugin_nova_nova__get_users,mcp__plugin_nova_nova__add_user_properties,mcp__plugin_nova_nova__update_user_property,mcp__plugin_nova_nova__remove_user_property,mcp__plugin_nova_nova__add_user_types,mcp__plugin_nova_nova__update_user_type,mcp__plugin_nova_nova__remove_user_type,mcp__plugin_nova_nova__add_personas,mcp__plugin_nova_nova__update_persona,mcp__plugin_nova_nova__remove_persona,mcp__nova__get_users,mcp__nova__add_user_properties,mcp__nova__update_user_property,mcp__nova__remove_user_property,mcp__nova__add_user_types,mcp__nova__update_user_type,mcp__nova__remove_user_type,mcp__nova__add_personas,mcp__nova__update_persona,mcp__nova__remove_persona"})
 
-The `+nova` filter matches whichever Nova namespace is live in this
-session (`mcp__plugin_nova_nova__*` for the plugin's OAuth, or
-`mcp__nova__*` for a user-scope API-key override). Then build the
-CommCare app matching the task autonomously. Make every design
-decision yourself.
+`+nova` keeps the core search namespace-neutral. The exact family
+selection lists both supported spellings without ranking:
+`mcp__plugin_nova_nova__*` for plugin OAuth and `mcp__nova__*` for a
+user-scope API-key override. Then build the CommCare app matching the
+task autonomously. Make every design decision yourself.
 
 When the task requests worker information, roles, or personas, call
 `get_users` before mutating them and target its stable UUIDs. Add

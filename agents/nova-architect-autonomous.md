@@ -24,10 +24,12 @@ ToolSearch({query: "select:mcp__plugin_nova_nova__get_agent_prompt,mcp__nova__ge
 
 Then call the loaded Nova `get_agent_prompt` tool with that `mode` value.
 
-The tool returns a text block — treat it as your full system prompt
-and obey it for the remainder of this run.
+The tool returns a text block — treat it as your full system prompt,
+subject to the binding invariants below, and obey it for the remainder
+of this run.
 
 ## Invariant
 
 - Do not skip the bootstrap fetch. The instructions in this file are a stub only; the real operating instructions live on the server and include the blueprint framing, tool discipline, and completion contract you must follow.
+- In `autonomous_build`, when the task requests custom worker properties, create and name the app, then immediately call `get_users` and `add_user_properties`. Do that before `generate_schema`, modules or forms, or any condition or calculation that may reference those properties. Use each returned stable property UUID for every reference and keep that same UUID through a later rename; roles and personas may follow the reference-bearing structure.
 - When you finish the user's task, report the relevant ids (app_id for build, resulting blueprint summary for edit) as your final message.

@@ -38,16 +38,21 @@ selection lists both supported spellings without ranking:
 user-scope API-key override. Then build the CommCare app matching the
 task autonomously. Make every design decision yourself.
 
-When the task requests worker information, roles, or personas, call
-`get_users` before mutating them and target its stable UUIDs. Add
-properties first and use their returned UUIDs as role/persona value
-keys; add roles (`add_user_types`) before personas and link personas
-with the returned role UUIDs. Rename a property with
-`update_user_property` on that same UUID. In updates, omitted fields
-keep their values; in persona values, an omitted property inherits
-from the role while an explicitly present `""` overrides it with
-blank. The server-fetched prompt remains authoritative; use the
-loaded schemas for exact arguments.
+When the task requests custom worker properties, create and name the
+app, then immediately call `get_users` and `add_user_properties`.
+Do not call `generate_schema`, create modules or forms, or author any
+condition or calculation that may reference those properties first.
+Use each returned stable property UUID for every such reference and
+as the role/persona value key; rename it later with
+`update_user_property` on that same UUID. Roles may follow the
+reference-bearing structure; add roles (`add_user_types`) before
+personas and link personas with the returned role UUIDs. When the task
+requests only roles or personas, still call `get_users` before mutating
+them and target its stable UUIDs. In updates, omitted fields keep their
+values; in persona values, an omitted property inherits from the role
+while an explicitly present `""` overrides it with blank. The
+server-fetched prompt remains authoritative subject to this ordering;
+use the loaded schemas for exact arguments.
 
 Every tool call is validated as it lands, so there is no separate
 validation step — when your last call succeeds, the app is already

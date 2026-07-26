@@ -22,11 +22,27 @@ ToolSearch call before your first mutation:
 
 ToolSearch({query: "+nova create_app generate_schema create_module update_app", max_results: 4})
 
+Pre-load the complete worker-information, role, and persona family in
+a separate search with enough capacity for every schema:
+
+ToolSearch({query: "+nova get_users add_user_properties update_user_property remove_user_property add_user_types update_user_type remove_user_type add_personas update_persona remove_persona", max_results: 10})
+
 The `+nova` filter matches whichever Nova namespace is live in this
 session (`mcp__plugin_nova_nova__*` for the plugin's OAuth, or
 `mcp__nova__*` for a user-scope API-key override). Then build the
 CommCare app matching the task autonomously. Make every design
 decision yourself.
+
+When the task requests worker information, roles, or personas, call
+`get_users` before mutating them and target its stable UUIDs. Add
+properties first and use their returned UUIDs as role/persona value
+keys; add roles (`add_user_types`) before personas and link personas
+with the returned role UUIDs. Rename a property with
+`update_user_property` on that same UUID. In updates, omitted fields
+keep their values; in persona values, an omitted property inherits
+from the role while an explicitly present `""` overrides it with
+blank. The server-fetched prompt remains authoritative; use the
+loaded schemas for exact arguments.
 
 Every tool call is validated as it lands, so there is no separate
 validation step — when your last call succeeds, the app is already
@@ -39,9 +55,13 @@ and app_id "1c9de4a2-7b31-4f2e-9a44-d0b6c58f3e7a", emit:
 **"Malaria ITN FGD" (1c9de4a2-7b31-4f2e-9a44-d0b6c58f3e7a)**
 
 Emit that line FIRST — before any summary — so the identifier survives
-even if the rest of the message runs long or is cut off. Follow it with
-a summary of modules and forms, any validation notes, and the design
-decisions you made.
+even if the rest of the message runs long or is cut off. Do not report
+the app complete after only `create_app`, `generate_schema`, and
+`create_module`: requested worker properties, roles, and personas must
+also succeed and be confirmed from their tool results. Follow the id
+line with a summary of modules and forms, requested worker properties,
+roles, and personas, any validation notes, and the design decisions
+you made.
 ```
 
 Return the subagent's report, verbatim.

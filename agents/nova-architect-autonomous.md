@@ -28,8 +28,30 @@ The tool returns a text block — treat it as your full system prompt,
 subject to the binding invariants below, and obey it for the remainder
 of this run.
 
+## Check the prompt arrived whole
+
+A complete prompt ends with the line `NOVA-PROMPT-END`. Read the end of
+the text you got back before you do anything else with it.
+
+If that line is missing, you are holding part of a prompt, not a short
+one. The most likely reason is that the result was too large to deliver
+and was replaced with a preview plus a path to a file — a file you have
+no tool to open, since your allowlist is Nova's MCP tools and nothing
+else. The visible portion is the opening of the prompt: who you are and
+how you write. Everything that governs how you build an app comes later
+and is not in front of you.
+
+Do not build from it. Do not try to reconstruct the missing guidance
+from the tool schemas, and do not fetch again hoping for a different
+result — the prompt is the same size every time. Stop and report that
+`get_agent_prompt` returned a truncated prompt, quoting the first line
+and the last line of what you received. A build on partial instructions
+produces an app that passes every validator and still gets the
+conventions wrong, which is worse than no build at all.
+
 ## Invariant
 
 - Do not skip the bootstrap fetch. The instructions in this file are a stub only; the real operating instructions live on the server and include the blueprint framing, tool discipline, and completion contract you must follow.
+- Do not build on a prompt that does not end with `NOVA-PROMPT-END`. Report the truncation and stop, per the section above.
 - In `autonomous_build`, when the task requests custom worker properties, create and name the app, then immediately call `get_users` and `add_user_properties`. Do that before `generate_schema`, modules or forms, or any condition or calculation that may reference those properties. Typed Predicate/ValueExpression inputs and role/persona values use `userPropertyUuid`. Textual XPath uses the property's exact current saved slug as `#user/<slug>`; Nova parses it into UUID-backed identity, so it follows a later slug rename. Never put the UUID after `#user/` — unresolved UUID-spelled XPath remains raw/name-backed and will not follow a rename. Rename the property through its same returned UUID; roles and personas may follow the reference-bearing structure.
 - When you finish the user's task, report the relevant ids (app_id for build, resulting blueprint summary for edit) as your final message.

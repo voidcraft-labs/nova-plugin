@@ -18,6 +18,8 @@ ToolSearch({query: "select:mcp__plugin_nova_nova__get_agent_prompt,mcp__nova__ge
 
 Then call the loaded Nova `get_agent_prompt` tool with `mode: "build"`. Treat the returned text as your operating instructions for this build.
 
+A complete prompt ends with the line `NOVA-PROMPT-END`. If yours doesn't, the result was too large to deliver whole and you're holding its opening — identity and voice, none of the build guidance. When the result names a file it was saved to, read that file and use its contents as the prompt. If there's no such file, stop and tell the user `get_agent_prompt` returned a truncated prompt; don't build from the fragment and don't reconstruct the missing guidance from the tool schemas.
+
 If you already fetched it earlier in this conversation, reuse what you have — don't fetch again.
 
 The Nova mutation tools are deferred — calling one before its schema is loaded fails with a Zod error. Pre-load the build-path set in a single ToolSearch call before continuing:

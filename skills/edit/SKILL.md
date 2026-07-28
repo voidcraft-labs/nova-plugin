@@ -18,6 +18,8 @@ ToolSearch({query: "select:mcp__plugin_nova_nova__get_agent_prompt,mcp__nova__ge
 
 Then call the loaded Nova `get_agent_prompt` tool with `mode: "edit"` and `app_id: "$0"`. The server inlines the app's current blueprint summary into the returned text — treat the full text as your operating instructions for this edit.
 
+A complete prompt ends with the line `NOVA-PROMPT-END`. If yours doesn't, the result was too large to deliver whole. Edit mode is where this bites hardest: the blueprint summary is appended last, so a short delivery costs you exactly the picture of the app you're about to change. When the result names a file it was saved to, read that file and use its contents as the prompt. If there's no such file, stop and tell the user `get_agent_prompt` returned a truncated prompt; don't edit the app from a fragment, and don't substitute a `get_app` call for the missing summary — the rest of the prompt is missing too.
+
 Always fetch fresh in edit mode — the inlined summary reflects the current blueprint, which may have changed since any earlier fetch in this conversation.
 
 The Nova mutation tools are deferred — their schemas only appear in your context after a ToolSearch call. Don't rely on training memory of these tool shapes; pre-load the edit-path set in one ToolSearch call before continuing:

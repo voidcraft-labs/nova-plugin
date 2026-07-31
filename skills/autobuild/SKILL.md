@@ -42,8 +42,12 @@ ToolSearch({query: "select:mcp__plugin_nova_nova__get_case_operations,mcp__plugi
 `+nova` keeps the core search namespace-neutral. Each exact family
 selection lists both supported spellings without ranking:
 `mcp__plugin_nova_nova__*` for plugin OAuth and `mcp__nova__*` for a
-user-scope API-key override. Then build the CommCare app matching the
-task autonomously. Make every design decision yourself.
+user-scope API-key override. Every other Nova tool your instructions
+send you to — `configure_connect` for a Connect app, `get_lookup_tables`
+and `set_field_options_source` for Project data, `rename_case_properties`
+— is deferred the same way; select it by both spellings before its
+first use. Then build the CommCare app matching the task autonomously.
+Make every design decision yourself.
 
 When the task requests custom worker properties, create and name the
 app, then immediately call `get_users` and `add_user_properties`.
@@ -62,11 +66,13 @@ reference-bearing structure; add roles
 (`add_user_types`) before personas and link personas with the returned
 role UUIDs. When the task requests only roles or personas, still call
 `get_users` before mutating them and target its stable UUIDs. In
-updates, omitted fields keep their values; in persona values, an
-omitted property inherits from the role while an explicitly present
-`""` overrides it with blank. The server-fetched prompt remains
-authoritative subject to this ordering; use the loaded schemas for
-exact arguments.
+updates, omitted fields keep their values, and one role or persona
+value changes per call through `valuePatch`: it names one
+`userPropertyUuid`, a string sets that value and `null` clears it, and
+omitting `valuePatch` leaves every value alone. A persona that carries
+no value for a property inherits the role's; an explicit `""` overrides
+the role with blank. The server-fetched prompt remains authoritative
+subject to this ordering; use the loaded schemas for exact arguments.
 
 Every tool call is validated as it lands, so there is no separate
 validation step — when your last call succeeds, the app is already

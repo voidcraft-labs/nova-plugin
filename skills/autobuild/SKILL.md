@@ -50,11 +50,13 @@ app, then immediately call `get_users` and `add_user_properties`.
 Do not call `generate_schema`, create modules or forms, or author any
 condition or calculation that may reference those properties first.
 Typed Predicate/ValueExpression inputs and role/persona values use
-`userPropertyUuid`. In textual XPath, author the property's exact
-current saved slug as `#user/<slug>`; Nova parses it into UUID-backed
-identity, so it follows a later slug rename. Never put the UUID after
-`#user/` — unresolved UUID-spelled XPath remains raw/name-backed and
-will not follow a rename. Rename the property later with
+`userPropertyUuid`. Expression slots take Nova's typed AST, not an
+XPath source string: a worker property is
+`{"kind":"user-property-ref","userPropertyUuid":"…"}` in prose and
+`{"kind":"session-user-property","userPropertyUuid":"…"}` in a Predicate
+or ValueExpression. Do not send `#user/<slug>` text for Nova to
+resolve — an unresolved hashtag is refused, not parsed. Rename the
+property later with
 `update_user_property` on that same returned UUID. Roles may follow the
 reference-bearing structure; add roles
 (`add_user_types`) before personas and link personas with the returned

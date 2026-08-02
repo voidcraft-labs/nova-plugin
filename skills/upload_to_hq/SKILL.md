@@ -81,12 +81,32 @@ confirmed in step 3.
 
 ## 5. Report
 
-On success the response has `{hq_app_id, url, warnings}`. Report the same way on
+On success the response has
+`{hq_app_id, url, warnings, feature_flag_requirements}`. Report the same way on
 both paths:
 
 > Uploaded **"App Name"** → `<url>`
 >
 > (If `warnings` is non-empty, list them below as a short bullet list.)
+
+Then interpret `feature_flag_requirements` literally; never infer a flag's
+state from the app alone:
+
+- `missing_flags` — Nova checked the target after the successful upload and
+  confirmed these flags are not enabled. Name every flag (label and slug), say
+  it is confirmed missing for the target project space, and tell the user to
+  contact `support@dimagi.com` to enable it for that named space.
+- `unverified_flags` — Nova could not determine these flags' state. Name every
+  flag (label and slug), make clear they are required but **not confirmed
+  missing**, and tell the user to contact `support@dimagi.com` if they need a
+  flag enabled for that named space.
+- `verification: "verified"` with both lists empty — a short sentence that Nova
+  verified all required flags are enabled is enough.
+- `verification: "not_required"` — do not add feature-flag noise.
+
+The upload has already succeeded even when flags are missing or could not be
+checked. Present this as follow-up information, never as an upload failure.
+Link to `https://docs.commcare.app/feature-flags` when useful.
 
 On a failed upload, surface `error_type` and `message` from the response:
 

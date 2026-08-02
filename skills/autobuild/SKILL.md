@@ -91,7 +91,9 @@ the app complete after only `create_app`, `generate_schema`, and
 also succeed and be confirmed from their tool results. Follow the id
 line with a summary of modules and forms, requested worker properties,
 roles, and personas, any validation notes, and the design decisions
-you made.
+you made. If the server prompt says this app needs CommCare HQ feature
+flags, add that as a brief FYI in this same completion message. Do not
+create a separate document or communication surface for it.
 ```
 
 Return the subagent's report, verbatim.

@@ -149,7 +149,7 @@ On a failed upload, surface `error_type` and `message` from the response:
   connected to your key, but these are: `<list>`. Want me to upload to one of
   those?" — then upload to their pick.
 - `domain_ambiguous` — only happens with no `domain`; resolve the target via
-  step 4 and retry step 5.
+  step 3, run the step 4 feature-flag check for that target, and retry step 5.
 - `hq_not_configured` — the user needs to connect CommCare HQ in Settings
   (pick the server their account lives on and add their API key).
 - `hq_upload_failed` — an HQ-side rejection; show the `message` so the user

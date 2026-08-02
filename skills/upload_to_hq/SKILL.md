@@ -40,11 +40,32 @@ The app reference may be an app id or a name search phrase.
 Throughout, refer to the app as **"App Name" (app_id)** so the user sees both
 the friendly name and the stable id.
 
-## 3. Pick the path
+## 3. Read and disclose the app's feature-flag requirements
 
-- **An explicit target was supplied →** go straight to step 4 and upload to it.
+Call Nova's `get_app_feature_flags` tool with
+`{app_id: "<resolved app_id>"}` before asking for confirmation or starting the
+upload. This is the user's pre-upload notice, not an HQ domain check:
+
+- Name every entry in `required_flags` by label and slug, include its `reasons`,
+  and link to its `docs_url` (or the response's top-level `docs_url`).
+- State that `domain_checked: false` means these are requirements for the
+  destination project space, **not flags known to be off**.
+- Tell the user that if a required flag is not enabled, they can contact the
+  response's `support_email` and name the project space.
+- If `required_flags` is empty, a short sentence that the app has no current HQ
+  feature-flag requirements is enough.
+
+For a path that asks the user to confirm, include this notice in the
+confirmation. For an explicit target, naming the target is already the user's
+confirmation, but still disclose the notice before invoking the upload tool.
+Do not block the upload based on requirements alone: the upload response will
+recheck the actual target after import.
+
+## 4. Pick the path
+
+- **An explicit target was supplied →** go straight to step 5 and upload to it.
   Naming a space IS the user's confirmation — do NOT ask again, and do NOT call
-  `get_hq_connection`. (If the space turns out to be unreachable, step 5's
+  `get_hq_connection`. (If the space turns out to be unreachable, step 6's
   `domain_not_authorized` handling recovers it in one turn.)
 
 - **No explicit target →** check the connection and confirm:
@@ -62,7 +83,8 @@ the friendly name and the stable id.
     a per-upload choice.)
   - Then **confirm** before uploading (substitute real values; `<space>` is the
     chosen `name`, `<host>` is `server_url` without the scheme, e.g.
-    `eu.commcarehq.org`):
+    `eu.commcarehq.org`). Include the feature-flag notice from step 3 in this
+    same confirmation:
 
     > **"App Name"** (app_id) is already saved in Nova and you can keep editing
     > it here anytime — this **also** uploads it as a **new** app to CommCare HQ
@@ -72,14 +94,14 @@ the friendly name and the stable id.
 
     Wait for their confirmation. If they decline, stop.
 
-## 4. Upload
+## 5. Upload
 
 Call Nova's `upload_app_to_hq` tool with
 `{app_id: "<resolved app_id>", domain: "<target space slug>"}`. Always pass
 `domain` explicitly — it's the explicit target, or the space resolved and
-confirmed in step 3.
+confirmed in step 4.
 
-## 5. Report
+## 6. Report
 
 On success the response has
 `{hq_app_id, url, warnings, feature_flag_requirements}`. Report the same way on
@@ -116,7 +138,7 @@ On a failed upload, surface `error_type` and `message` from the response:
   connected to your key, but these are: `<list>`. Want me to upload to one of
   those?" — then upload to their pick.
 - `domain_ambiguous` — only happens with no `domain`; resolve the target via
-  step 3 and retry step 4.
+  step 4 and retry step 5.
 - `hq_not_configured` — the user needs to connect CommCare HQ in Settings
   (pick the server their account lives on and add their API key).
 - `hq_upload_failed` — an HQ-side rejection; show the `message` so the user

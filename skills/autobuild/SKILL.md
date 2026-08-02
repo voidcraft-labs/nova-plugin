@@ -91,17 +91,17 @@ the app complete after only `create_app`, `generate_schema`, and
 also succeed and be confirmed from their tool results. Follow the id
 line with a summary of modules and forms, requested worker properties,
 roles, and personas, any validation notes, and the design decisions
-you made. At the terminal handoff—only after every requested mutation and
-validation task is final and no more app edits are planned—call
+you made. At the final handoff, after every requested mutation and
+validation task is complete and no more app edits are planned, call
 `get_app_hq_feature_flags` exactly once without a domain, with the app id from
 `create_app`. Do not call it after individual mutations, while planning, or
-while editing. This is passive HQ deployment disclosure, never an authoring
-gate: regardless of the response, do not remove, undo, avoid, or revise
-requested functionality, and make no mutation because of it. Do not infer
-requirements yourself. If `feature_flag_requirements.required_flags` is
-non-empty, add only those returned requirements as a brief FYI in this same
+while editing. This is CommCare HQ deployment information, not a Nova
+authoring gate. No matter what the response says, do not remove, undo, avoid,
+or revise requested functionality, and make no mutation because of it. Do not
+infer requirements yourself. If `feature_flag_requirements.required_flags` is
+non-empty, add only those returned requirements as a brief note in this same
 completion message, preserving that `domain_checked: false` means the
-destination has not been checked. If the list is empty, omit the FYI. If the
+destination has not been checked. If the list is empty, omit the note. If the
 read check itself is unavailable, finish normally without retrying, changing
 the app, or creating a separate document or communication surface for it.
 ```

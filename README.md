@@ -27,4 +27,10 @@ Full details: [docs.commcare.app/mcp/api-keys](https://docs.commcare.app/mcp/api
 - `/nova:edit <app_id> "<instruction>"` — edit an existing app
 - `/nova:list` — list your apps
 - `/nova:show <app_id>` — blueprint summary
-- `/nova:upload_to_hq <app_id or name> [project space]` — deploy to CommCare HQ (names a space to upload straight there, otherwise confirms the target first)
+- `/nova:upload_to_hq <app_id or name> [project space]` — deploy to CommCare HQ (names a space to upload straight there, otherwise confirms the target first; reports required HQ feature flags that are missing or could not be verified)
+
+Agents connected directly over MCP can call `get_app_hq_feature_flags` before
+publishing. It returns only the CommCare HQ flags the app uses, why each
+applies, inline plain-language descriptions, and public docs links. With no
+domain it makes no claim about what is off; with one explicit connected domain
+it reports confirmed missing flags separately from checks HQ could not answer.

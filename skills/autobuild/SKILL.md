@@ -91,9 +91,14 @@ the app complete after only `create_app`, `generate_schema`, and
 also succeed and be confirmed from their tool results. Follow the id
 line with a summary of modules and forms, requested worker properties,
 roles, and personas, any validation notes, and the design decisions
-you made. If the server prompt says this app needs CommCare HQ feature
-flags, add that as a brief FYI in this same completion message. Do not
-create a separate document or communication surface for it.
+you made. After the last required mutation succeeds, call
+`get_app_feature_flags` exactly once with the app id from `create_app`.
+Do not infer requirements yourself. If its returned `required_flags` is
+non-empty, add only those returned requirements as a brief FYI in this same
+completion message, preserving that `domain_checked: false` means the
+destination has not been checked. If the list is empty, omit the FYI. If the
+read check itself is unavailable, finish normally without retrying or creating
+a separate document or communication surface for it.
 ```
 
 Return the subagent's report, verbatim.

@@ -90,8 +90,9 @@ independently from address-book visibility. Chain the exact revision returned
 by every create, update, move, archive, and unarchive into the next place
 write; re-read after a conflict and prefer `valuePatch` for individual custom
 values. If a saved reverse-hop owner rule requires a destination below every
-new source, pass the complete request-local `descendants` branch in that
-source's `create_location` call; sequential creates are correctly refused.
+new source, pass the complete bounded, structurally nested `descendants` tree
+in that source's `create_location` call and keep the final UUIDs from its
+compact mirrored receipt; sequential creates are correctly refused.
 Create places before modules that name location owners and before
 assigning personas through `locationUuids` (main first). Archiving is a
 two-call confirmation: fetch the bounded impact and exact token, review it,

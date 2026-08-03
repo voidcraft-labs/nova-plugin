@@ -34,6 +34,11 @@ a separate deterministic exact selection:
 
 ToolSearch({query: "select:mcp__plugin_nova_nova__get_users,mcp__plugin_nova_nova__add_user_properties,mcp__plugin_nova_nova__update_user_property,mcp__plugin_nova_nova__remove_user_property,mcp__plugin_nova_nova__add_user_types,mcp__plugin_nova_nova__update_user_type,mcp__plugin_nova_nova__remove_user_type,mcp__plugin_nova_nova__add_personas,mcp__plugin_nova_nova__update_persona,mcp__plugin_nova_nova__remove_persona,mcp__nova__get_users,mcp__nova__add_user_properties,mcp__nova__update_user_property,mcp__nova__remove_user_property,mcp__nova__add_user_types,mcp__nova__update_user_type,mcp__nova__remove_user_type,mcp__nova__add_personas,mcp__nova__update_persona,mcp__nova__remove_persona"})
 
+When the task depends on places, pre-load the complete organization
+family in a separate deterministic exact selection:
+
+ToolSearch({query: "select:mcp__plugin_nova_nova__get_organization,mcp__plugin_nova_nova__add_organization_levels,mcp__plugin_nova_nova__update_organization_level,mcp__plugin_nova_nova__remove_organization_level,mcp__plugin_nova_nova__add_location_properties,mcp__plugin_nova_nova__update_location_property,mcp__plugin_nova_nova__remove_location_property,mcp__plugin_nova_nova__create_location,mcp__plugin_nova_nova__update_location,mcp__plugin_nova_nova__move_location,mcp__plugin_nova_nova__set_location_archived,mcp__nova__get_organization,mcp__nova__add_organization_levels,mcp__nova__update_organization_level,mcp__nova__remove_organization_level,mcp__nova__add_location_properties,mcp__nova__update_location_property,mcp__nova__remove_location_property,mcp__nova__create_location,mcp__nova__update_location,mcp__nova__move_location,mcp__nova__set_location_archived"})
+
 Pre-load the ordered case-operation family the same way when the task
 has a form doing more to cases than saving its own answers:
 
@@ -74,6 +79,16 @@ no value for a property inherits the role's; an explicit `""` overrides
 the role with blank. The server-fetched prompt remains authoritative
 subject to this ordering; use the loaded schemas for exact arguments.
 
+When the task depends on districts, facilities, worker assignments, or
+place ownership, call `get_organization`, add levels parent-first, add
+place-information fields, then create the places. Keep every returned
+UUID and treat level codes and site codes as create-once identities.
+Case flow controls ownership and delivery independently from address-book
+visibility. Carry the current revision into place writes and re-read after
+a conflict. Create places before assigning personas through `locationUuids`
+(main first) or using a location UUID as a case owner. Archiving a subtree
+removes persona assignments there but never reassigns owned cases.
+
 Every tool call is validated as it lands, so there is no separate
 validation step — when your last call succeeds, the app is already
 export-ready. Begin your completion message with the app on its OWN
@@ -90,7 +105,7 @@ the app complete after only `create_app`, `generate_schema`, and
 `create_module`: requested worker properties, roles, and personas must
 also succeed and be confirmed from their tool results. Follow the id
 line with a summary of modules and forms, requested worker properties,
-roles, and personas, any validation notes, and the design decisions
+roles, personas, organization levels, places, and assignments, any validation notes, and the design decisions
 you made. At the final handoff, after every requested mutation and
 validation task is complete and no more app edits are planned, call
 `get_app_hq_feature_flags` exactly once without a domain, with the app id from

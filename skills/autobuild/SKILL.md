@@ -84,12 +84,15 @@ place ownership, call `get_organization`, follow its opaque, snapshot-bound
 `cursor` pages until `page.complete`, and restart without a cursor if the
 snapshot changed. Its one bounded cursor pages across levels, place-information
 fields, and matching places, so accumulate every collection. Add levels
-parent-first, add place-information fields, then create the places. Keep every returned UUID and treat level codes and site
+parent-first, add place-information fields, then create the places. Read the
+complete organization before changing an existing declaration: level case-flow
+and address-book objects are complete replacements, so preserve every nested
+setting the edit does not change. Keep every returned UUID and treat level codes and site
 codes as create-once identities. Case flow controls ownership and delivery
 independently from address-book visibility. Chain the exact revision returned
 by every create, update, move, archive, and unarchive into the next place
-write; re-read after a conflict and prefer `valuePatch` for individual custom
-values. If a saved reverse-hop owner rule requires a destination below every
+write; re-read after a conflict and use `valuePatch` for exactly one custom
+value per call. If a saved reverse-hop owner rule requires a destination below every
 new source, pass the complete bounded, structurally nested `descendants` tree
 in that source's `create_location` call and keep the final UUIDs from its
 compact mirrored receipt; sequential creates are correctly refused.

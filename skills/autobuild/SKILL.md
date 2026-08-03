@@ -80,16 +80,19 @@ the role with blank. The server-fetched prompt remains authoritative
 subject to this ordering; use the loaded schemas for exact arguments.
 
 When the task depends on districts, facilities, worker assignments, or
-place ownership, call `get_organization`, follow `cursor` pages until
-`page.complete`, add levels parent-first, add place-information fields, then create the places. Keep every returned
-UUID and treat level codes and site codes as create-once identities.
-Case flow controls ownership and delivery independently from address-book
-visibility. Carry the current revision into every existing-place write and
-re-read after a conflict; prefer `valuePatch` for individual custom values.
-Create places before modules that name location owners and before assigning
-personas through `locationUuids` (main first). Archiving is a two-call
-confirmation: fetch exact impact, review it, then repeat with that payload;
-it removes persona assignments but never reassigns owned cases.
+place ownership, call `get_organization`, follow its opaque, snapshot-bound
+`cursor` pages until `page.complete`, and restart without a cursor if the
+snapshot changed. Add levels parent-first, add place-information fields, then
+create the places. Keep every returned UUID and treat level codes and site
+codes as create-once identities. Case flow controls ownership and delivery
+independently from address-book visibility. Chain the exact revision returned
+by every create, update, move, archive, and unarchive into the next place
+write; re-read after a conflict and prefer `valuePatch` for individual custom
+values. Create places before modules that name location owners and before
+assigning personas through `locationUuids` (main first). Archiving is a
+two-call confirmation: fetch the bounded impact and exact token, review it,
+then repeat with that unchanged payload; never confirm a blocked preflight.
+It removes persona assignments but never reassigns owned cases.
 
 Every tool call is validated as it lands, so there is no separate
 validation step. Place-owner rules are Preview-only until Nova ships device

@@ -99,7 +99,8 @@ compact mirrored receipt; sequential creates are correctly refused.
 Create places before modules that name location owners and before
 assigning personas through `locationUuids` (main first). Archiving is a
 two-call confirmation: fetch the bounded impact and exact token, review it,
-then repeat with that unchanged payload; never confirm a blocked preflight.
+then repeat with that unchanged payload and `expectedRevision` set to the
+returned `expectedRevisionForConfirmation`; never confirm a blocked preflight.
 It removes persona assignments but never reassigns owned cases.
 
 Every tool call is validated as it lands, so there is no separate

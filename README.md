@@ -68,11 +68,17 @@ part carries scope plus the Nova `(caseType, property)` identity, while a
 `context-property` part explicitly names a case-owner or recipient field. Both
 project to HQ syntax only in the returned guide. Registered custom handler IDs and setup-only
 instructions must be exact, trimmed, and nonblank; never invent placeholder
-values. HQ requires a system administrator to save an alert that uses a
+values. Setup-only criteria distinguish UCR filters from registered custom
+criteria so the guide can name the required `CASE_UPDATES_UCR_FILTERS` toggle
+or system-administrator access. HQ requires a system administrator to save an alert that uses a
 registered custom recipient or custom content handler; a project administrator
 cannot complete that returned setup guide alone.
 Checkbox-style, case-property, and custom recipient kinds are singletons;
 list-backed kinds may use a concrete target only once, and concrete HQ IDs must
 be trimmed and nonblank. Descendant controls
 require a location recipient, level filters require descendants, and each
-worker-property filter key may appear once.
+worker-property filter key may appear once. Its values are structural exact
+literals or custom case-property references: empty and whitespace literals are
+meaningful, while brace-wrapped literals are refused because HQ executes them
+as lookups. Multiple keys/values or exact blank/whitespace values use HQ's JSON
+mode, whose new-alert system-administrator prerequisite appears in the guide.

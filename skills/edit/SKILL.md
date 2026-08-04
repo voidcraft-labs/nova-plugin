@@ -77,7 +77,7 @@ and partial-submission dependencies.
 Weekly event days are offsets from `startDayOfWeek`, not absolute weekday
 numbers. The two kinds have different criteria: automatic updates admit
 value/date comparisons against case, parent, or host properties, at most one
-standard closed-parent condition, and server-modified age, but no regex or
+standard closed-parent condition, and server-modified age, but no regex
 condition; alerts admit direct-case value comparisons plus portable regex, but
 no date, parent/host, closed-parent, or server-modified condition. Both admit at
 most one UUID-backed location condition plus its descendant flag; preserve it
@@ -104,7 +104,13 @@ identity; a `context-property` part explicitly names a case-owner or recipient
 field. Preserve and edit that canonical shape directly; never send or parse
 magic token strings. Registered custom handler IDs, language codes, and
 setup-only instructions are exact trimmed nonblank values, not instructional
-placeholders. An alert using a registered custom recipient or custom content
+placeholders. Preserve each setup-only instruction's `ucr-filter` or
+`registered-custom` family; the guide names the required UCR domain toggle or
+system-administrator access. Recipient-filter values are structural exact
+literals or custom case-property references. Empty and whitespace literals are
+meaningful; never rewrite a reference as brace-wrapped literal text. Preserve
+the guide's system-administrator JSON-mode caveat when multiple keys/values or
+blank/whitespace values require it. An alert using a registered custom recipient or custom content
 handler requires an HQ system administrator to save it; preserve that returned
 setup-guide caveat because project-admin access alone is insufficient.
 Checkbox-style,

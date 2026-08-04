@@ -63,8 +63,8 @@ When the workflow requests automations, add them only after their case types,
 forms, worker information, and places exist. The `add_automations` input is the
 complete canonical rule: predeclare stable UUIDs for the rule and every nested
 criterion, setup-only instruction, update, recipient, schedule event, and user
-filter. Use only the loaded schema's closed vocabulary. UCR/custom criteria are
-setup-only instructions; automatic-update server-modified age is its own
+filter. Use only the loaded schema's closed vocabulary. UCR and registered
+custom criteria are distinct setup-only kinds; automatic-update server-modified age is its own
 structured field. None is locally executed. Builder Preview can count current real open cases, but the MCP
 automation tools do not return that count. `get_automations` and successful
 add/update results return the regenerated manual guide plus the locally omitted
@@ -113,6 +113,14 @@ identity; a `context-property` part explicitly names a case-owner or recipient
 field. Use that canonical shape directly; never send or parse magic token
 strings. Registered custom handler IDs, language codes, and setup-only
 instructions are exact trimmed nonblank values, not instructional placeholders.
+Use `ucr-filter` only for a UCR definition and `registered-custom` only for an
+instance-registered criterion; the returned guide names the former's
+`CASE_UPDATES_UCR_FILTERS` toggle and the latter's system-administrator save
+requirement. Recipient-filter values are structural exact literals or custom
+case-property references. Empty and whitespace literals are meaningful; never
+encode a lookup as a brace-wrapped literal because HQ executes it dynamically.
+The guide emits exact JSON and names the new-alert system-administrator
+prerequisite when multiple keys/values or blank/whitespace values require it.
 An alert using a registered custom recipient or custom content handler requires
 an HQ system administrator to save it; preserve that returned setup-guide
 caveat because project-admin access alone is insufficient.

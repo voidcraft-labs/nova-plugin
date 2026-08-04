@@ -111,7 +111,8 @@ It removes persona assignments but never reassigns owned cases.
 When the task requests automations, add them after their case types, forms,
 worker information, and places exist. Predeclare stable UUIDs for the complete
 rule and every nested item, and use only the loaded schema's closed vocabulary.
-UCR/custom criteria are setup-only; automatic-update server-modified age is a
+UCR and registered custom criteria are distinct setup-only kinds;
+automatic-update server-modified age is a
 separate structured field. None executes locally. Builder Preview may count current real open cases, but MCP does not
 return that count. `get_automations` and successful add/update results return
 the regenerated manual setup guide and locally omitted criteria; remove returns
@@ -152,6 +153,14 @@ identity; a `context-property` part explicitly names a case-owner or recipient
 field. Use that canonical shape directly; never send or parse magic token
 strings. Registered custom handler IDs, language codes, and setup-only
 instructions are exact trimmed nonblank values, not instructional placeholders.
+Use `ucr-filter` only for a UCR definition and `registered-custom` only for an
+instance-registered criterion; the returned guide names the former's
+`CASE_UPDATES_UCR_FILTERS` toggle and the latter's system-administrator save
+requirement. Recipient-filter values are structural exact literals or custom
+case-property references. Empty and whitespace literals are meaningful; never
+encode a lookup as a brace-wrapped literal because HQ executes it dynamically.
+The guide emits exact JSON and names the new-alert system-administrator
+prerequisite when multiple keys/values or blank/whitespace values require it.
 An alert using a registered custom recipient or custom content handler requires
 an HQ system administrator to save it; preserve that returned setup-guide
 caveat because project-admin access alone is insufficient.

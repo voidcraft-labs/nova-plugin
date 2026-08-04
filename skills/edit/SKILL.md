@@ -78,9 +78,11 @@ Weekly event days are offsets from `startDayOfWeek`, not absolute weekday
 numbers. The two kinds have different criteria: automatic updates admit
 value/date comparisons against case, parent, or host properties, at most one
 standard closed-parent condition, and server-modified age, but no regex or
-location condition; alerts admit direct-case value comparisons plus portable
-regex, but no date, parent/host, closed-parent, location, or server-modified
-condition. Names must be nonblank and already trimmed; equality and update
+condition; alerts admit direct-case value comparisons plus portable regex, but
+no date, parent/host, closed-parent, or server-modified condition. Both admit at
+most one UUID-backed location condition plus its descendant flag; preserve it
+and report the returned guide's HQ-administrator application caveat. Names must
+be nonblank and already trimmed; equality and update
 literals must be exact nonblank/unquoted values. Do not invent a parent index, relationship, or
 web-user recipient. Connect content cannot use matched-case, parent-case,
 all-child-cases, case-property-email, or case-group recipients. A timed restart
@@ -96,9 +98,11 @@ fields accept custom properties only. Email content has one `body`:
 plaintext derived from it. Never invent parallel email bodies or promise
 byte-exact rich output.
 Message fields are structural `parts`: ordinary `text` remains literal even
-when it looks like `{case.foo}`, and only an explicit `case-property` part with
-scope plus `(caseType, property)` identity asks HQ to substitute a value. Preserve and edit that canonical shape directly;
-never send or parse magic token strings. Registered custom handler IDs and
+when it looks like `{case.foo}` and the guide escapes its braces for HQ. An
+explicit `case-property` part carries scope plus `(caseType, property)`
+identity; a `context-property` part explicitly names a case-owner or recipient
+field. Preserve and edit that canonical shape directly; never send or parse
+magic token strings. Registered custom handler IDs, language codes, and
 setup-only instructions are exact trimmed nonblank values, not instructional
 placeholders. Checkbox-style,
 case-property, and custom recipient kinds are singletons; list-backed kinds may

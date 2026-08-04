@@ -47,7 +47,10 @@ offset, and survey rules.
 The shared schema keeps the forms' criteria distinct: automatic updates admit
 case/parent/host value and date comparisons, one standard closed-parent
 condition, and server-modified age; alerts admit direct-case value comparisons
-and portable regex. Neither admits a location condition. Names and literals
+and portable regex. Both admit at most one UUID-backed location condition and
+an explicit descendant flag; HQ executes and form-accepts it even though the
+current visible editors hide the picker, so returned guidance names the
+administrator application path. Names and literals
 are canonical nonblank values. Date conditions compare the current date directly
 with the case-property date plus a signed day offset. The schema also enforces
 recipient compatibility and the rule-trigger requirement for timed restarts.
@@ -59,9 +62,11 @@ slots are refused. Email content chooses one plain-text or rich-text body form;
 rich HTML requires the domain toggle, is sanitized and rewrapped by HQ, and has
 its plaintext derived rather than authored in parallel.
 Message fields use canonical structural `parts`: literal `text` never becomes
-a reference, even when it looks like `{case.foo}`, while an explicit
-`case-property` part carries scope plus the Nova `(caseType, property)` identity and is projected to HQ
-syntax only in the returned guide. Registered custom handler IDs and setup-only
+a reference, even when it looks like `{case.foo}`; the guide escapes literal
+braces before HQ's Python Formatter evaluates them. An explicit `case-property`
+part carries scope plus the Nova `(caseType, property)` identity, while a
+`context-property` part explicitly names a case-owner or recipient field. Both
+project to HQ syntax only in the returned guide. Registered custom handler IDs and setup-only
 instructions must be exact, trimmed, and nonblank; never invent placeholder
 values.
 Checkbox-style, case-property, and custom recipient kinds are singletons;

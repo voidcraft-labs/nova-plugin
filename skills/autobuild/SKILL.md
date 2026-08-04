@@ -118,6 +118,10 @@ the regenerated manual setup guide and locally omitted criteria; remove returns
 only its deletion receipt. Nova never updates a case, sends a message, advances
 a schedule, or installs the rule in CommCare HQ. Report the returned guide and
 omissions after get/add/update; never promise that uploading configures it.
+Schedules use one content type, and timed schedules must map to one CommCare HQ
+setup form: every event shares one timing mode, and Weekly and Monthly also share content. Obey the loaded schema's
+ordering, five-minute separation, random-window, day, offset, survey-expiration,
+and partial-submission dependencies.
 
 Every tool call is validated as it lands, so there is no separate
 validation step. Place-owner rules are Preview-only until Nova ships device

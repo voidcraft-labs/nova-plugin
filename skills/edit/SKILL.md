@@ -70,6 +70,10 @@ only its deletion receipt. Nova does not execute, install, or remove an HQ
 rule. Builder Preview's separate current-match count is read-only; MCP does not
 return that count. Never describe either surface as automation execution or a
 prediction of the next HQ sweep.
+Keep every schedule to one content type and each timed schedule within one HQ
+setup form: all events share a timing mode, and Weekly and Monthly also share content. Preserve the loaded schema's
+ordering, five-minute separation, random-window, day, offset, survey-expiration,
+and partial-submission dependencies.
 
 Before pointing a question's choices at a Project data table, call `get_lookup_tables` — its table and column `id` values are the immutable UUIDs `set_field_options_source` needs, and the names and tags it returns are for explaining the choice, not for addressing it. A lookup source names its table plus the value and label columns (`tableId`, `valueColumnId`, `labelColumnId`), and may carry a row `filter`. That filter reads columns of the same table, fixed values, worker/session values, and answers from earlier in this form; it cannot read case data, a case-search answer, a later answer, or an answer inside a child or sibling repeat. The other source kind is inline choices, and setting either one replaces the field's whole source — nothing is kept in reserve.
 

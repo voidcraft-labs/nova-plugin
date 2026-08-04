@@ -41,3 +41,6 @@ through `get_automations`, `add_automations`, `update_automation`, and
 execute or install the rule. Builder Preview owns the count; MCP
 `get_automations` and successful add/update results return the regenerated
 manual CommCare HQ setup guidance and locally omitted criteria.
+Schedule definitions use one content type and are constrained to one CommCare
+HQ setup form, including shared timing/content, event ordering, window, day,
+offset, and survey rules.

@@ -65,11 +65,13 @@ complete canonical rule: predeclare stable UUIDs for the rule and every nested
 criterion, setup-only instruction, update, recipient, schedule event, and user
 filter. Use only the loaded schema's closed vocabulary. UCR/custom criteria and
 HQ server-modified behavior are setup-only instructions, not locally executed
-conditions. Nova can count current real open cases where its result says it
-can, but it never updates a case, sends a message, advances a schedule, or
-installs the rule in CommCare HQ. Report that the returned guide must be applied
-manually and preserve any named count omissions. Do not promise that uploading
-the app configures the automation.
+conditions. Builder Preview can count current real open cases, but the MCP
+automation tools do not return that count. `get_automations` and successful
+add/update results return the regenerated manual guide plus the locally omitted
+criteria; remove returns only its deletion receipt. Nova never updates a case,
+sends a message, advances a schedule, or installs the rule in CommCare HQ.
+Report the returned guide and omissions after get/add/update, and do not promise
+that uploading the app configures the automation.
 
 A case-bound field is still the simplest way for a form to save its own answers, so reach for `add_case_operations` only when one submission carries a further ordered effect: opening another case, updating or closing a known one, linking, renaming or retyping, assigning an owner, or repeating an effect per repeat entry. Every one of these tools names the form it acts on by `moduleUuid` + `formUuid`: take both from `get_module` or `search_blueprint`, and never guess or construct one. Inside the operation every reference is a UUID: a form answer is `{"kind":"field","uuid":"…"}`, a `forEach` repeat scope is that repeat field's UUID, and an earlier create is targeted as `{"kind":"op","opUuid":"…"}` (its resulting case id, inside a value expression, is `{"kind":"id-of","opUuid":"…"}`). The operation's own `id` stays a readable wire name, never an address. Within a single `add_case_operations` call a later item may consume an earlier create by predeclaring that create's `operationUuid`, so keep producer before consumer. The server-fetched prompt remains authoritative for each action's exact shape; use the loaded schemas for arguments.
 

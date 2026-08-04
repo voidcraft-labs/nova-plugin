@@ -37,6 +37,7 @@ it reports confirmed missing flags separately from checks HQ could not answer.
 
 Build and edit skills also expose automatic case updates and conditional alerts
 through `get_automations`, `add_automations`, `update_automation`, and
-`remove_automation`. Nova can describe and count supported matches, but it does
-not execute or install the rule; the agent returns the regenerated manual
-CommCare HQ setup guidance.
+`remove_automation`. Nova can describe supported matching, but it does not
+execute or install the rule. Builder Preview owns the count; MCP
+`get_automations` and successful add/update results return the regenerated
+manual CommCare HQ setup guidance and locally omitted criteria.

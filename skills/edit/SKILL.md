@@ -64,10 +64,12 @@ automation UUID, kind, and every nested UUID that still represents the same
 item. `update_automation` takes the complete desired rule, so carry forward all
 unrelated criteria, setup-only instructions, updates, recipients, events, and
 user filters; omission removes the nested item. Use only the loaded closed
-schema. Nova regenerates manual CommCare HQ setup guidance but does not execute,
-install, or remove an HQ rule. A current-match count is read-only and may name
-HQ-only omissions; never describe it as automation execution or a prediction of
-the next HQ sweep.
+schema. `get_automations` and successful add/update results return regenerated
+manual CommCare HQ setup guidance and locally omitted criteria; remove returns
+only its deletion receipt. Nova does not execute, install, or remove an HQ
+rule. Builder Preview's separate current-match count is read-only; MCP does not
+return that count. Never describe either surface as automation execution or a
+prediction of the next HQ sweep.
 
 Before pointing a question's choices at a Project data table, call `get_lookup_tables` — its table and column `id` values are the immutable UUIDs `set_field_options_source` needs, and the names and tags it returns are for explaining the choice, not for addressing it. A lookup source names its table plus the value and label columns (`tableId`, `valueColumnId`, `labelColumnId`), and may carry a row `filter`. That filter reads columns of the same table, fixed values, worker/session values, and answers from earlier in this form; it cannot read case data, a case-search answer, a later answer, or an answer inside a child or sibling repeat. The other source kind is inline choices, and setting either one replaces the field's whole source — nothing is kept in reserve.
 
@@ -99,4 +101,4 @@ When the edits are done, return:
 - The updated blueprint summary
 - Any worker-property, role, or persona changes
 - Any organization, place, or assignment changes
-- Any automation changes, count omissions, and the manual HQ setup boundary
+- Any automation changes, returned matching omissions, and the manual HQ setup boundary

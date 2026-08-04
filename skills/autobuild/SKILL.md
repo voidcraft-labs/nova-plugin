@@ -112,10 +112,12 @@ When the task requests automations, add them after their case types, forms,
 worker information, and places exist. Predeclare stable UUIDs for the complete
 rule and every nested item, and use only the loaded schema's closed vocabulary.
 UCR/custom criteria and HQ server-modified behavior are setup-only, not local
-conditions. Nova may count current real open cases while naming HQ-only
-omissions, but it never updates a case, sends a message, advances a schedule,
-or installs the rule in CommCare HQ. Report the returned manual setup guide and
-its omissions; never promise that uploading the app configures an automation.
+conditions. Builder Preview may count current real open cases, but MCP does not
+return that count. `get_automations` and successful add/update results return
+the regenerated manual setup guide and locally omitted criteria; remove returns
+only its deletion receipt. Nova never updates a case, sends a message, advances
+a schedule, or installs the rule in CommCare HQ. Report the returned guide and
+omissions after get/add/update; never promise that uploading configures it.
 
 Every tool call is validated as it lands, so there is no separate
 validation step. Place-owner rules are Preview-only until Nova ships device

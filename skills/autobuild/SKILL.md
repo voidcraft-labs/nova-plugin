@@ -133,7 +133,15 @@ nonblank/unquoted values. Do not invent a parent index, relationship, or web-use
 recipient. Connect content cannot use matched-case, parent-case, all-child-cases,
 case-property-email, or case-group recipients. A timed restart property requires
 a rule-trigger start. Date conditions compare the current date directly with
-the case-property date plus a signed day offset. Checkbox-style, case-property,
+the case-property date plus a signed day offset. Use Nova standard property
+names in tool input; returned guides project `case_name`/`date_opened`/
+`last_modified` to HQ `name`/`opened_on`/`modified_on`. `status` is not
+representable, standard datetimes do not accept equality/regex, and restart or
+event-time fields accept custom properties only. Email content has one `body`:
+`plain-text { message }` targets a domain without Rich text emails, while
+`rich-text { html }` requires the toggle and is sanitized/rewrapped by HQ with
+plaintext derived from it. Never invent parallel email bodies or promise
+byte-exact rich output. Checkbox-style, case-property,
 and custom recipient kinds are singletons; list-backed kinds may use each
 concrete target only once. Descendant controls require a location recipient,
 location-level filters require descendants, and each worker-property filter

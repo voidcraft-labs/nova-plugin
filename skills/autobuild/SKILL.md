@@ -39,6 +39,11 @@ family in a separate deterministic exact selection:
 
 ToolSearch({query: "select:mcp__plugin_nova_nova__get_organization,mcp__plugin_nova_nova__add_organization_levels,mcp__plugin_nova_nova__update_organization_level,mcp__plugin_nova_nova__remove_organization_level,mcp__plugin_nova_nova__add_location_properties,mcp__plugin_nova_nova__update_location_property,mcp__plugin_nova_nova__remove_location_property,mcp__plugin_nova_nova__create_location,mcp__plugin_nova_nova__update_location,mcp__plugin_nova_nova__move_location,mcp__plugin_nova_nova__set_location_archived,mcp__nova__get_organization,mcp__nova__add_organization_levels,mcp__nova__update_organization_level,mcp__nova__remove_organization_level,mcp__nova__add_location_properties,mcp__nova__update_location_property,mcp__nova__remove_location_property,mcp__nova__create_location,mcp__nova__update_location,mcp__nova__move_location,mcp__nova__set_location_archived"})
 
+When the task requests an automatic case update, conditional alert,
+reminder, or scheduled message, pre-load the complete automation family:
+
+ToolSearch({query: "select:mcp__plugin_nova_nova__get_automations,mcp__plugin_nova_nova__add_automations,mcp__plugin_nova_nova__update_automation,mcp__plugin_nova_nova__remove_automation,mcp__nova__get_automations,mcp__nova__add_automations,mcp__nova__update_automation,mcp__nova__remove_automation"})
+
 Pre-load the ordered case-operation family the same way when the task
 has a form doing more to cases than saving its own answers:
 
@@ -103,6 +108,15 @@ then repeat with that unchanged payload and `expectedRevision` set to the
 returned `expectedRevisionForConfirmation`; never confirm a blocked preflight.
 It removes persona assignments but never reassigns owned cases.
 
+When the task requests automations, add them after their case types, forms,
+worker information, and places exist. Predeclare stable UUIDs for the complete
+rule and every nested item, and use only the loaded schema's closed vocabulary.
+UCR/custom criteria and HQ server-modified behavior are setup-only, not local
+conditions. Nova may count current real open cases while naming HQ-only
+omissions, but it never updates a case, sends a message, advances a schedule,
+or installs the rule in CommCare HQ. Report the returned manual setup guide and
+its omissions; never promise that uploading the app configures an automation.
+
 Every tool call is validated as it lands, so there is no separate
 validation step. Place-owner rules are Preview-only until Nova ships device
 location data and HQ identity mapping, so report that export boundary when
@@ -117,10 +131,11 @@ and app_id "1c9de4a2-7b31-4f2e-9a44-d0b6c58f3e7a", emit:
 Emit that line FIRST — before any summary — so the identifier survives
 even if the rest of the message runs long or is cut off. Do not report
 the app complete after only `create_app`, `generate_schema`, and
-`create_module`: requested worker properties, roles, and personas must
+`create_module`: requested worker properties, roles, personas, and automations must
 also succeed and be confirmed from their tool results. Follow the id
 line with a summary of modules and forms, requested worker properties,
-roles, personas, organization levels, places, and assignments, any validation notes, and the design decisions
+roles, personas, organization levels, places, assignments, and automations with
+their manual HQ setup boundary, any validation notes, and the design decisions
 you made. At the final handoff, after every requested mutation and
 validation task is complete and no more app edits are planned, call
 `get_app_hq_feature_flags` exactly once without a domain, with the app id from

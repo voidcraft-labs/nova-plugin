@@ -34,3 +34,9 @@ publishing. It returns only the CommCare HQ flags the app uses, why each
 applies, inline plain-language descriptions, and public docs links. With no
 domain it makes no claim about what is off; with one explicit connected domain
 it reports confirmed missing flags separately from checks HQ could not answer.
+
+Build and edit skills also expose automatic case updates and conditional alerts
+through `get_automations`, `add_automations`, `update_automation`, and
+`remove_automation`. Nova can describe and count supported matches, but it does
+not execute or install the rule; the agent returns the regenerated manual
+CommCare HQ setup guidance.

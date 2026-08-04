@@ -72,10 +72,17 @@ criteria; remove returns only its deletion receipt. Nova never updates a case,
 sends a message, advances a schedule, or installs the rule in CommCare HQ.
 Report the returned guide and omissions after get/add/update, and do not promise
 that uploading the app configures the automation.
+The returned case-update guide targets
+`/a/<domain>/data/edit/automatic_updates/`; the conditional-alert guide targets
+`/a/<domain>/messaging/conditional/`. HQ's deprecated
+`RUN_AUTO_CASE_UPDATES_ON_SAVE` switch is project-wide and can evaluate every
+active case-update rule for a saved case type, so treat it as a separate target
+deployment caveat and never invent a per-rule field for it.
 Schedules use one content type, and timed schedules must map to one CommCare HQ
 setup form: every event shares one timing mode, and Weekly and Monthly also share content. Follow the loaded
 schema's ordering, five-minute separation, random-window, day, offset,
-survey-expiration, and partial-submission dependencies.
+survey-expiration, and partial-submission dependencies. Weekly and Monthly days
+come from closed, unique sets in canonical HQ order.
 The schema also admits at most one standard closed-parent and one owner-location
 condition, exact nonblank/unquoted equality and update literals, and nonempty
 portable regexes. Do not invent a parent index, relationship, or web-user

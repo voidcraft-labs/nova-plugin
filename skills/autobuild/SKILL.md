@@ -152,6 +152,9 @@ identity; a `context-property` part explicitly names a case-owner or recipient
 field. Use that canonical shape directly; never send or parse magic token
 strings. Registered custom handler IDs, language codes, and setup-only
 instructions are exact trimmed nonblank values, not instructional placeholders.
+An alert using a registered custom recipient or custom content handler requires
+an HQ system administrator to save it; preserve that returned setup-guide
+caveat because project-admin access alone is insufficient.
 Checkbox-style, case-property,
 and custom recipient kinds are singletons; list-backed kinds may use each
 concrete target only once, and every concrete HQ ID is trimmed and nonblank.

@@ -44,6 +44,9 @@ manual CommCare HQ setup guidance and locally omitted criteria.
 Schedule definitions use one content type and are constrained to one CommCare
 HQ setup form, including shared timing/content, event ordering, window, day,
 offset, and survey rules.
-The shared schema also carries the form's single standard closed-parent and
-owner-location conditions, exact nonblank literals, recipient compatibility,
-and rule-trigger requirement for timed restarts.
+The shared schema keeps the forms' criteria distinct: automatic updates admit
+case/parent/host value and date comparisons, one standard closed-parent
+condition, and server-modified age; alerts admit direct-case value comparisons
+and portable regex. Neither admits a location condition. Names and literals
+are canonical nonblank values. The schema also enforces recipient compatibility
+and the rule-trigger requirement for timed restarts.

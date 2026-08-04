@@ -111,8 +111,8 @@ It removes persona assignments but never reassigns owned cases.
 When the task requests automations, add them after their case types, forms,
 worker information, and places exist. Predeclare stable UUIDs for the complete
 rule and every nested item, and use only the loaded schema's closed vocabulary.
-UCR/custom criteria and HQ server-modified behavior are setup-only, not local
-conditions. Builder Preview may count current real open cases, but MCP does not
+UCR/custom criteria are setup-only; automatic-update server-modified age is a
+separate structured field. None executes locally. Builder Preview may count current real open cases, but MCP does not
 return that count. `get_automations` and successful add/update results return
 the regenerated manual setup guide and locally omitted criteria; remove returns
 only its deletion receipt. Nova never updates a case, sends a message, advances
@@ -122,9 +122,14 @@ Schedules use one content type, and timed schedules must map to one CommCare HQ
 setup form: every event shares one timing mode, and Weekly and Monthly also share content. Obey the loaded schema's
 ordering, five-minute separation, random-window, day, offset, survey-expiration,
 and partial-submission dependencies.
-The schema also admits at most one standard closed-parent and one owner-location
-condition, exact nonblank/unquoted equality and update literals, and nonempty
-portable regexes. Do not invent a parent index, relationship, or web-user
+Weekly event days are offsets from `startDayOfWeek`, not absolute weekday
+numbers. Automatic updates admit value/date comparisons against case, parent,
+or host properties, at most one standard closed-parent condition, and
+server-modified age; they have no regex or location condition. Alerts admit
+direct-case value comparisons plus portable regex, with no date, parent/host,
+closed-parent, location, or server-modified condition. Names must be nonblank
+and already trimmed; equality and update literals must be exact
+nonblank/unquoted values. Do not invent a parent index, relationship, or web-user
 recipient. Connect content cannot use matched-case, parent-case, all-child-cases,
 case-property-email, or case-group recipients. A timed restart property requires
 a rule-trigger start.

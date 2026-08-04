@@ -63,9 +63,9 @@ When the workflow requests automations, add them only after their case types,
 forms, worker information, and places exist. The `add_automations` input is the
 complete canonical rule: predeclare stable UUIDs for the rule and every nested
 criterion, setup-only instruction, update, recipient, schedule event, and user
-filter. Use only the loaded schema's closed vocabulary. UCR/custom criteria and
-HQ server-modified behavior are setup-only instructions, not locally executed
-conditions. Builder Preview can count current real open cases, but the MCP
+filter. Use only the loaded schema's closed vocabulary. UCR/custom criteria are
+setup-only instructions; automatic-update server-modified age is its own
+structured field. None is locally executed. Builder Preview can count current real open cases, but the MCP
 automation tools do not return that count. `get_automations` and successful
 add/update results return the regenerated manual guide plus the locally omitted
 criteria; remove returns only its deletion receipt. Nova never updates a case,
@@ -82,10 +82,15 @@ Schedules use one content type, and timed schedules must map to one CommCare HQ
 setup form: every event shares one timing mode, and Weekly and Monthly also share content. Follow the loaded
 schema's ordering, five-minute separation, random-window, day, offset,
 survey-expiration, and partial-submission dependencies. Weekly and Monthly days
-come from closed, unique sets in canonical HQ order.
-The schema also admits at most one standard closed-parent and one owner-location
-condition, exact nonblank/unquoted equality and update literals, and nonempty
-portable regexes. Do not invent a parent index, relationship, or web-user
+come from closed, unique sets in canonical HQ order. Weekly event days are
+offsets from `startDayOfWeek`, not absolute weekday numbers.
+The two automation kinds have different criteria. Automatic updates admit
+value/date comparisons against case, parent, or host properties, at most one
+standard closed-parent condition, and server-modified age; they have no regex
+or location condition. Alerts admit direct-case value comparisons plus
+portable regex, with no date, parent/host, closed-parent, location, or
+server-modified condition. Names must be nonblank and already trimmed;
+equality and update literals must be exact nonblank/unquoted values. Do not invent a parent index, relationship, or web-user
 recipient. Connect content cannot use matched-case, parent-case, all-child-cases,
 case-property-email, or case-group recipients. A timed restart property requires
 a rule-trigger start.

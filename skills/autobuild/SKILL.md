@@ -132,7 +132,12 @@ and already trimmed; equality and update literals must be exact
 nonblank/unquoted values. Do not invent a parent index, relationship, or web-user
 recipient. Connect content cannot use matched-case, parent-case, all-child-cases,
 case-property-email, or case-group recipients. A timed restart property requires
-a rule-trigger start.
+a rule-trigger start. Date conditions compare the current date directly with
+the case-property date plus a signed day offset. Checkbox-style, case-property,
+and custom recipient kinds are singletons; list-backed kinds may use each
+concrete target only once. Descendant controls require a location recipient,
+location-level filters require descendants, and each worker-property filter
+key may appear once.
 
 Every tool call is validated as it lands, so there is no separate
 validation step. Place-owner rules are Preview-only until Nova ships device

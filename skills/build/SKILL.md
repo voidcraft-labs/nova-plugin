@@ -93,7 +93,12 @@ server-modified condition. Names must be nonblank and already trimmed;
 equality and update literals must be exact nonblank/unquoted values. Do not invent a parent index, relationship, or web-user
 recipient. Connect content cannot use matched-case, parent-case, all-child-cases,
 case-property-email, or case-group recipients. A timed restart property requires
-a rule-trigger start.
+a rule-trigger start. Date conditions compare the current date directly with
+the case-property date plus a signed day offset. Checkbox-style, case-property,
+and custom recipient kinds are singletons; list-backed kinds may use each
+concrete target only once. Descendant controls require a location recipient,
+location-level filters require descendants, and each worker-property filter
+key may appear once.
 
 A case-bound field is still the simplest way for a form to save its own answers, so reach for `add_case_operations` only when one submission carries a further ordered effect: opening another case, updating or closing a known one, linking, renaming or retyping, assigning an owner, or repeating an effect per repeat entry. Every one of these tools names the form it acts on by `moduleUuid` + `formUuid`: take both from `get_module` or `search_blueprint`, and never guess or construct one. Inside the operation every reference is a UUID: a form answer is `{"kind":"field","uuid":"…"}`, a `forEach` repeat scope is that repeat field's UUID, and an earlier create is targeted as `{"kind":"op","opUuid":"…"}` (its resulting case id, inside a value expression, is `{"kind":"id-of","opUuid":"…"}`). The operation's own `id` stays a readable wire name, never an address. Within a single `add_case_operations` call a later item may consume an earlier create by predeclaring that create's `operationUuid`, so keep producer before consumer. The server-fetched prompt remains authoritative for each action's exact shape; use the loaded schemas for arguments.
 

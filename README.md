@@ -48,5 +48,10 @@ The shared schema keeps the forms' criteria distinct: automatic updates admit
 case/parent/host value and date comparisons, one standard closed-parent
 condition, and server-modified age; alerts admit direct-case value comparisons
 and portable regex. Neither admits a location condition. Names and literals
-are canonical nonblank values. The schema also enforces recipient compatibility
-and the rule-trigger requirement for timed restarts.
+are canonical nonblank values. Date conditions compare the current date directly
+with the case-property date plus a signed day offset. The schema also enforces
+recipient compatibility and the rule-trigger requirement for timed restarts.
+Checkbox-style, case-property, and custom recipient kinds are singletons;
+list-backed kinds may use a concrete target only once. Descendant controls
+require a location recipient, level filters require descendants, and each
+worker-property filter key may appear once.

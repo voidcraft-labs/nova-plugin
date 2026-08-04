@@ -84,7 +84,12 @@ condition. Names must be nonblank and already trimmed; equality and update
 literals must be exact nonblank/unquoted values. Do not invent a parent index, relationship, or
 web-user recipient. Connect content cannot use matched-case, parent-case,
 all-child-cases, case-property-email, or case-group recipients. A timed restart
-property requires a rule-trigger start.
+property requires a rule-trigger start. Date conditions compare the current date
+directly with the case-property date plus a signed day offset. Checkbox-style,
+case-property, and custom recipient kinds are singletons; list-backed kinds may
+use each concrete target only once. Descendant controls require a location
+recipient, location-level filters require descendants, and each worker-property
+filter key may appear once.
 
 Before pointing a question's choices at a Project data table, call `get_lookup_tables` — its table and column `id` values are the immutable UUIDs `set_field_options_source` needs, and the names and tags it returns are for explaining the choice, not for addressing it. A lookup source names its table plus the value and label columns (`tableId`, `valueColumnId`, `labelColumnId`), and may carry a row `filter`. That filter reads columns of the same table, fixed values, worker/session values, and answers from earlier in this form; it cannot read case data, a case-search answer, a later answer, or an answer inside a child or sibling repeat. The other source kind is inline choices, and setting either one replaces the field's whole source — nothing is kept in reserve.
 

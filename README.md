@@ -44,3 +44,6 @@ manual CommCare HQ setup guidance and locally omitted criteria.
 Schedule definitions use one content type and are constrained to one CommCare
 HQ setup form, including shared timing/content, event ordering, window, day,
 offset, and survey rules.
+The shared schema also carries the form's single standard closed-parent and
+owner-location conditions, exact nonblank literals, recipient compatibility,
+and rule-trigger requirement for timed restarts.

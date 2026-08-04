@@ -122,6 +122,12 @@ Schedules use one content type, and timed schedules must map to one CommCare HQ
 setup form: every event shares one timing mode, and Weekly and Monthly also share content. Obey the loaded schema's
 ordering, five-minute separation, random-window, day, offset, survey-expiration,
 and partial-submission dependencies.
+The schema also admits at most one standard closed-parent and one owner-location
+condition, exact nonblank/unquoted equality and update literals, and nonempty
+portable regexes. Do not invent a parent index, relationship, or web-user
+recipient. Connect content cannot use matched-case, parent-case, all-child-cases,
+case-property-email, or case-group recipients. A timed restart property requires
+a rule-trigger start.
 
 Every tool call is validated as it lands, so there is no separate
 validation step. Place-owner rules are Preview-only until Nova ships device

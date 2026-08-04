@@ -52,12 +52,14 @@ are canonical nonblank values. Date conditions compare the current date directly
 with the case-property date plus a signed day offset. The schema also enforces
 recipient compatibility and the rule-trigger requirement for timed restarts.
 Automation input uses Nova standard property names and setup guidance projects
-them to HQ's automation model-field names; divergent `status`, datetime
-equality/regex, and standard properties in dynamic-only restart/event-time
+them to HQ's automation model-field names, including `case_type` to `type`;
+`case_id` and `case_type` are read-only. Divergent `status`, datetime
+equality/regex, and every standard scalar in dynamic-only restart/event-time
 slots are refused. Email content chooses one plain-text or rich-text body form;
 rich HTML requires the domain toggle, is sanitized and rewrapped by HQ, and has
 its plaintext derived rather than authored in parallel.
 Checkbox-style, case-property, and custom recipient kinds are singletons;
-list-backed kinds may use a concrete target only once. Descendant controls
+list-backed kinds may use a concrete target only once, and concrete HQ IDs must
+be trimmed and nonblank. Descendant controls
 require a location recipient, level filters require descendants, and each
 worker-property filter key may appear once.

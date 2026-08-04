@@ -58,6 +58,12 @@ equality/regex, and every standard scalar in dynamic-only restart/event-time
 slots are refused. Email content chooses one plain-text or rich-text body form;
 rich HTML requires the domain toggle, is sanitized and rewrapped by HQ, and has
 its plaintext derived rather than authored in parallel.
+Message fields use canonical structural `parts`: literal `text` never becomes
+a reference, even when it looks like `{case.foo}`, while an explicit
+`case-property` part carries scope plus the Nova `(caseType, property)` identity and is projected to HQ
+syntax only in the returned guide. Registered custom handler IDs and setup-only
+instructions must be exact, trimmed, and nonblank; never invent placeholder
+values.
 Checkbox-style, case-property, and custom recipient kinds are singletons;
 list-backed kinds may use a concrete target only once, and concrete HQ IDs must
 be trimmed and nonblank. Descendant controls

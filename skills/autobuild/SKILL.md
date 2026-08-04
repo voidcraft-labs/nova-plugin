@@ -142,7 +142,13 @@ fields accept custom properties only. Email content has one `body`:
 `plain-text { message }` targets a domain without Rich text emails, while
 `rich-text { html }` requires the toggle and is sanitized/rewrapped by HQ with
 plaintext derived from it. Never invent parallel email bodies or promise
-byte-exact rich output. Checkbox-style, case-property,
+byte-exact rich output.
+Message fields are structural `parts`: ordinary `text` remains literal even
+when it looks like `{case.foo}`, and only an explicit `case-property` part with
+scope plus `(caseType, property)` identity asks HQ to substitute a value. Use that canonical shape directly; never send or
+parse magic token strings. Registered custom handler IDs and setup-only
+instructions are exact trimmed nonblank values, not instructional placeholders.
+Checkbox-style, case-property,
 and custom recipient kinds are singletons; list-backed kinds may use each
 concrete target only once, and every concrete HQ ID is trimmed and nonblank.
 Descendant controls require a location recipient,

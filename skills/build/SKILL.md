@@ -98,15 +98,15 @@ case-property-email, or case-group recipients. A timed restart property requires
 a rule-trigger start. Date conditions compare the current date directly with
 the case-property date plus a signed day offset; a datetime contributes its
 written calendar date only, discarding its time and explicit offset.
-Host-scoped reads remain representable only while the app has one unambiguous
+Host-scoped references remain representable only while the app has one unambiguous
 canonical extension relation for the automation case type. If an advanced case
 operation can add a second extension, Nova refuses host-scoped criteria, update
-sources, and message case-property parts rather than choose from HQ's unordered
-extensions; use a non-host scope or remove the additional link. Every
-host-scoped read also requires exactly one live extension at runtime. Retained
-extra extension indices make the current-match count unavailable when a
-criterion reads the host, and HQ does not define which extension it chooses as
-the host. Use Nova
+targets, update sources, and message case-property parts rather than choose
+from HQ's unordered extensions; use a non-host scope or remove the additional
+link. Every host-scoped reference also requires exactly one live extension at
+runtime. Retained extra extension indices make the current-match count
+unavailable when a criterion reads the host, and HQ does not define which
+extension it chooses as the host. Use Nova
 standard property names in tool input; returned guides project `case_type`/`case_name`/
 `date_opened`/`last_modified` to HQ `type`/`name`/`opened_on`/`modified_on`.
 `case_id` and `case_type` are read-only. `status` is not representable,

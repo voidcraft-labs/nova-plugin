@@ -56,14 +56,14 @@ with the case-property date plus a signed day offset; a datetime contributes its
 written calendar date only, discarding its time and explicit offset. The schema
 also enforces
 recipient compatibility and the rule-trigger requirement for timed restarts.
-Host-scoped reads remain representable only while the app has one unambiguous
-canonical extension relation for the automated case type. If an advanced case
-operation can add a second extension, Nova refuses host-scoped criteria, update
-sources, and message case-property parts rather than choose from HQ's unordered
-extensions. Every host-scoped read also requires exactly one live extension at
-runtime. Retained extra extension indices make the current-match count
-unavailable when a criterion reads the host, and HQ does not define which
-extension it chooses as the host.
+Host-scoped references remain representable only while the app has one
+unambiguous canonical extension relation for the automated case type. If an
+advanced case operation can add a second extension, Nova refuses host-scoped
+criteria, update targets, update sources, and message case-property parts rather
+than choose from HQ's unordered extensions. Every host-scoped reference also
+requires exactly one live extension at runtime. Retained extra extension
+indices make the current-match count unavailable when a criterion reads the
+host, and HQ does not define which extension it chooses as the host.
 Automation input uses Nova standard property names and setup guidance projects
 them to HQ's automation model-field names, including `case_type` to `type`;
 `case_id` and `case_type` are read-only. Divergent `status`, datetime

@@ -56,6 +56,11 @@ with the case-property date plus a signed day offset; a datetime contributes its
 written calendar date only, discarding its time and explicit offset. The schema
 also enforces
 recipient compatibility and the rule-trigger requirement for timed restarts.
+Host-scoped reads remain representable only while the app has one unambiguous
+canonical extension relation for the automated case type. If an advanced case
+operation can add a second extension, Nova refuses host-scoped criteria, update
+sources, and message case-property parts rather than choose from HQ's unordered
+extensions.
 Automation input uses Nova standard property names and setup guidance projects
 them to HQ's automation model-field names, including `case_type` to `type`;
 `case_id` and `case_type` are read-only. Divergent `status`, datetime
@@ -68,7 +73,11 @@ a reference, even when it looks like `{case.foo}`; the guide escapes literal
 braces before HQ's Python Formatter evaluates them. An explicit `case-property`
 part carries scope plus the Nova `(caseType, property)` identity, while a
 `context-property` part explicitly names a case-owner or recipient field. Both
-project to HQ syntax only in the returned guide. Registered custom handler IDs and setup-only
+project to HQ syntax only in the returned guide. A message `case-property` part
+cannot use `owner`, `host`, or `last_modified_by` in any scope because HQ's
+formatter context shadows same-named custom case data; rename the custom
+property, or use `context-property` for the actual case-owner or recipient
+context. Registered custom handler IDs and setup-only
 instructions must be exact, trimmed, and nonblank; never invent placeholder
 values. Setup-only criteria distinguish UCR filters from registered custom
 criteria so the guide can name the required `CASE_UPDATES_UCR_FILTERS` toggle

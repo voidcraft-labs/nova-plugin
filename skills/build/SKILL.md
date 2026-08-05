@@ -97,7 +97,12 @@ recipient. Connect content cannot use matched-case, parent-case, all-child-cases
 case-property-email, or case-group recipients. A timed restart property requires
 a rule-trigger start. Date conditions compare the current date directly with
 the case-property date plus a signed day offset; a datetime contributes its
-written calendar date only, discarding its time and explicit offset. Use Nova
+written calendar date only, discarding its time and explicit offset.
+Host-scoped reads remain representable only while the app has one unambiguous
+canonical extension relation for the automation case type. If an advanced case
+operation can add a second extension, Nova refuses host-scoped criteria, update
+sources, and message case-property parts rather than choose from HQ's unordered
+extensions; use a non-host scope or remove the additional link. Use Nova
 standard property names in tool input; returned guides project `case_type`/`case_name`/
 `date_opened`/`last_modified` to HQ `type`/`name`/`opened_on`/`modified_on`.
 `case_id` and `case_type` are read-only. `status` is not representable,
@@ -112,7 +117,11 @@ when it looks like `{case.foo}` and the guide escapes its braces for HQ. An
 explicit `case-property` part carries scope plus `(caseType, property)`
 identity; a `context-property` part explicitly names a case-owner or recipient
 field. Use that canonical shape directly; never send or parse magic token
-strings. Registered custom handler IDs, language codes, and setup-only
+strings. A message `case-property` part cannot use `owner`, `host`, or
+`last_modified_by` in any scope because HQ's formatter context shadows
+same-named custom case data; rename the custom property, or use
+`context-property` for the actual case-owner or recipient context. Registered
+custom handler IDs, language codes, and setup-only
 instructions are exact trimmed nonblank values, not instructional placeholders.
 Use `ucr-filter` only for a UCR definition and `registered-custom` only for an
 instance-registered criterion; the returned guide names the former's

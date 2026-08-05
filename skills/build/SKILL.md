@@ -107,7 +107,9 @@ standard property names in tool input; returned guides project `case_type`/`case
 `date_opened`/`last_modified` to HQ `type`/`name`/`opened_on`/`modified_on`.
 `case_id` and `case_type` are read-only. `status` is not representable,
 standard datetimes do not accept equality/regex, and restart or event-time
-fields accept custom properties only. Email content has one `body`:
+fields accept custom properties only. Case-property event times accept `H:MM`
+or `HH:MM`; HQ uses 12:00 PM when the value is blank, missing, or malformed.
+Email content has one `body`:
 `plain-text { message }` targets a domain without Rich text emails, while
 `rich-text { html }` requires the toggle and is sanitized/rewrapped by HQ with
 plaintext derived from it. Never invent parallel email bodies or promise
@@ -129,6 +131,11 @@ instance-registered criterion; the returned guide names the former's
 requirement. Recipient-filter values are structural exact literals or custom
 case-property references. Empty and whitespace literals are meaningful; never
 encode a lookup as a brace-wrapped literal because HQ executes it dynamically.
+Every triggering case must contain each referenced property because HQ raises
+when its direct lookup is missing. HQ filters only contacts that resolve to
+user accounts, so never combine filters with case, parent/child-case,
+case-email, case-group, or registered custom recipients; those contacts bypass
+the filter or have an unknown runtime type.
 The guide emits exact JSON and names the new-alert system-administrator
 prerequisite when multiple keys/values or blank/whitespace values require it.
 An alert using a registered custom recipient or custom content handler requires

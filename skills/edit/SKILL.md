@@ -99,7 +99,9 @@ link. Use Nova standard property names in tool input; returned guides project
 `date_opened`/`last_modified` to HQ `type`/`name`/`opened_on`/`modified_on`.
 `case_id` and `case_type` are read-only. `status` is not representable,
 standard datetimes do not accept equality/regex, and restart or event-time
-fields accept custom properties only. Email content has one `body`:
+fields accept custom properties only. Case-property event times accept `H:MM`
+or `HH:MM`; HQ uses 12:00 PM when the value is blank, missing, or malformed.
+Email content has one `body`:
 `plain-text { message }` targets a domain without Rich text emails, while
 `rich-text { html }` requires the toggle and is sanitized/rewrapped by HQ with
 plaintext derived from it. Never invent parallel email bodies or promise
@@ -120,6 +122,11 @@ placeholders. Preserve each setup-only instruction's `ucr-filter` or
 system-administrator access. Recipient-filter values are structural exact
 literals or custom case-property references. Empty and whitespace literals are
 meaningful; never rewrite a reference as brace-wrapped literal text. Preserve
+the requirement that every triggering case contain each referenced property;
+HQ raises when a direct lookup is missing. HQ filters only contacts that
+resolve to user accounts, so never combine filters with case,
+parent/child-case, case-email, case-group, or registered custom recipients;
+those contacts bypass the filter or have an unknown runtime type. Preserve
 the guide's system-administrator JSON-mode caveat when multiple keys/values or
 blank/whitespace values require it. An alert using a registered custom recipient or custom content
 handler requires an HQ system administrator to save it; preserve that returned

@@ -65,7 +65,8 @@ Automation input uses Nova standard property names and setup guidance projects
 them to HQ's automation model-field names, including `case_type` to `type`;
 `case_id` and `case_type` are read-only. Divergent `status`, datetime
 equality/regex, and every standard scalar in dynamic-only restart/event-time
-slots are refused. Email content chooses one plain-text or rich-text body form;
+slots are refused. Case-property event times accept `H:MM` or `HH:MM`; HQ uses
+12:00 PM when the value is blank, missing, or malformed. Email content chooses one plain-text or rich-text body form;
 rich HTML requires the domain toggle, is sanitized and rewrapped by HQ, and has
 its plaintext derived rather than authored in parallel.
 Message fields use canonical structural `parts`: literal `text` never becomes
@@ -94,5 +95,9 @@ require a location recipient, level filters require descendants, and each
 worker-property filter key may appear once. Its values are structural exact
 literals or custom case-property references: empty and whitespace literals are
 meaningful, while brace-wrapped literals are refused because HQ executes them
-as lookups. Multiple keys/values or exact blank/whitespace values use HQ's JSON
+as lookups. Every triggering case must contain each referenced property because
+HQ raises when its direct lookup is missing. Filters apply only to contacts
+that resolve to user accounts, so the schema refuses filters with case,
+parent/child-case, case-email, case-group, or registered custom recipients;
+those contacts bypass the filter or have an unknown runtime type. Multiple keys/values or exact blank/whitespace values use HQ's JSON
 mode, whose new-alert system-administrator prerequisite appears in the guide.

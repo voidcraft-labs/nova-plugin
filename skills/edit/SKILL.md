@@ -94,13 +94,18 @@ unambiguous canonical extension relation for the automation case type. If an
 advanced case operation can add a second extension, Nova refuses host-scoped
 criteria, update sources, and message case-property parts rather than choose
 from HQ's unordered extensions; use a non-host scope or remove the additional
-link. Use Nova standard property names in tool input; returned guides project
+link. Every host-scoped read also requires exactly one live extension at
+runtime. Retained extra extension indices make the current-match count
+unavailable when a criterion reads the host, and HQ does not define which
+extension it chooses as the host. Use Nova standard property names in tool input; returned guides project
 `case_type`/`case_name`/
 `date_opened`/`last_modified` to HQ `type`/`name`/`opened_on`/`modified_on`.
 `case_id` and `case_type` are read-only. `status` is not representable,
 standard datetimes do not accept equality/regex, and restart or event-time
-fields accept custom properties only. Case-property event times accept `H:MM`
-or `HH:MM`; HQ uses 12:00 PM when the value is blank, missing, or malformed.
+fields accept custom properties only. After trimming, case-property event-time
+values must begin with `H:MM` or `HH:MM`, and the whole value must parse as a
+time. Suffixes such as AM/PM or seconds are accepted; blank, nonmatching, or
+unparseable values use 12:00 PM.
 Email content has one `body`:
 `plain-text { message }` targets a domain without Rich text emails, while
 `rich-text { html }` requires the toggle and is sanitized/rewrapped by HQ with

@@ -60,13 +60,18 @@ Host-scoped reads remain representable only while the app has one unambiguous
 canonical extension relation for the automated case type. If an advanced case
 operation can add a second extension, Nova refuses host-scoped criteria, update
 sources, and message case-property parts rather than choose from HQ's unordered
-extensions.
+extensions. Every host-scoped read also requires exactly one live extension at
+runtime. Retained extra extension indices make the current-match count
+unavailable when a criterion reads the host, and HQ does not define which
+extension it chooses as the host.
 Automation input uses Nova standard property names and setup guidance projects
 them to HQ's automation model-field names, including `case_type` to `type`;
 `case_id` and `case_type` are read-only. Divergent `status`, datetime
 equality/regex, and every standard scalar in dynamic-only restart/event-time
-slots are refused. Case-property event times accept `H:MM` or `HH:MM`; HQ uses
-12:00 PM when the value is blank, missing, or malformed. Email content chooses one plain-text or rich-text body form;
+slots are refused. After trimming, case-property event-time values must begin
+with `H:MM` or `HH:MM`, and the whole value must parse as a time. Suffixes such
+as AM/PM or seconds are accepted; blank, nonmatching, or unparseable values use
+12:00 PM. Email content chooses one plain-text or rich-text body form;
 rich HTML requires the domain toggle, is sanitized and rewrapped by HQ, and has
 its plaintext derived rather than authored in parallel.
 Message fields use canonical structural `parts`: literal `text` never becomes

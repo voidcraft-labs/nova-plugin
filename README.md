@@ -75,6 +75,9 @@ criteria so the guide can name the required `CASE_UPDATES_UCR_FILTERS` toggle
 or system-administrator access. HQ requires a system administrator to save an alert that uses a
 registered custom recipient or custom content handler; a project administrator
 cannot complete that returned setup guide alone.
+Preserve content-specific guide caveats too: SMS Survey requires Inbound SMS
+access, while Connect requires the `COMMCARE_CONNECT` domain toggle and every
+resolved recipient to be a CommCare mobile worker with an active PersonalID link.
 Checkbox-style, case-property, and custom recipient kinds are singletons;
 list-backed kinds may use a concrete target only once, and concrete HQ IDs must
 be trimmed and nonblank. Descendant controls

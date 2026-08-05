@@ -165,6 +165,9 @@ prerequisite when multiple keys/values or blank/whitespace values require it.
 An alert using a registered custom recipient or custom content handler requires
 an HQ system administrator to save it; preserve that returned setup-guide
 caveat because project-admin access alone is insufficient.
+Preserve content-specific caveats too: SMS Survey requires Inbound SMS access,
+while Connect requires the `COMMCARE_CONNECT` domain toggle and every resolved
+recipient to be a CommCare mobile worker with an active PersonalID link.
 Checkbox-style, case-property,
 and custom recipient kinds are singletons; list-backed kinds may use each
 concrete target only once, and every concrete HQ ID is trimmed and nonblank.

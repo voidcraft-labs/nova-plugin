@@ -87,8 +87,10 @@ literals must be exact nonblank/unquoted values. Do not invent a parent index, r
 web-user recipient. Connect content cannot use matched-case, parent-case,
 all-child-cases, case-property-email, or case-group recipients. A timed restart
 property requires a rule-trigger start. Date conditions compare the current date
-directly with the case-property date plus a signed day offset. Use Nova standard
-property names in tool input; returned guides project `case_type`/`case_name`/
+directly with the case-property date plus a signed day offset; a datetime
+contributes its written calendar date only, discarding its time and explicit
+offset. Use Nova standard property names in tool input; returned guides project
+`case_type`/`case_name`/
 `date_opened`/`last_modified` to HQ `type`/`name`/`opened_on`/`modified_on`.
 `case_id` and `case_type` are read-only. `status` is not representable,
 standard datetimes do not accept equality/regex, and restart or event-time

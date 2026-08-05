@@ -52,7 +52,9 @@ an explicit descendant flag; HQ executes and form-accepts it even though the
 current visible editors hide the picker, so returned guidance names the
 administrator application path. Names and literals
 are canonical nonblank values. Date conditions compare the current date directly
-with the case-property date plus a signed day offset. The schema also enforces
+with the case-property date plus a signed day offset; a datetime contributes its
+written calendar date only, discarding its time and explicit offset. The schema
+also enforces
 recipient compatibility and the rule-trigger requirement for timed restarts.
 Automation input uses Nova standard property names and setup guidance projects
 them to HQ's automation model-field names, including `case_type` to `type`;

@@ -39,6 +39,11 @@ family in a separate deterministic exact selection:
 
 ToolSearch({query: "select:mcp__plugin_nova_nova__get_organization,mcp__plugin_nova_nova__add_organization_levels,mcp__plugin_nova_nova__update_organization_level,mcp__plugin_nova_nova__remove_organization_level,mcp__plugin_nova_nova__add_location_properties,mcp__plugin_nova_nova__update_location_property,mcp__plugin_nova_nova__remove_location_property,mcp__plugin_nova_nova__create_location,mcp__plugin_nova_nova__update_location,mcp__plugin_nova_nova__move_location,mcp__plugin_nova_nova__set_location_archived,mcp__nova__get_organization,mcp__nova__add_organization_levels,mcp__nova__update_organization_level,mcp__nova__remove_organization_level,mcp__nova__add_location_properties,mcp__nova__update_location_property,mcp__nova__remove_location_property,mcp__nova__create_location,mcp__nova__update_location,mcp__nova__move_location,mcp__nova__set_location_archived"})
 
+When the task requests an automatic case update, conditional alert,
+reminder, or scheduled message, pre-load the complete automation family:
+
+ToolSearch({query: "select:mcp__plugin_nova_nova__get_automations,mcp__plugin_nova_nova__add_automations,mcp__plugin_nova_nova__update_automation,mcp__plugin_nova_nova__remove_automation,mcp__nova__get_automations,mcp__nova__add_automations,mcp__nova__update_automation,mcp__nova__remove_automation"})
+
 Pre-load the ordered case-operation family the same way when the task
 has a form doing more to cases than saving its own answers:
 
@@ -103,6 +108,95 @@ then repeat with that unchanged payload and `expectedRevision` set to the
 returned `expectedRevisionForConfirmation`; never confirm a blocked preflight.
 It removes persona assignments but never reassigns owned cases.
 
+When the task requests automations, add them after their case types, forms,
+worker information, and places exist. Predeclare stable UUIDs for the complete
+rule and every nested item, and use only the loaded schema's closed vocabulary.
+UCR and registered custom criteria are distinct setup-only kinds;
+automatic-update server-modified age is a
+separate structured field. None executes locally. Builder Preview may count current real open cases, but MCP does not
+return that count. `get_automations` and successful add/update results return
+the regenerated manual setup guide and locally omitted criteria; remove returns
+only its deletion receipt. Nova never updates a case, sends a message, advances
+a schedule, or installs the rule in CommCare HQ. Report the returned guide and
+omissions after get/add/update; never promise that uploading configures it.
+Schedules use one content type, and timed schedules must map to one CommCare HQ
+setup form: every event shares one timing mode, and Weekly and Monthly also share content. Obey the loaded schema's
+ordering, five-minute separation, random-window, day, offset, survey-expiration,
+and partial-submission dependencies.
+Weekly event days are offsets from `startDayOfWeek`, not absolute weekday
+numbers. Automatic updates admit value/date comparisons against case, parent,
+or host properties, at most one standard closed-parent condition, and
+server-modified age; they have no regex condition. Alerts admit direct-case
+value comparisons plus portable regex, with no date, parent/host,
+closed-parent, or server-modified condition. Both admit at most one UUID-backed
+location condition plus its descendant flag; preserve it and report the
+returned guide's HQ-administrator application caveat. Names must be nonblank
+and already trimmed; equality and update literals must be exact
+nonblank/unquoted values. Do not invent a parent index, relationship, or web-user
+recipient. Connect content cannot use matched-case, parent-case, all-child-cases,
+case-property-email, or case-group recipients. A timed restart property requires
+a rule-trigger start. Date conditions compare the current date directly with
+the case-property date plus a signed day offset; a datetime contributes its
+written calendar date only, discarding its time and explicit offset. Host-scoped
+references remain representable only while the app has one unambiguous canonical
+extension relation for the automation case type. If an advanced case operation
+can add a second extension, Nova refuses host-scoped criteria, update targets,
+update sources, and message case-property parts rather than choose from HQ's
+unordered extensions; use a non-host scope or remove the additional link. Every
+host-scoped reference also requires exactly one live extension at runtime.
+Retained extra extension indices make the current-match count unavailable when
+a criterion reads the host, and HQ does not define which extension it chooses
+as the host. Use Nova
+standard property names in tool input; returned guides project `case_type`/`case_name`/
+`date_opened`/`last_modified` to HQ `type`/`name`/`opened_on`/`modified_on`.
+`case_id` and `case_type` are read-only. `status` is not representable,
+standard datetimes do not accept equality/regex, and restart or event-time
+fields accept custom properties only. After trimming, case-property event-time
+values must begin with `H:MM` or `HH:MM`, and the whole value must parse as a
+time. Suffixes such as AM/PM or seconds are accepted; blank, nonmatching, or
+unparseable values use 12:00 PM.
+Email content has one `body`:
+`plain-text { message }` targets a domain without Rich text emails, while
+`rich-text { html }` requires the toggle and is sanitized/rewrapped by HQ with
+plaintext derived from it. Never invent parallel email bodies or promise
+byte-exact rich output.
+Message fields are structural `parts`: ordinary `text` remains literal even
+when it looks like `{case.foo}` and the guide escapes its braces for HQ. An
+explicit `case-property` part carries scope plus `(caseType, property)`
+identity; a `context-property` part explicitly names a case-owner or recipient
+field. Use that canonical shape directly; never send or parse magic token
+strings. A message `case-property` part cannot use `owner`, `host`, or
+`last_modified_by` in any scope because HQ's formatter context shadows
+same-named custom case data; rename the custom property, or use
+`context-property` for the actual case-owner or recipient context. Registered
+custom handler IDs, language codes, and setup-only
+instructions are exact trimmed nonblank values, not instructional placeholders.
+Use `ucr-filter` only for a UCR definition and `registered-custom` only for an
+instance-registered criterion; the returned guide names the former's
+`CASE_UPDATES_UCR_FILTERS` toggle and the latter's system-administrator save
+requirement. Recipient-filter values are structural exact literals or custom
+case-property references. Empty and whitespace literals are meaningful; never
+encode a lookup as a brace-wrapped literal because HQ executes it dynamically.
+Every triggering case must contain each referenced property because HQ raises
+when its direct lookup is missing. HQ filters only contacts that resolve to
+user accounts, so never combine filters with case, parent/child-case,
+case-email, case-group, or registered custom recipients; those contacts bypass
+the filter or have an unknown runtime type.
+The guide emits exact JSON and names the new-alert system-administrator
+prerequisite when multiple keys/values or blank/whitespace values require it.
+An alert using a registered custom recipient or custom content handler requires
+an HQ system administrator to save it; preserve that returned setup-guide
+caveat because project-admin access alone is insufficient.
+Preserve content-specific caveats too: SMS Survey requires Inbound SMS access,
+while Connect requires the `COMMCARE_CONNECT` domain toggle and every resolved
+recipient to be a CommCare mobile worker with an active PersonalID link.
+Checkbox-style, case-property,
+and custom recipient kinds are singletons; list-backed kinds may use each
+concrete target only once, and every concrete HQ ID is trimmed and nonblank.
+Descendant controls require a location recipient,
+location-level filters require descendants, and each worker-property filter
+key may appear once.
+
 Every tool call is validated as it lands, so there is no separate
 validation step. Place-owner rules are Preview-only until Nova ships device
 location data and HQ identity mapping, so report that export boundary when
@@ -117,10 +211,11 @@ and app_id "1c9de4a2-7b31-4f2e-9a44-d0b6c58f3e7a", emit:
 Emit that line FIRST — before any summary — so the identifier survives
 even if the rest of the message runs long or is cut off. Do not report
 the app complete after only `create_app`, `generate_schema`, and
-`create_module`: requested worker properties, roles, and personas must
+`create_module`: requested worker properties, roles, personas, and automations must
 also succeed and be confirmed from their tool results. Follow the id
 line with a summary of modules and forms, requested worker properties,
-roles, personas, organization levels, places, and assignments, any validation notes, and the design decisions
+roles, personas, organization levels, places, assignments, and automations with
+their manual HQ setup boundary, any validation notes, and the design decisions
 you made. At the final handoff, after every requested mutation and
 validation task is complete and no more app edits are planned, call
 `get_app_hq_feature_flags` exactly once without a domain, with the app id from

@@ -1,6 +1,6 @@
 ---
 name: upload_to_hq
-description: Upload an existing Nova app to CommCare HQ using the user's stored API key. Name a project space to upload straight there; otherwise it confirms the target with the user first.
+description: Upload an existing Nova app to CommCare HQ using the user's stored API key, then report what is left to do there. Name a project space to upload straight there; otherwise it confirms the target with the user first.
 argument-hint: <app_id or name> [project space]
 ---
 
@@ -115,12 +115,48 @@ target explicitly.
 ## 6. Report
 
 On success the response has
-`{hq_app_id, url, warnings, feature_flag_requirements}`. Report the same way on
-both paths:
+`{hq_app_id, url, warnings, feature_flag_requirements, deployment_state,
+deployment, setup_artifact}`.
+
+**Uploading is not releasing.** `deployment_state` is `uploaded`, which means
+the app is on the project space and is NOT yet something workers can open.
+CommCare HQ accepts an API key for putting an app there but not for making a
+version or releasing one, so those steps need a signed-in person. Never say the
+app is live, released, deployed to workers, or ready — say it is on CommCare HQ,
+then give the two remaining steps:
 
 > Uploaded **"App Name"** → `<url>`
 >
+> Two steps left, and they have to happen on CommCare HQ. Open the app's
+> Releases screen, choose **Make new version**, then star it to release it.
+> Tell me when you have, and I'll check it.
+>
 > (If `warnings` is non-empty, list them below as a short bullet list.)
+
+If `deployment.left_behind` is non-empty, say that publishing again created a
+new app rather than replacing the old one (CommCare HQ has no way to update an
+app in place), and name the ids still sitting on the project space.
+
+`setup_artifact.sections` lists what the project space still needs set up by
+hand, each with a real URL on that space. Do not paste all of it. Name the
+sections and offer the detail, unless the user asked what they have to set up.
+
+When the user says they have made and released the version, call
+`refresh_deployment` with the same `app_id`, `server`, and `domain`. It returns
+the same shape; report `state`:
+
+- `built` — a version exists but is not released. Tell them to star it.
+- `released` — released, and Nova is confirming a device can install it. Call
+  `refresh_deployment` once more.
+- `runnable` — now it is genuinely ready for workers. This is the only state to
+  describe that way.
+- `incomplete` — read `retry_from` and the matching entry in `phases` for the
+  reason, relay it, and say that retrying picks up from there rather than
+  starting over.
+
+`get_deployment` reports every project space an app has been published to
+without contacting CommCare HQ. `adopt_hq_app` attaches an app somebody imported
+by hand, and needs the exact HQ app id from its URL; Nova never matches by name.
 
 Then interpret `feature_flag_requirements` literally; never infer a flag's
 state from the app alone:

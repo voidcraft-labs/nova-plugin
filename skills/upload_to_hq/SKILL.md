@@ -154,6 +154,14 @@ the same shape; report `state`:
   reason, relay it, and say that retrying picks up from there rather than
   starting over.
 
+`refresh_deployment` can also answer with an ERROR instead of a state, and an
+error is never a verdict on the app. It means Nova could not ask: the account
+has no CommCare HQ key or the key no longer reaches that project space, or
+CommCare HQ did not answer, or the app has not been published there at all.
+Relay the message as-is — each one already says what to do — and do not report
+the deployment as failed, refused, or moved. Nothing changed on the project
+space, and the last state you saw is still the true one.
+
 `get_deployment` reports every project space an app has been published to
 without contacting CommCare HQ. `adopt_hq_app` attaches an app somebody imported
 by hand, and needs the exact HQ app id from its URL; Nova never matches by name.

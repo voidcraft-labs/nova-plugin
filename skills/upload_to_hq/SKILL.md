@@ -163,8 +163,7 @@ the deployment as failed, refused, or moved. Nothing changed on the project
 space, and the last state you saw is still the true one.
 
 `get_deployment` reports every project space an app has been published to
-without contacting CommCare HQ. `adopt_hq_app` attaches an app somebody imported
-by hand, and needs the exact HQ app id from its URL; Nova never matches by name.
+without contacting CommCare HQ.
 
 Then interpret `feature_flag_requirements` literally; never infer a flag's
 state from the app alone:

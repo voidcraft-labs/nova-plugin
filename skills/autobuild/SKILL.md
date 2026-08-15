@@ -49,6 +49,11 @@ has a form doing more to cases than saving its own answers:
 
 ToolSearch({query: "select:mcp__plugin_nova_nova__get_case_operations,mcp__plugin_nova_nova__add_case_operations,mcp__plugin_nova_nova__update_case_operation,mcp__plugin_nova_nova__remove_case_operation,mcp__plugin_nova_nova__move_case_operation,mcp__nova__get_case_operations,mcp__nova__add_case_operations,mcp__nova__update_case_operation,mcp__nova__remove_case_operation,mcp__nova__move_case_operation"})
 
+When the task requests non-English worker content or multiple app
+languages, pre-load the complete language family:
+
+ToolSearch({query: "select:mcp__plugin_nova_nova__get_languages,mcp__plugin_nova_nova__get_translatable_content,mcp__plugin_nova_nova__add_language,mcp__plugin_nova_nova__update_language,mcp__plugin_nova_nova__remove_language,mcp__plugin_nova_nova__update_translations,mcp__nova__get_languages,mcp__nova__get_translatable_content,mcp__nova__add_language,mcp__nova__update_language,mcp__nova__remove_language,mcp__nova__update_translations"})
+
 `+nova` keeps the core search namespace-neutral. Each exact family
 selection lists both supported spellings without ranking:
 `mcp__plugin_nova_nova__*` for plugin OAuth and `mcp__nova__*` for a
@@ -60,6 +65,38 @@ for an app-wide rename, and `configure_case_list` or
 way; select it by both spellings before its first use. Then build the
 CommCare app matching the task autonomously. Make every design decision
 yourself.
+
+Reply in the language of the user's latest substantive message. That
+conversation language is independent from the app's source, runtime default,
+and target worker languages; never switch the conversation merely because an
+app language differs.
+
+When the task requests non-English worker content or multiple app languages,
+choose the canonical source language, runtime default, ordered targets, and
+each target's copy source explicitly. Author every worker-facing name, label,
+hint, option, message, and composition string in the canonical source language.
+Do not stack multiple languages into one string. Finish every structural and
+source-content mutation before the language phase, because only then does the
+complete translation inventory exist.
+
+At the language phase, call `get_languages`. If the requested source uses
+another code, call `update_language` with `relabel-source` while it remains the
+sole language. Add targets in dependency order with `add_language` and an
+existing `copyFrom`; each target receives a complete effective projection and
+starts Needs review rather than blank. Set the runtime default only after its
+language exists.
+
+Every CommCare Classic language code is available for manual authoring and
+copying. `get_languages` separately reports automatic translation for each
+exact direction as Available, Not evaluated, or Withheld. No direction is
+currently Available, and the MCP surface has no paid automatic translation
+action. Never treat your own language fluency as capability approval or
+bulk-translate self-generated text through `update_translations`. Only save
+target text supplied by the user: page `get_translatable_content` to completion,
+preserve typed `protectedParts`, and write at most 50 distinct stable unit IDs
+per atomic call. A review must echo the exact explicit value and source
+fingerprint just read; never mark copied or machine-authored text reviewed on
+the user's behalf. Report incomplete, Out of date, and Needs review coverage.
 
 When the task requests custom worker properties, create and name the
 app, then immediately call `get_users` and `add_user_properties`.
@@ -202,7 +239,11 @@ key may appear once.
 Every tool call is validated as it lands, so there is no separate
 validation step. Place-owner rules are Preview-only until Nova ships device
 location data and HQ identity mapping, so report that export boundary when
-one is used. Begin your completion message with the app on its OWN
+one is used. After every source-language mutation, complete the requested
+language phase and verify the final catalog with `get_languages`. Do not report
+the build complete until every requested target exists, the runtime default is
+correct, and any human translation or review work is named. Begin your
+completion message with the app on its OWN
 FIRST LINE, formatted as `**"<app_name>" (<app_id>)**` — `app_id`
 from `create_app`'s result, `app_name` as you set it (`create_app`'s
 `app_name`, or `update_app`) — e.g. for app_name "Malaria ITN FGD"
@@ -217,8 +258,9 @@ the app complete after only `create_app`, `generate_schema`, and
 also succeed and be confirmed from their tool results. Follow the id
 line with a summary of modules and forms, requested worker properties,
 roles, personas, organization levels, places, assignments, and automations with
-their manual HQ setup boundary, any validation notes, and the design decisions
-you made. At the final handoff, after every requested mutation and
+their manual HQ setup boundary, source/default/target languages with translation
+coverage and review state, any validation notes, and the design decisions you
+made. At the final handoff, after every requested mutation and
 validation task is complete and no more app edits are planned, call
 `get_app_hq_feature_flags` exactly once without a domain, with the app id from
 `create_app`. Do not call it after individual mutations, while planning, or

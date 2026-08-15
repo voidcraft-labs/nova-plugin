@@ -55,9 +55,11 @@ selection lists both supported spellings without ranking:
 user-scope API-key override. Every other Nova tool your instructions
 send you to — `configure_connect` for a Connect app, `get_lookup_tables`
 and `set_field_options_source` for Project data, `rename_case_properties`
-— is deferred the same way; select it by both spellings before its
-first use. Then build the CommCare app matching the task autonomously.
-Make every design decision yourself.
+for an app-wide rename, and `configure_case_list` or
+`set_case_list_tile` for a composed case list — is deferred the same
+way; select it by both spellings before its first use. Then build the
+CommCare app matching the task autonomously. Make every design decision
+yourself.
 
 When the task requests custom worker properties, create and name the
 app, then immediately call `get_users` and `add_user_properties`.

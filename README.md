@@ -45,10 +45,11 @@ machine-authored values stay **Needs review** until that explicit review step.
 
 `get_languages` reports automatic translation independently for each exact
 source-to-target direction as **Available**, **Not evaluated**, or **Withheld**.
-No direction is currently Available. The plugin does not treat a model's
-general language fluency as permission to bulk-translate through the ordinary
-manual edit tool. It continues with copied content and tells you what needs
-human translation and review.
+Nova's launch policy marks pairs between distinct members of its 57-language
+launch set Available. The plugin has no paid automatic MCP action and does not
+treat a model's general language fluency as permission to bulk-translate through
+the ordinary manual edit tool. It continues with copied content and tells you
+what needs human translation and review.
 
 The agent replies in the language of your latest substantive message. That
 conversation language is independent from the app's source, default, and

@@ -53,8 +53,9 @@ def main() -> None:
             f"{path.relative_to(ROOT)} omits the conversation-language rule",
         )
         require(
-            "No direction is currently Available" in prose,
-            f"{path.relative_to(ROOT)} overstates automatic translation",
+            "57-language launch set" in prose
+            and "no paid automatic translation action" in prose,
+            f"{path.relative_to(ROOT)} misstates automatic translation",
         )
         require(
             "bulk-translate" in prose and "update_translations" in prose,
@@ -75,8 +76,9 @@ def main() -> None:
         "autonomous agent omits the conversation-language rule",
     )
     require(
-        "No direction is currently Available" in agent_prose,
-        "autonomous agent overstates automatic translation",
+        "57-language launch set" in agent_prose
+        and "no paid automatic MCP action" in agent_prose,
+        "autonomous agent misstates automatic translation",
     )
 
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
@@ -90,8 +92,9 @@ def main() -> None:
         "README must distinguish Classic compatibility from model capability",
     )
     require(
-        "No direction is currently Available" in readme_prose,
-        "README overstates automatic translation",
+        "57-language launch set" in readme_prose
+        and "no paid automatic MCP action" in readme_prose,
+        "README misstates automatic translation",
     )
 
     print("Nova plugin source contract passed")

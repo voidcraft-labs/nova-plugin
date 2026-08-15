@@ -78,10 +78,11 @@ label.
 
 Every CommCare Classic language code is available for manual authoring and
 copying. `get_languages` separately reports automatic translation for each
-exact source-to-target direction as Available, Not evaluated, or Withheld. No
-direction is currently Available, and the MCP surface has no paid automatic
-translation action. Never treat your own language fluency as capability
-approval or bulk-translate by feeding self-generated text through
+source-to-target pair as Available, Not evaluated, or Withheld. Nova's launch
+policy marks pairs between distinct members of its 57-language launch set
+Available, but the MCP surface has no paid automatic translation action. Never
+treat your own language fluency as a substitute or bulk-translate by feeding
+self-generated text through
 `update_translations`. When the user supplies target text, page
 `get_translatable_content` to completion for that target, preserve every typed
 `protectedParts` reference, and write at most 50 distinct stable unit IDs per

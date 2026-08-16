@@ -29,6 +29,32 @@ Full details: [docs.commcare.app/mcp/api-keys](https://docs.commcare.app/mcp/api
 - `/nova:show <app_id>` — blueprint summary
 - `/nova:upload_to_hq <app_id or name> [project space]` — deploy to CommCare HQ (names a space to upload straight there, otherwise confirms the target first; reports required HQ feature flags that are missing or could not be verified)
 
+## Languages and translations
+
+`/nova:build`, `/nova:autobuild`, and `/nova:edit` understand Nova's app
+language catalog. Every language code CommCare Classic accepts can be added,
+copied, edited, previewed, and exported; that compatibility does not imply that
+Nova can automatically translate the same language direction.
+
+For an existing app, ask `/nova:edit` to add or manage a language. The agent
+first reads the source and runtime-default languages, then adds each target by
+copying a complete existing language so the app is never born with blank
+worker text. It can page through every contextual string, save translations
+you provide, and mark an exact unchanged value reviewed. Copied and
+machine-authored values stay **Needs review** until that explicit review step.
+
+`get_languages` reports automatic translation independently for each exact
+source-to-target direction as **Available**, **Not evaluated**, or **Withheld**.
+Nova's launch policy marks pairs between distinct members of its 57-language
+launch set Available. The plugin has no paid automatic MCP action and does not
+treat a model's general language fluency as permission to bulk-translate through
+the ordinary manual edit tool. It continues with copied content and tells you
+what needs human translation and review.
+
+The agent replies in the language of your latest substantive message. That
+conversation language is independent from the app's source, default, and
+target worker languages.
+
 Agents connected directly over MCP can call `get_app_hq_feature_flags` before
 publishing. It returns only the CommCare HQ flags the app uses, why each
 applies, inline plain-language descriptions, and public docs links. With no

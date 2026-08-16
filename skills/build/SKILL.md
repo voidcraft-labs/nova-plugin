@@ -53,7 +53,53 @@ Pre-load the ordered case-operation family the same way when the spec has a form
 ToolSearch({query: "select:mcp__plugin_nova_nova__get_case_operations,mcp__plugin_nova_nova__add_case_operations,mcp__plugin_nova_nova__update_case_operation,mcp__plugin_nova_nova__remove_case_operation,mcp__plugin_nova_nova__move_case_operation,mcp__nova__get_case_operations,mcp__nova__add_case_operations,mcp__nova__update_case_operation,mcp__nova__remove_case_operation,mcp__nova__move_case_operation"})
 ```
 
+When the spec requests non-English worker content or multiple app languages,
+pre-load the complete language family:
+
+```
+ToolSearch({query: "select:mcp__plugin_nova_nova__get_languages,mcp__plugin_nova_nova__get_translatable_content,mcp__plugin_nova_nova__add_language,mcp__plugin_nova_nova__update_language,mcp__plugin_nova_nova__remove_language,mcp__plugin_nova_nova__update_translations,mcp__nova__get_languages,mcp__nova__get_translatable_content,mcp__nova__add_language,mcp__nova__update_language,mcp__nova__remove_language,mcp__nova__update_translations"})
+```
+
 `+nova` keeps the core search namespace-neutral. Each exact family selection lists both supported spellings without ranking: `mcp__plugin_nova_nova__*` for plugin OAuth and `mcp__nova__*` for a user-scope API-key override.
+
+Reply in the language of the user's latest substantive message. That
+conversation language is independent from the app's source, runtime default,
+and target worker languages; never switch the conversation merely because an
+app language differs.
+
+When the spec requests non-English worker content or multiple app languages,
+settle the canonical source language, runtime default, and ordered targets
+explicitly. Author every worker-facing name, label, hint, option, message, and
+composition string in the canonical source language while building the app.
+Do not mix stacked translations into one label. Finish every structural and
+source-content mutation before the language phase, because only then does the
+complete translation inventory exist.
+
+At the language phase, call `get_languages`. A new app starts with one source
+language; if the requested source uses another code, call `update_language`
+with `relabel-source` while it is still the sole language. Add targets in copy
+dependency order with `add_language`, always naming an existing `copyFrom`.
+That call copies the complete effective projection and every copied value starts
+Needs review, so a target is never created blank. Set the runtime default only
+after its language exists.
+
+Every CommCare Classic language code is available for manual authoring and
+copying. `get_languages` separately reports automatic translation for each
+source-to-target pair as Available, Not evaluated, or Withheld. Nova's launch
+policy marks pairs between distinct members of its 57-language launch set
+Available, but the MCP surface has no paid automatic translation action. Never
+treat your own language fluency as a substitute or bulk-translate by feeding
+self-generated text through
+`update_translations`. When the user supplies target text, first page
+`get_translatable_content` to completion, preserve typed `protectedParts`, and
+write at most 50 distinct stable unit IDs per atomic `update_translations`
+call. For a set, echo the unit's just-read current `sourceFingerprint` as
+`expectedSourceFingerprint`. For a review, echo the explicit entry's
+`sourceFingerprint` and exact value as `expectedSourceFingerprint` and
+`expectedValue`, plus the unit's current `sourceFingerprint` as
+`expectedCurrentSourceFingerprint`. Re-read the target after any concurrency
+refusal; never mark copied or machine-authored text reviewed on the user's behalf.
+Report incomplete, out-of-date, and Needs review coverage honestly.
 
 When the spec requests worker information, roles, or personas, call `get_users` before mutating them and target its stable UUIDs. In a build with custom worker properties, make that read and `add_user_properties` the first calls after creating and naming the app. Typed Predicate/ValueExpression inputs and role/persona values use `userPropertyUuid`. Expression slots take Nova's typed AST, not an XPath source string: a worker property is `{"kind":"user-property-ref","userPropertyUuid":"…"}` in prose and `{"kind":"session-user-property","userPropertyUuid":"…"}` in a Predicate or ValueExpression. Do not send `#user/<slug>` text for Nova to resolve — an unresolved hashtag is refused, not parsed. Rename the property with `update_user_property` on that same returned UUID. Add roles (`add_user_types`) after the reference-bearing structure and before personas, and link personas with the returned role UUIDs. In updates, omitted fields keep their values, and one role or persona value changes per call through `valuePatch`: it names one `userPropertyUuid`, a string sets that value and `null` clears it, and omitting `valuePatch` leaves every value alone. A persona that carries no value for a property inherits the role's; an explicit `""` overrides the role with blank. The server-fetched prompt remains authoritative subject to this ordering; use the loaded schemas for exact arguments.
 
@@ -186,10 +232,16 @@ Use TaskCreate to track the build phases:
 4. Building each module with its forms and fields
 5. Configuring requested automations
 6. Configuring requested roles, personas, and place assignments
+7. Adding requested app languages after all source-language content exists
 
 ## 4. Build
 
 Work through each phase per the fetched instructions. Create the app first (`create_app`; pass the app's name there, and its returned `app_id` threads through every other call). If the build requests custom worker properties, immediately call `get_users` and `add_user_properties`; do not call `generate_schema`, create a module or form, or author any condition or calculation that may reference those properties first. Then commit the data model with `generate_schema` (the case-type catalog; modules reference the recorded types by name; the app's name is not its concern). Build any requested organization parent-first next, before modules whose case-owner operations need those returned place identities. Then build each module, with its forms and fields, in one atomic `create_module` call, referring to a worker property by its `userPropertyUuid` in every typed slot as described above, never as `#user/<slug>` text. Add requested automations after every identity they reference exists. Configure roles and personas in dependency order after their places exist. Every call is validated as it lands, so there is no separate authoring-validation step. Place-based case-owner rules work in Preview but are deliberately not export-ready until Nova ships the matching device location fixture and HQ identity mapping; report that boundary when such a rule is requested. Do not mark the build complete until every requested user, organization, and automation authoring call has succeeded and its returned identities are confirmed. Mark each task `in_progress` when you start it and `completed` when it's done.
+
+After all source-language content exists, perform the requested language phase
+using the source/default/copy/review contract above. Do not mark the build
+complete until every requested language exists, the runtime default is correct,
+and the remaining human translation or review work is explicit.
 
 If a new ambiguity surfaces mid-build that materially changes the design, ask via AskUserQuestion before committing to it.
 
@@ -202,4 +254,5 @@ When the build is done, return:
 - A summary of requested worker properties, roles, and personas
 - A summary of requested organization levels, places, and assignments
 - A summary of requested automations and the manual HQ setup boundary
+- A summary of source, runtime-default, and target languages, with remaining translation and review coverage
 - Any validation notes

@@ -53,7 +53,47 @@ Pre-load the ordered case-operation family the same way when the edit touches wh
 ToolSearch({query: "select:mcp__plugin_nova_nova__get_case_operations,mcp__plugin_nova_nova__add_case_operations,mcp__plugin_nova_nova__update_case_operation,mcp__plugin_nova_nova__remove_case_operation,mcp__plugin_nova_nova__move_case_operation,mcp__nova__get_case_operations,mcp__nova__add_case_operations,mcp__nova__update_case_operation,mcp__nova__remove_case_operation,mcp__nova__move_case_operation"})
 ```
 
+When the edit touches app languages or translated worker content, pre-load the
+complete language family:
+
+```
+ToolSearch({query: "select:mcp__plugin_nova_nova__get_languages,mcp__plugin_nova_nova__get_translatable_content,mcp__plugin_nova_nova__add_language,mcp__plugin_nova_nova__update_language,mcp__plugin_nova_nova__remove_language,mcp__plugin_nova_nova__update_translations,mcp__nova__get_languages,mcp__nova__get_translatable_content,mcp__nova__add_language,mcp__nova__update_language,mcp__nova__remove_language,mcp__nova__update_translations"})
+```
+
 `+nova` keeps the core search namespace-neutral. Each exact family selection lists both supported spellings without ranking: `mcp__plugin_nova_nova__*` for plugin OAuth and `mcp__nova__*` for a user-scope API-key override.
+
+Reply in the language of the user's latest substantive message. Conversation
+language is independent from the app's source, runtime default, and target
+worker languages; never switch the conversation merely because an app language
+differs.
+
+For every language edit, call `get_languages` first. Treat the canonical source
+as the ordinary app content and every other language as an overlay. A source
+code can be relabeled only while it is the sole language. Add a target with
+`add_language` and an explicit existing `copyFrom`; it atomically copies every
+effective string and marks the result Needs review, so no target is born blank.
+Set the runtime default only after that language exists, and change it before
+removing the current default. Never mix several languages into one source
+label.
+
+Every CommCare Classic language code is available for manual authoring and
+copying. `get_languages` separately reports automatic translation for each
+source-to-target pair as Available, Not evaluated, or Withheld. Nova's launch
+policy marks pairs between distinct members of its 57-language launch set
+Available, but the MCP surface has no paid automatic translation action. Never
+treat your own language fluency as a substitute or bulk-translate by feeding
+self-generated text through
+`update_translations`. When the user supplies target text, page
+`get_translatable_content` to completion for that target, preserve every typed
+`protectedParts` reference, and write at most 50 distinct stable unit IDs per
+atomic call. For a set, echo the unit's just-read current `sourceFingerprint`
+as `expectedSourceFingerprint`. For a review, echo the explicit entry's
+`sourceFingerprint` and exact value as `expectedSourceFingerprint` and
+`expectedValue`, plus the unit's current `sourceFingerprint` as
+`expectedCurrentSourceFingerprint`. Re-read the target after any concurrency
+refusal; never mark copied or machine-authored text reviewed on the user's behalf.
+If ordinary source content changed, report target entries that are now Out of
+date instead of hiding the fallback.
 
 When an edit touches worker information, roles, or personas, call `get_users` first and target its stable UUIDs, never display names. Add properties first and use their returned UUIDs as role/persona value keys; add roles (`add_user_types`) before personas and link personas with the returned role UUIDs. Rename a property with `update_user_property` on that same UUID. In updates, omitted fields keep their values, and one role or persona value changes per call through `valuePatch`: it names one `userPropertyUuid`, a string sets that value and `null` clears it, and omitting `valuePatch` leaves every value alone — so two values are two calls. A persona that carries no value for a property inherits the role's; an explicit `""` overrides the role with blank. The server-fetched prompt remains authoritative; use the loaded schemas for exact arguments.
 
@@ -167,6 +207,10 @@ Use TaskCreate to outline the changes needed for this edit. There is no validati
 
 Work through each task using the Nova tools per the fetched instructions. Mark each task `in_progress` when you start it and `completed` when it's done.
 
+For a language task, keep the read/add/copy/manual-write/review sequence in the
+plan and re-read `get_languages` after the final mutation so the handoff names
+the actual default, targets, coverage, and remaining review work.
+
 If a new ambiguity surfaces mid-edit, ask via AskUserQuestion before applying it.
 
 ## 5. Report
@@ -178,3 +222,4 @@ When the edits are done, return:
 - Any worker-property, role, or persona changes
 - Any organization, place, or assignment changes
 - Any automation changes, returned matching omissions, and the manual HQ setup boundary
+- Any language, runtime-default, translation coverage, or review-state changes

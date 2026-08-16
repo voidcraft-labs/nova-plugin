@@ -1,5 +1,6 @@
 .DS_Store
 node_modules/
+__pycache__/
 .serena/
 
 # Overlay rebuilt by commcare-nova's scripts/nova-plugin-dev.sh on each

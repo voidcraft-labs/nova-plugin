@@ -22,11 +22,19 @@ A complete prompt ends with the line `NOVA-PROMPT-END`. If yours doesn't, the re
 
 If you already fetched it earlier in this conversation, reuse what you have — don't fetch again.
 
-The Nova mutation tools are deferred — calling one before its schema is loaded fails with a Zod error. Pre-load the build-path set in a single ToolSearch call before continuing:
+The Nova mutation tools are deferred — calling one before its schema is loaded fails with a Zod error. Pre-load the build-path set in a single deterministic ToolSearch call before continuing:
 
 ```
-ToolSearch({query: "+nova create_app generate_schema create_module update_app", max_results: 4})
+ToolSearch({query: "select:mcp__plugin_nova_nova__create_app,mcp__plugin_nova_nova__generate_schema,mcp__plugin_nova_nova__create_module,mcp__plugin_nova_nova__update_app,mcp__nova__create_app,mcp__nova__generate_schema,mcp__nova__create_module,mcp__nova__update_app"})
 ```
+
+When the spec names a target Nova Project — a shared workspace whose members all see the app — resolve it before creating the app. Load `list_projects`:
+
+```
+ToolSearch({query: "select:mcp__plugin_nova_nova__list_projects,mcp__nova__list_projects"})
+```
+
+Call it, match the named Project, and pass its `project_id` to `create_app`. When no Project is named, omit `project_id`; the app lands in the user's personal Project.
 
 Pre-load the complete worker-information, role, and persona family with a separate deterministic exact selection:
 
@@ -60,7 +68,7 @@ pre-load the complete language family:
 ToolSearch({query: "select:mcp__plugin_nova_nova__get_languages,mcp__plugin_nova_nova__get_translatable_content,mcp__plugin_nova_nova__add_language,mcp__plugin_nova_nova__update_language,mcp__plugin_nova_nova__remove_language,mcp__plugin_nova_nova__update_translations,mcp__nova__get_languages,mcp__nova__get_translatable_content,mcp__nova__add_language,mcp__nova__update_language,mcp__nova__remove_language,mcp__nova__update_translations"})
 ```
 
-`+nova` keeps the core search namespace-neutral. Each exact family selection lists both supported spellings without ranking: `mcp__plugin_nova_nova__*` for plugin OAuth and `mcp__nova__*` for a user-scope API-key override.
+Each exact selection lists both supported spellings without ranking: `mcp__plugin_nova_nova__*` for plugin OAuth and `mcp__nova__*` for a user-scope API-key override; the spelling that isn't connected simply matches nothing.
 
 Reply in the language of the user's latest substantive message. That
 conversation language is independent from the app's source, runtime default,

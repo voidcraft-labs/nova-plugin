@@ -25,6 +25,10 @@ The user wants to upload an app to CommCare HQ. The input is `$ARGUMENTS`.
 
 Call the space parsed here the **explicit target** — it may be unset.
 
+A CommCare HQ **project space** is not a Nova **Project** (the shared
+workspace `list_projects` reports). The target here is always an HQ
+domain slug; never pass a Nova Project name or id as the space.
+
 ## 2. Resolve the argument to exactly one app
 
 The app reference may be an app id or a name search phrase.
@@ -33,8 +37,10 @@ The app reference may be an app id or a name search phrase.
 - Otherwise → call Nova's `search_apps` tool with `{query: "<app>"}`.
   - Zero matches → tell the user no app matched and stop.
   - Multiple matches → show them as a numbered list with
-    `<N>. **<App Name>** (<app_id>) — <N> modules, <M> forms, updated <date>`
-    and ask which one. Wait for their answer before continuing.
+    `<N>. **<App Name>** (<app_id>, in <project_name>) — <N> modules, <M> forms, updated <date>`
+    and ask which one. Wait for their answer before continuing. The
+    Nova Project tells apart same-named apps living in different
+    shared workspaces.
   - Exactly one → use it.
 
 Throughout, refer to the app as **"App Name" (app_id)** so the user sees both

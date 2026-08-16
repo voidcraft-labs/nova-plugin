@@ -13,12 +13,19 @@ Build, edit, compile, and deploy CommCare apps from Claude Code.
 opens your browser to sign in at commcare.app. Tokens are stored in Claude Code's
 credential store; revoke via `/mcp` → nova → Clear authentication.
 
-**API key.** For unattended runs, or several agents sharing one account, set
-`NOVA_API_KEY` in your environment to a key from
-[commcare.app/settings](https://commcare.app/settings). The plugin picks it up
-automatically — no browser, no extra setup. Unset it to fall back to browser sign-in.
+**API key.** For unattended runs, set `NOVA_API_KEY` in your environment to a
+key from [commcare.app/settings](https://commcare.app/settings). The plugin
+picks it up automatically — no browser, no extra setup. Unset it to fall back
+to browser sign-in.
 
-Full details: [docs.commcare.app/mcp/api-keys](https://docs.commcare.app/mcp/api-keys).
+**Working as a team?** Don't share one account. Create a shared Nova Project and
+invite your teammates — everyone signs in as themselves, and every member sees
+the Project's apps, case data, and media. Agents manage this over MCP too:
+`list_projects`, `create_project`, `invite_member`, `list_members`,
+`update_member_role`, and `move_app`.
+
+Full details: [docs.commcare.app/mcp/api-keys](https://docs.commcare.app/mcp/api-keys)
+and [docs.commcare.app/mcp/tools](https://docs.commcare.app/mcp/tools).
 
 ## Skills
 

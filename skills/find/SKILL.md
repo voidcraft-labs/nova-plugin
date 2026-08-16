@@ -6,9 +6,9 @@ argument-hint: <search phrase>
 
 Call Nova's `search_apps` tool with `{query: "$ARGUMENTS"}`.
 
-Render the matches as a markdown table with columns: Name, Status,
-Last Updated, ID. Use the `app_id` value from each entry for the ID
-column.
+Render the matches as a markdown table with columns: Name, Project,
+Status, Last Updated, ID. Use the `project_name` value from each entry
+for the Project column and the `app_id` value for the ID column.
 
 Frame the output naturally — talk like you would to a colleague, not
 a script. A short one-line opener referencing what was searched, the

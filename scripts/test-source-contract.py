@@ -35,8 +35,8 @@ def main() -> None:
     )
     require(manifest["name"] == "nova", "plugin name must remain nova")
     require(
-        manifest["version"] == "1.19.0",
-        "language contract release must carry plugin version 1.19.0",
+        manifest["version"] == "1.20.0",
+        "Project-management release must carry plugin version 1.20.0",
     )
 
     for path in GUIDANCE_FILES:

@@ -86,10 +86,14 @@ self-generated text through
 `update_translations`. When the user supplies target text, page
 `get_translatable_content` to completion for that target, preserve every typed
 `protectedParts` reference, and write at most 50 distinct stable unit IDs per
-atomic call. A review must echo the exact explicit value and source fingerprint
-just read; never mark copied or machine-authored text reviewed on the user's
-behalf. If ordinary source content changed, report target entries that are now
-Out of date instead of hiding the fallback.
+atomic call. For a set, echo the unit's just-read current `sourceFingerprint`
+as `expectedSourceFingerprint`. For a review, echo the explicit entry's
+`sourceFingerprint` and exact value as `expectedSourceFingerprint` and
+`expectedValue`, plus the unit's current `sourceFingerprint` as
+`expectedCurrentSourceFingerprint`. Re-read the target after any concurrency
+refusal; never mark copied or machine-authored text reviewed on the user's behalf.
+If ordinary source content changed, report target entries that are now Out of
+date instead of hiding the fallback.
 
 When an edit touches worker information, roles, or personas, call `get_users` first and target its stable UUIDs, never display names. Add properties first and use their returned UUIDs as role/persona value keys; add roles (`add_user_types`) before personas and link personas with the returned role UUIDs. Rename a property with `update_user_property` on that same UUID. In updates, omitted fields keep their values, and one role or persona value changes per call through `valuePatch`: it names one `userPropertyUuid`, a string sets that value and `null` clears it, and omitting `valuePatch` leaves every value alone — so two values are two calls. A persona that carries no value for a property inherits the role's; an explicit `""` overrides the role with blank. The server-fetched prompt remains authoritative; use the loaded schemas for exact arguments.
 

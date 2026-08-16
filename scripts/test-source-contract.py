@@ -61,6 +61,13 @@ def main() -> None:
             "bulk-translate" in prose and "update_translations" in prose,
             f"{path.relative_to(ROOT)} omits the manual-write boundary",
         )
+        require(
+            "expectedSourceFingerprint" in prose
+            and "expectedValue" in prose
+            and "expectedCurrentSourceFingerprint" in prose
+            and "concurrency refusal" in prose,
+            f"{path.relative_to(ROOT)} omits translation concurrency fencing",
+        )
 
     agent_text = AUTONOMOUS_AGENT.read_text(encoding="utf-8")
     agent_prose = " ".join(agent_text.split())
@@ -79,6 +86,13 @@ def main() -> None:
         "57-language launch set" in agent_prose
         and "no paid automatic MCP action" in agent_prose,
         "autonomous agent misstates automatic translation",
+    )
+    require(
+        "expectedSourceFingerprint" in agent_prose
+        and "expectedValue" in agent_prose
+        and "expectedCurrentSourceFingerprint" in agent_prose
+        and "concurrency refusal" in agent_prose,
+        "autonomous agent omits translation concurrency fencing",
     )
 
     readme = (ROOT / "README.md").read_text(encoding="utf-8")

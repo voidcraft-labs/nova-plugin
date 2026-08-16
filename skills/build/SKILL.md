@@ -93,8 +93,12 @@ self-generated text through
 `update_translations`. When the user supplies target text, first page
 `get_translatable_content` to completion, preserve typed `protectedParts`, and
 write at most 50 distinct stable unit IDs per atomic `update_translations`
-call. A review must echo the exact explicit value and source fingerprint just
-read; never mark copied or machine-authored text reviewed on the user's behalf.
+call. For a set, echo the unit's just-read current `sourceFingerprint` as
+`expectedSourceFingerprint`. For a review, echo the explicit entry's
+`sourceFingerprint` and exact value as `expectedSourceFingerprint` and
+`expectedValue`, plus the unit's current `sourceFingerprint` as
+`expectedCurrentSourceFingerprint`. Re-read the target after any concurrency
+refusal; never mark copied or machine-authored text reviewed on the user's behalf.
 Report incomplete, out-of-date, and Needs review coverage honestly.
 
 When the spec requests worker information, roles, or personas, call `get_users` before mutating them and target its stable UUIDs. In a build with custom worker properties, make that read and `add_user_properties` the first calls after creating and naming the app. Typed Predicate/ValueExpression inputs and role/persona values use `userPropertyUuid`. Expression slots take Nova's typed AST, not an XPath source string: a worker property is `{"kind":"user-property-ref","userPropertyUuid":"…"}` in prose and `{"kind":"session-user-property","userPropertyUuid":"…"}` in a Predicate or ValueExpression. Do not send `#user/<slug>` text for Nova to resolve — an unresolved hashtag is refused, not parsed. Rename the property with `update_user_property` on that same returned UUID. Add roles (`add_user_types`) after the reference-bearing structure and before personas, and link personas with the returned role UUIDs. In updates, omitted fields keep their values, and one role or persona value changes per call through `valuePatch`: it names one `userPropertyUuid`, a string sets that value and `null` clears it, and omitting `valuePatch` leaves every value alone. A persona that carries no value for a property inherits the role's; an explicit `""` overrides the role with blank. The server-fetched prompt remains authoritative subject to this ordering; use the loaded schemas for exact arguments.

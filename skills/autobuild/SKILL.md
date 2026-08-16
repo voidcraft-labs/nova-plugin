@@ -95,9 +95,14 @@ treat your own language fluency as a substitute or
 bulk-translate self-generated text through `update_translations`. Only save
 target text supplied by the user: page `get_translatable_content` to completion,
 preserve typed `protectedParts`, and write at most 50 distinct stable unit IDs
-per atomic call. A review must echo the exact explicit value and source
-fingerprint just read; never mark copied or machine-authored text reviewed on
-the user's behalf. Report incomplete, Out of date, and Needs review coverage.
+per atomic call. For a set, echo the unit's just-read current
+`sourceFingerprint` as `expectedSourceFingerprint`. For a review, echo the
+explicit entry's `sourceFingerprint` and exact value as
+`expectedSourceFingerprint` and `expectedValue`, plus the unit's current
+`sourceFingerprint` as `expectedCurrentSourceFingerprint`. Re-read the target
+after any concurrency refusal; never mark copied or machine-authored text
+reviewed on the user's behalf. Report incomplete, Out of date, and Needs review
+coverage.
 
 When the task requests custom worker properties, create and name the
 app, then immediately call `get_users` and `add_user_properties`.

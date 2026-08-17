@@ -68,15 +68,27 @@ worker languages; never switch the conversation merely because an app language
 differs.
 
 For every language edit, call `get_languages` first. Treat the canonical source
-as the ordinary app content and every other language as an overlay. A source
-code can be relabeled only while it is the sole language. Add a target with
-`add_language` and an explicit existing `copyFrom`; it atomically copies every
-effective string and marks the result Needs review, so no target is born blank.
-Set the runtime default only after that language exists, and change it before
-removing the current default. Never mix several languages into one source
-label.
+as the ordinary app content and every other language as an overlay. The source
+language's identity can be replaced only while it is the sole language. Add a
+target with `add_language` and an explicit existing `copyFrom`; it atomically
+copies every effective string and marks the result Needs review, so no target
+is born blank. Set the runtime default only after that language exists, and
+change it before removing the current default. Never mix several languages
+into one source label.
 
-Every CommCare Classic language code is available for manual authoring and
+A language is an identity object `{language, script?, region?}`, never a
+combined tag. `language` is an ISO 639:2023 Set 3 code for one individual
+living language (`cmn`, `spa`, `hin`) — never a macrolanguage such as `zho`
+and never a two-letter code. `script` is an ISO 15924 code (`Hans`), required
+exactly when the language has more than one customary writing system. `region`
+is an ISO 3166-1 alpha-2 code (`MX`), used where a country's conventions
+differ and otherwise omitted. A rejected identifier names the identifiers to
+use instead — a macrolanguage rejection lists its individual members. The
+worker-facing name and text direction derive from the identity rather than
+being authored; read identities back from tool results instead of assuming
+what you sent.
+
+Every individual living language is available for manual authoring and
 copying. `get_languages` separately reports automatic translation for each
 source-to-target pair as Available, Not evaluated, or Withheld. Nova's launch
 policy marks pairs between distinct members of its 57-language launch set

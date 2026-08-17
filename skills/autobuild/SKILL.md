@@ -86,14 +86,26 @@ Do not stack multiple languages into one string. Finish every structural and
 source-content mutation before the language phase, because only then does the
 complete translation inventory exist.
 
-At the language phase, call `get_languages`. If the requested source uses
-another code, call `update_language` with `relabel-source` while it remains the
-sole language. Add targets in dependency order with `add_language` and an
-existing `copyFrom`; each target receives a complete effective projection and
-starts Needs review rather than blank. Set the runtime default only after its
-language exists.
+At the language phase, call `get_languages`. If the requested source is a
+different language, call `update_language` with `change-identity` while it
+remains the sole language. Add targets in dependency order with
+`add_language` and an existing `copyFrom`; each target receives a complete
+effective projection and starts Needs review rather than blank. Set the
+runtime default only after its language exists.
 
-Every CommCare Classic language code is available for manual authoring and
+A language is an identity object `{language, script?, region?}`, never a
+combined tag. `language` is an ISO 639:2023 Set 3 code for one individual
+living language (`cmn`, `spa`, `hin`) — never a macrolanguage such as `zho`
+and never a two-letter code. `script` is an ISO 15924 code (`Hans`), required
+exactly when the language has more than one customary writing system. `region`
+is an ISO 3166-1 alpha-2 code (`MX`), used where a country's conventions
+differ and otherwise omitted. A rejected identifier names the identifiers to
+use instead — a macrolanguage rejection lists its individual members. The
+worker-facing name and text direction derive from the identity rather than
+being authored; read identities back from tool results instead of assuming
+what you sent.
+
+Every individual living language is available for manual authoring and
 copying. `get_languages` separately reports automatic translation for each
 source-to-target pair as Available, Not evaluated, or Withheld. Nova's launch
 policy marks pairs between distinct members of its 57-language launch set

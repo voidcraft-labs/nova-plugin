@@ -1,6 +1,6 @@
 ---
 name: upload_to_hq
-description: Upload an existing Nova app to CommCare HQ using the user's stored API key, then report what is left to do there. Name a project space to upload straight there; otherwise it confirms the target with the user first.
+description: Upload an existing Nova app to CommCare HQ using the user's stored API key, then report what is left to do there. The first upload to a project space creates the HQ app; uploading again updates that same app in place. Name a project space to upload straight there; otherwise it confirms the target with the user first.
 argument-hint: <app_id or name> [project space]
 ---
 
@@ -108,8 +108,10 @@ feature-flag disclosure in the same message; `<host>` is `server_url` without
 the scheme):
 
 > **"App Name"** (app_id) is already saved in Nova and you can keep editing
-> it here anytime — this **also** uploads it as a **new** app to CommCare HQ
-> at `<host>/a/<target>/`, using your API key. Your Nova copy stays put.
+> it here anytime — this **also** uploads it to CommCare HQ at
+> `<host>/a/<target>/`, using your API key: a first upload creates the app
+> there, and a later one updates that same HQ app in place. Your Nova copy
+> stays put.
 >
 > Proceed?
 
@@ -121,8 +123,10 @@ target explicitly.
 ## 6. Report
 
 On success the response has
-`{hq_app_id, url, warnings, feature_flag_requirements, deployment_state,
-deployment, setup_artifact}`.
+`{hq_app_id, hq_app_action, url, warnings, feature_flag_requirements,
+deployment_state, deployment, setup_artifact}`. `hq_app_action` says whether
+this upload created the HQ app or updated it in place — say which happened
+(e.g. "Uploaded" for `created`, "Updated" for `updated`).
 
 **Uploading is not releasing.** `deployment_state` is `uploaded`, which means
 the app is on the project space and is NOT yet something workers can open.
@@ -139,9 +143,10 @@ then give the two remaining steps:
 >
 > (If `warnings` is non-empty, list them below as a short bullet list.)
 
-If `deployment.left_behind` is non-empty, say that publishing again created a
-new app rather than replacing the old one (CommCare HQ has no way to update an
-app in place), and name the ids still sitting on the project space.
+If `deployment.left_behind` is non-empty, name those app ids: they are apps
+earlier uploads left on the project space (uploads made before Nova updated
+apps in place, or an app replaced after the mapped one was deleted on HQ), and
+the user can archive or delete them there when no longer needed.
 
 `setup_artifact.sections` lists what the project space still needs set up by
 hand, each with a real URL on that space. Do not paste all of it. Name the
@@ -201,5 +206,8 @@ On a failed upload, surface `error_type` and `message` from the response:
   step 3, run the step 4 feature-flag check for that target, and retry step 5.
 - `hq_not_configured` — the user needs to connect CommCare HQ in Settings
   (pick the server their account lives on and add their API key).
+- `remote_app_missing` — the HQ app this one updates in place was deleted on
+  HQ. Nothing was changed; relay the `message` (uploading again creates a
+  fresh app there).
 - `hq_upload_failed` — an HQ-side rejection; show the `message` so the user
   knows what HQ rejected.

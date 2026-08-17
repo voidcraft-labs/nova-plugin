@@ -25,9 +25,16 @@ Then call the loaded Nova `get_agent_prompt` tool with the mode above
 ends with `NOVA-PROMPT-END` before using it; if it doesn't, follow your
 bootstrap invariant and report the truncation instead of building. The
 Nova mutation tools are deferred — pre-load their schemas in one
-ToolSearch call before your first mutation:
+deterministic ToolSearch call before your first mutation:
 
-ToolSearch({query: "+nova create_app generate_schema create_module update_app", max_results: 4})
+ToolSearch({query: "select:mcp__plugin_nova_nova__create_app,mcp__plugin_nova_nova__generate_schema,mcp__plugin_nova_nova__create_module,mcp__plugin_nova_nova__update_app,mcp__nova__create_app,mcp__nova__generate_schema,mcp__nova__create_module,mcp__nova__update_app"})
+
+When the task names a target Nova Project — a shared workspace whose
+members all see the app — resolve it before creating the app: select
+`list_projects` by both spellings the same way, call it, match the
+named Project, and pass its `project_id` to `create_app`. When no
+Project is named, omit `project_id`; the app lands in the user's
+personal Project.
 
 Pre-load the complete worker-information, role, and persona family in
 a separate deterministic exact selection:
@@ -54,10 +61,10 @@ languages, pre-load the complete language family:
 
 ToolSearch({query: "select:mcp__plugin_nova_nova__get_languages,mcp__plugin_nova_nova__get_translatable_content,mcp__plugin_nova_nova__add_language,mcp__plugin_nova_nova__update_language,mcp__plugin_nova_nova__remove_language,mcp__plugin_nova_nova__update_translations,mcp__nova__get_languages,mcp__nova__get_translatable_content,mcp__nova__add_language,mcp__nova__update_language,mcp__nova__remove_language,mcp__nova__update_translations"})
 
-`+nova` keeps the core search namespace-neutral. Each exact family
-selection lists both supported spellings without ranking:
+Each exact selection lists both supported spellings without ranking:
 `mcp__plugin_nova_nova__*` for plugin OAuth and `mcp__nova__*` for a
-user-scope API-key override. Every other Nova tool your instructions
+user-scope API-key override; the spelling that isn't connected simply
+matches nothing. Every other Nova tool your instructions
 send you to — `configure_connect` for a Connect app, `get_lookup_tables`
 and `set_field_options_source` for Project data, `rename_case_properties`
 for an app-wide rename, and `configure_case_list` or

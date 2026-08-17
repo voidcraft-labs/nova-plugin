@@ -5,8 +5,9 @@ description: Show your 10 most recently updated Nova apps.
 
 Call Nova's `list_apps` tool with no arguments.
 
-Render the apps as a markdown table with columns: Name, Status, Last
-Updated, ID. Use the `app_id` value from each entry for the ID column.
+Render the apps as a markdown table with columns: Name, Project,
+Status, Last Updated, ID. Use the `project_name` value from each entry
+for the Project column and the `app_id` value for the ID column.
 
 Frame the output naturally — talk like you would to a colleague, not
 a script. A short one-line opener before the table, the table itself,

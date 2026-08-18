@@ -35,8 +35,8 @@ def main() -> None:
     )
     require(manifest["name"] == "nova", "plugin name must remain nova")
     require(
-        manifest["version"] == "1.21.0",
-        "In-place-update release must carry plugin version 1.21.0",
+        manifest["version"] == "1.22.0",
+        "Structured-language-identity release must carry plugin version 1.22.0",
     )
 
     for path in GUIDANCE_FILES:
@@ -56,6 +56,11 @@ def main() -> None:
             "57-language launch set" in prose
             and "no paid automatic translation action" in prose,
             f"{path.relative_to(ROOT)} misstates automatic translation",
+        )
+        require(
+            "`{language, script?, region?}`" in prose
+            and "never a combined tag" in prose,
+            f"{path.relative_to(ROOT)} omits the language identity contract",
         )
         require(
             "bulk-translate" in prose and "update_translations" in prose,
@@ -88,6 +93,11 @@ def main() -> None:
         "autonomous agent misstates automatic translation",
     )
     require(
+        "`{language, script?, region?}`" in agent_prose
+        and "never a combined tag" in agent_prose,
+        "autonomous agent omits the language identity contract",
+    )
+    require(
         "expectedSourceFingerprint" in agent_prose
         and "expectedValue" in agent_prose
         and "expectedCurrentSourceFingerprint" in agent_prose
@@ -102,8 +112,10 @@ def main() -> None:
         "README omits the public language contract",
     )
     require(
-        "Every language code CommCare Classic accepts" in readme_prose,
-        "README must distinguish Classic compatibility from model capability",
+        "`{language, script?, region?}`" in readme_prose
+        and "Every individual living language" in readme_prose,
+        "README must state the identity contract and distinguish language"
+        " availability from model capability",
     )
     require(
         "57-language launch set" in readme_prose

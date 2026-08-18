@@ -39,9 +39,14 @@ and [docs.commcare.app/mcp/tools](https://docs.commcare.app/mcp/tools).
 ## Languages and translations
 
 `/nova:build`, `/nova:autobuild`, and `/nova:edit` understand Nova's app
-language catalog. Every language code CommCare Classic accepts can be added,
-copied, edited, previewed, and exported; that compatibility does not imply that
-Nova can automatically translate the same language direction.
+language catalog. A language is an identity object
+`{language, script?, region?}`: one individual living ISO 639 language, its
+writing system where the language has more than one, and optional regional
+conventions. Every individual living language can be added, copied, edited,
+previewed, and exported; that does not imply that Nova can automatically
+translate the same language direction. Macrolanguages and two-letter codes
+are rejected with the identifiers to use instead, and each language's name
+and text direction come from the identity itself.
 
 For an existing app, ask `/nova:edit` to add or manage a language. The agent
 first reads the source and runtime-default languages, then adds each target by

@@ -35,8 +35,8 @@ def main() -> None:
     )
     require(manifest["name"] == "nova", "plugin name must remain nova")
     require(
-        manifest["version"] == "1.24.0",
-        "Push-and-provisioning-drivers release must carry plugin version 1.24.0",
+        manifest["version"] == "1.25.0",
+        "Place-owner-claim release must carry plugin version 1.25.0",
     )
 
     for path in GUIDANCE_FILES:

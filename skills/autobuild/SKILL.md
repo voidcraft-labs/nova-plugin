@@ -262,9 +262,9 @@ location-level filters require descendants, and each worker-property filter
 key may appear once.
 
 Every tool call is validated as it lands, so there is no separate
-validation step. Place-owner rules are Preview-only until Nova ships device
-location data and HQ identity mapping, so report that export boundary when
-one is used. After every source-language mutation, complete the requested
+validation step. Place-owner rules are Preview-only: they execute in
+Preview, and no export mode carries them yet, so report that export
+boundary when one is used. After every source-language mutation, complete the requested
 language phase and verify the final catalog with `get_languages`. Do not report
 the build complete until every requested target exists, the runtime default is
 correct, and any human translation or review work is named. Begin your

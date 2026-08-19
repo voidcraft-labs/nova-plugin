@@ -149,9 +149,11 @@ If `deployment.left_behind` is non-empty, name each entry. Each one is
 - `kind: "app"` — an app an earlier upload left on the project space (uploads
   made before Nova updated apps in place, or an app replaced after the mapped
   one was deleted on HQ). `hq_id` is how the user finds it there.
-- `kind: "lookup-table"` — a table still sitting on the project space under a
-  tag the app has since renamed. `hq_name` is that old tag, which is what the
-  user will see on HQ's Lookup Tables screen.
+- `kind: "lookup-table"` — a table still sitting on the project space that the
+  app no longer points at, either because its tag was renamed or because the
+  last question reading it is gone. `hq_name` is the tag it still carries
+  there, which is what the user will see on HQ's Lookup Tables screen. A table
+  that was simply republished never appears here.
 
 Nova never deletes anything on CommCare HQ, so say what is there and leave the
 decision with the user: they can archive or delete it themselves once they no

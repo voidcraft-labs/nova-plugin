@@ -238,9 +238,10 @@ The refusals, each of which wrote nothing:
 - `app_not_published` — upload the app to that space first.
 - `workers_not_provisionable` — the `message` names each reason: a username
   CommCare HQ will not take, worker information the app marks required that a
-  persona has no value for, or a persona standing in a place the project space
-  does not hold yet (upload the app there, which puts the places there). Relay
-  it and stop; nothing was created.
+  persona has no value for, a persona standing in a place the project space
+  does not hold yet (upload the app there, which puts the places there), the
+  same persona or the same username named twice in one call, or a persona the
+  app no longer has. Relay it and stop; nothing was created.
 - `hq_worker_conflict` — one or more usernames already belong to accounts Nova
   did not create. `worker_conflicts` carries one entry per clash as
   `{persona_uuid, persona_name, username, hq_user_id}`. A mobile username is

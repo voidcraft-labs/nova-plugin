@@ -176,12 +176,14 @@ upload. A `succeeded` status means its lookup tables and places are on the
 project space and match the Nova copy; `null` means the app has neither and
 nothing was sent.
 
-Places go up in groups, one organization level at a time, and each group either
-lands whole or not at all. So a `retry_from: "resources"` after some groups
-landed is not "nothing happened" — the earlier levels really are on the project
-space and Nova recorded them, and uploading again carries on from there rather
-than making a second copy. Never tell the user nothing was created; if you need
-to be exact, call `get_deployment` and report what the record says.
+A `retry_from: "resources"` does not mean nothing was created. Places go up in
+groups, one organization level at a time, and each group either lands whole or
+not at all, so the levels before the one that stopped really are on the project
+space. Lookup tables are the same: CommCare HQ writes a large table in more than
+one piece, so a table can be there even though the upload was refused. Nova
+records whatever it can account for, and uploading again carries on from there
+rather than making a second copy. Never tell the user nothing was created; if
+you need to be exact, call `get_deployment` and report what the record says.
 
 `setup_artifact.sections` lists what the project space still needs set up by
 hand, each with a real URL on that space. Do not paste all of it. Name the

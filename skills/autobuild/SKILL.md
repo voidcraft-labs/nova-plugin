@@ -262,9 +262,12 @@ location-level filters require descendants, and each worker-property filter
 key may appear once.
 
 Every tool call is validated as it lands, so there is no separate
-validation step. Place-owner rules are Preview-only: they execute in
-Preview, and no export mode carries them yet, so report that export
-boundary when one is used. After every source-language mutation, complete the requested
+validation step. One place-owner rule cannot be exported: an owner set to
+a PARTICULAR PLACE, which travels as Nova's own place id and so names
+nobody on CommCare HQ. An owner set to A PLACE BENEATH THE CURRENT CASE
+OWNER exports on every mode, because it travels as level codes and the
+case's own owner. Report that boundary only for the particular-place
+form, and offer the other as the way to keep place ownership. After every source-language mutation, complete the requested
 language phase and verify the final catalog with `get_languages`. Do not report
 the build complete until every requested target exists, the runtime default is
 correct, and any human translation or review work is named. Begin your

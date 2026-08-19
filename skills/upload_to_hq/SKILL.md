@@ -233,7 +233,24 @@ copy and cannot show it again. Show them even when the answer also carries an
 with `action: "updated"` has `password: null`, because that person's password is
 untouched.
 
-The refusals, each of which wrote nothing:
+**An error does not always mean the account was not made.** CommCare HQ saves a
+worker before it writes its reply, so a request that breaks off after that point
+leaves a real account behind and still answers with an error. That comes back as
+`hq_worker_may_exist`, with the account in `unconfirmed_workers` carrying its
+`password`. Show it exactly as urgently as any other password: if the account is
+there, that password is the only one it will ever have, and Nova cannot look it
+up, because CommCare HQ's username search runs on an index that trails a new
+account by seconds. Tell the user to look for that username on their project
+space. If it is not there, call again to make it. If it IS, wait a moment
+before calling again: CommCare HQ's username search runs on an index that
+trails its own new account by seconds, so until it catches up a retry still
+tries to create and comes back as `hq_rejected_worker` saying the name is
+taken. The take-over path is only available once `worker_conflicts` names the
+account, and `adopt_personas` does nothing before then.
+
+The refusals. None created an account except where said otherwise, and one
+of them (`hq_rejected_worker`) is not always a proven non-event, so relay each
+`message` rather than reading the tag alone:
 
 - `app_not_published` — upload the app to that space first.
 - `workers_not_provisionable` — the `message` names each reason: a username
@@ -253,8 +270,16 @@ The refusals, each of which wrote nothing:
   other way out is a username nobody has yet — a username is set once when the
   account is made, so giving a persona a new one makes a second account and
   leaves the first alone, and retiring an account never gives its name back.
+- `hq_rejected_worker` — CommCare HQ would not complete one of the writes.
+  Accounts made before it are real and are in `workers` with their passwords.
+  An UPDATE that broke off mid-flight also lands here, and then the `message`
+  says the change may or may not have taken; do not report that as "nothing
+  changed".
 - `hq_worker_state_unknown` — CommCare HQ would not say which usernames it
   holds. Nothing was written; try again.
+- `hq_worker_may_exist` — CommCare HQ broke off mid-create and said nothing
+  about what it made, as above. This is the one refusal that may have created
+  an account; `unconfirmed_workers` carries it with its password.
 - `hq_not_configured` / `domain_not_authorized` — the same Settings and
   reachable-space guidance as an upload.
 

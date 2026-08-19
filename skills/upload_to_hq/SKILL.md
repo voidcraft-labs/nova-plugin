@@ -110,8 +110,8 @@ the scheme):
 > **"App Name"** (app_id) is already saved in Nova and you can keep editing
 > it here anytime — this **also** uploads it to CommCare HQ at
 > `<host>/a/<target>/`, using your API key: a first upload creates the app
-> there, and a later one updates that same HQ app in place. Your Nova copy
-> stays put.
+> there, and a later one updates that same HQ app in place. Any Project data
+> tables the app reads go up with it. Your Nova copy stays put.
 >
 > Proceed?
 
@@ -143,10 +143,24 @@ then give the two remaining steps:
 >
 > (If `warnings` is non-empty, list them below as a short bullet list.)
 
-If `deployment.left_behind` is non-empty, name those app ids: they are apps
-earlier uploads left on the project space (uploads made before Nova updated
-apps in place, or an app replaced after the mapped one was deleted on HQ), and
-the user can archive or delete them there when no longer needed.
+If `deployment.left_behind` is non-empty, name each entry. Each one is
+`{kind, hq_id, hq_name}`:
+
+- `kind: "app"` — an app an earlier upload left on the project space (uploads
+  made before Nova updated apps in place, or an app replaced after the mapped
+  one was deleted on HQ). `hq_id` is how the user finds it there.
+- `kind: "lookup-table"` — a table still sitting on the project space under a
+  tag the app has since renamed. `hq_name` is that old tag, which is what the
+  user will see on HQ's Lookup Tables screen.
+
+Nova never deletes anything on CommCare HQ, so say what is there and leave the
+decision with the user: they can archive or delete it themselves once they no
+longer need it.
+
+`deployment.phases.resources` tells you whether Project data tables went up on
+this upload. A `succeeded` status means the app's tables are on the project
+space and match the Nova copy; `null` means the app reads no tables and none
+were sent.
 
 `setup_artifact.sections` lists what the project space still needs set up by
 hand, each with a real URL on that space. Do not paste all of it. Name the
@@ -210,4 +224,20 @@ On a failed upload, surface `error_type` and `message` from the response:
   HQ. Nothing was changed; relay the `message` (uploading again creates a
   fresh app there).
 - `hq_upload_failed` — an HQ-side rejection; show the `message` so the user
-  knows what HQ rejected.
+  knows what HQ rejected. This also covers CommCare HQ refusing the app's
+  Project data tables, which happens before the app is sent, so the app never
+  went up either. When a deployment comes back with `retry_from: "resources"`,
+  say that retrying picks up at the tables rather than starting over.
+- `hq_resource_conflict` — the project space already holds a lookup table
+  under a name one of the app's tables uses, and Nova will not overwrite a
+  table it did not put there. **Nothing was uploaded**, not even the app. The
+  response carries `resource_conflicts`, one entry per clash as
+  `{kind, nova_resource_id, name, hq_name, hq_id}`: `name` is what the user
+  calls it in Nova, `hq_name` is the name it collides with on HQ. Name every
+  clash and ask the user, **per table**, whether that HQ table is theirs to
+  replace. A shared name is not evidence that it is — never decide this for
+  them, and never send them all because they said yes to one. Retry with
+  `adopt_resources` set to the `nova_resource_id` of each table they approved;
+  Nova then takes over exactly those and replaces their rows with the Nova
+  copy. If they approve none, stop: the upload cannot proceed while a clash
+  stands.

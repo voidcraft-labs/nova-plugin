@@ -1,6 +1,6 @@
 ---
 name: upload_to_hq
-description: Upload an existing Nova app to CommCare HQ using the user's stored API key, along with the lookup tables it reads and the places in its organization, then report what is left to do there. The first upload to a project space creates the HQ app; uploading again updates that same app in place. Name a project space to upload straight there; otherwise it confirms the target with the user first.
+description: Upload an existing Nova app to CommCare HQ using the user's stored API key, along with the lookup tables it reads and the places in its organization, then report what is left to do there and offer to make a mobile worker for each persona. The first upload to a project space creates the HQ app; uploading again updates that same app in place. Name a project space to upload straight there; otherwise it confirms the target with the user first.
 argument-hint: <app_id or name> [project space]
 ---
 
@@ -161,6 +161,11 @@ If `deployment.left_behind` is non-empty, name each entry. Each one is
   `hq_name` is its site code, which is what the user will see on HQ's Organization
   screen — and that code stays reserved there even if they archive the place,
   so a future place cannot reuse it.
+- `kind: "worker"` — a mobile worker Nova made for a persona the app no longer
+  has, or under a username the persona no longer uses. `hq_name` is the complete
+  username. Nova never deletes or retires a worker, because CommCare HQ's own
+  delete also deletes every case that worker owns — so this one is a real
+  person's account, and whether to keep it is entirely the user's call.
 
 Nova never deletes anything on CommCare HQ, so say what is there and leave the
 decision with the user: they can archive or delete it themselves once they no
@@ -205,6 +210,54 @@ space, and the last state you saw is still the true one.
 
 `get_deployment` reports every project space an app has been published to
 without contacting CommCare HQ.
+
+## 7. Offer to make workers
+
+Once the deployment is `runnable`, the app is ready but nobody has an account
+to open it with. If the app has personas (`get_users` reports them), offer:
+
+> Want me to make a CommCare mobile worker for each persona on `<target>`?
+
+Only when the user says yes, call `provision_workers` with
+`{app_id, server, domain, workers: [{persona_uuid}]}` — one entry per persona
+they asked for. Omit `username` to take Nova's suggestion from the persona's
+name, or pass one the user gave you.
+
+**Show every password in the answer to the user immediately, and show them all
+before anything else.** Each `workers[]` entry carries `password` for an account
+this call CREATED, and that value exists only in that answer — Nova stores no
+copy and cannot show it again. Show them even when the answer also carries an
+`error_type`: a call that stopped partway still made real accounts. An entry
+with `action: "updated"` has `password: null`, because that person's password is
+untouched.
+
+The refusals, each of which wrote nothing:
+
+- `app_not_published` — upload the app to that space first.
+- `workers_not_provisionable` — the `message` names each reason: a username
+  CommCare HQ will not take, worker information the app marks required that a
+  persona has no value for, or a persona standing in a place the project space
+  does not hold yet (upload the app there, which puts the places there). Relay
+  it and stop; nothing was created.
+- `hq_worker_conflict` — one or more usernames already belong to accounts Nova
+  did not create. `worker_conflicts` carries one entry per clash as
+  `{persona_uuid, persona_name, username, hq_user_id}`. A mobile username is
+  unique across the whole of CommCare HQ, so each of these is somebody's real
+  account. Ask the user about each one **one at a time**, and never decide for
+  them or send them all because they said yes to one. Retry with
+  `adopt_personas` set to the `persona_uuid` of each one they approved. The
+  other way out is a username nobody has yet — a username is set once when the
+  account is made, so giving a persona a new one makes a second account and
+  leaves the first alone.
+- `hq_worker_state_unknown` — CommCare HQ would not say which usernames it
+  holds. Nothing was written; try again.
+- `hq_not_configured` / `domain_not_authorized` — the same Settings and
+  reachable-space guidance as an upload.
+
+Nova does not create CommCare user roles, and it does not set up the project
+space's custom user-data field definitions; both are on the upload's
+`setup_artifact` list. Say so if the user expects a worker to arrive with a
+role.
 
 Then interpret `feature_flag_requirements` literally; never infer a flag's
 state from the app alone:

@@ -1,6 +1,6 @@
 ---
 name: upload_to_hq
-description: Upload an existing Nova app to CommCare HQ using the user's stored API key, then report what is left to do there. The first upload to a project space creates the HQ app; uploading again updates that same app in place. Name a project space to upload straight there; otherwise it confirms the target with the user first.
+description: Upload an existing Nova app to CommCare HQ using the user's stored API key, along with the lookup tables it reads and the places in its organization, then report what is left to do there. The first upload to a project space creates the HQ app; uploading again updates that same app in place. Name a project space to upload straight there; otherwise it confirms the target with the user first.
 argument-hint: <app_id or name> [project space]
 ---
 
@@ -111,7 +111,8 @@ the scheme):
 > it here anytime — this **also** uploads it to CommCare HQ at
 > `<host>/a/<target>/`, using your API key: a first upload creates the app
 > there, and a later one updates that same HQ app in place. Any Project data
-> tables the app reads go up with it. Your Nova copy stays put.
+> tables the app reads and any places in its organization go up with it. Your
+> Nova copy stays put.
 >
 > Proceed?
 
@@ -154,15 +155,28 @@ If `deployment.left_behind` is non-empty, name each entry. Each one is
   last question reading it is gone. `hq_name` is the tag it still carries
   there, which is what the user will see on HQ's Lookup Tables screen. A table
   that was simply republished never appears here.
+- `kind: "location"` — a place still on the project space that the app
+  archived. Nova stops sending an archived place, and CommCare HQ's location
+  API offers no way to archive or delete one, so Nova cannot take it down.
+  `hq_name` is its site code, which is what the user will see on HQ's Organization
+  screen — and that code stays reserved there even if they archive the place,
+  so a future place cannot reuse it.
 
 Nova never deletes anything on CommCare HQ, so say what is there and leave the
 decision with the user: they can archive or delete it themselves once they no
 longer need it.
 
-`deployment.phases.resources` tells you whether Project data tables went up on
-this upload. A `succeeded` status means the app's tables are on the project
-space and match the Nova copy; `null` means the app reads no tables and none
-were sent.
+`deployment.phases.resources` tells you whether the app's data went up on this
+upload. A `succeeded` status means its lookup tables and places are on the
+project space and match the Nova copy; `null` means the app has neither and
+nothing was sent.
+
+Places go up in groups, one organization level at a time, and each group either
+lands whole or not at all. So a `retry_from: "resources"` after some groups
+landed is not "nothing happened" — the earlier levels really are on the project
+space and Nova recorded them, and uploading again carries on from there rather
+than making a second copy. Never tell the user nothing was created; if you need
+to be exact, call `get_deployment` and report what the record says.
 
 `setup_artifact.sections` lists what the project space still needs set up by
 hand, each with a real URL on that space. Do not paste all of it. Name the
@@ -227,19 +241,37 @@ On a failed upload, surface `error_type` and `message` from the response:
   fresh app there).
 - `hq_upload_failed` — an HQ-side rejection; show the `message` so the user
   knows what HQ rejected. This also covers CommCare HQ refusing the app's
-  Project data tables, which happens before the app is sent, so the app never
-  went up either. When a deployment comes back with `retry_from: "resources"`,
-  say that retrying picks up at the tables rather than starting over.
-- `hq_resource_conflict` — the project space already holds a lookup table
-  under a name one of the app's tables uses, and Nova will not overwrite a
-  table it did not put there. **Nothing was uploaded**, not even the app. The
-  response carries `resource_conflicts`, one entry per clash as
-  `{kind, nova_resource_id, name, hq_name, hq_id}`: `name` is what the user
-  calls it in Nova, `hq_name` is the name it collides with on HQ. Name every
-  clash and ask the user, **per table**, whether that HQ table is theirs to
-  replace. A shared name is not evidence that it is — never decide this for
+  Project data tables or its places, which happens before the app is sent, so
+  the app never went up either. When a deployment comes back with
+  `retry_from: "resources"`, say that retrying picks up at the data rather than
+  starting over. CommCare HQ's own sentence about a refused place arrives in
+  `message` and names the place by its site code — relay it as it is, because it
+  is more specific than anything you could infer.
+- `hq_resource_conflict` — the project space already holds a lookup table or a
+  place under a name one of the app's uses, and Nova will not overwrite
+  something it did not put there. **Nothing was uploaded**, not even the app.
+  The response carries `resource_conflicts`, one entry per clash as
+  `{kind, nova_resource_id, name, hq_name, hq_id}`: `kind` is `lookup-table` or
+  `location`, `name` is what the user calls it in Nova, `hq_name` is the name it
+  collides with on HQ (a table's tag, or a place's site code). Name every clash
+  and ask the user, **one at a time**, whether that HQ resource is theirs to
+  take over. A shared name is not evidence that it is — never decide this for
   them, and never send them all because they said yes to one. Retry with
-  `adopt_resources` set to the `nova_resource_id` of each table they approved;
-  Nova then takes over exactly those and replaces their rows with the Nova
-  copy. If they approve none, stop: the upload cannot proceed while a clash
-  stands.
+  `adopt_resources` set to the `nova_resource_id` of each one they approved;
+  Nova then takes over exactly those and keeps them in step with the Nova copy.
+  If they approve none, stop: the upload cannot proceed while a clash stands.
+  The other way out differs by kind — a table's export tag can be renamed in
+  Project data, while a place's site code is set once, so sending a place of
+  their own beside it means removing it in Organization and adding it again
+  with a code that is free.
+- `hq_organization_mismatch` — the app's places do not fit the organization
+  levels the project space has, so CommCare HQ would refuse them. **Nothing was
+  uploaded.** The `message` names each place and what is wrong with it: a level
+  the project space does not have, a place whose level is not directly below its
+  parent's, two places under one parent sharing a name, or a place Nova moved to
+  the top of the organization that HQ still holds under a parent. No approval
+  resolves this one — do not offer `adopt_resources`. Relay the message, and say
+  the fix is either in Nova's Organization or on CommCare HQ's Organization
+  Levels page. Nova cannot create levels there: HQ's API is read-only for them,
+  so `setup_artifact` carries every level the app needs, in the order to make
+  them.

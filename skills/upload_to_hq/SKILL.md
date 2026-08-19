@@ -244,16 +244,15 @@ The refusals, each of which wrote nothing:
   app no longer has. Relay it and stop; nothing was created.
 - `hq_worker_conflict` — one or more usernames already belong to accounts Nova
   did not create. `worker_conflicts` carries one entry per clash as
-  `{persona_uuid, persona_name, username, hq_user_id}`. Usually each of these
-  is somebody's real account, so ask the user about each one **one at a time**,
-  and never decide for them or send them all because they said yes to one. One
-  case is worth naming when you ask: if an earlier call for that same persona
-  stopped on an error, the account may be one Nova made and could not record,
-  in which case nobody holds its password and adopting it is the right move. Retry with
-  `adopt_personas` set to the `persona_uuid` of each one they approved. The
+  `{persona_uuid, persona_name, username, hq_user_id}`. A mobile username is
+  the whole address, `name@project-space.commcarehq.org`, so the same name is
+  free on every other project space and taken only on this one, where it is
+  somebody's real account. Ask the user about each one **one at a time**, and
+  never decide for them or send them all because they said yes to one. Retry
+  with `adopt_personas` set to the `persona_uuid` of each one they approved. The
   other way out is a username nobody has yet — a username is set once when the
   account is made, so giving a persona a new one makes a second account and
-  leaves the first alone.
+  leaves the first alone, and retiring an account never gives its name back.
 - `hq_worker_state_unknown` — CommCare HQ would not say which usernames it
   holds. Nothing was written; try again.
 - `hq_not_configured` / `domain_not_authorized` — the same Settings and

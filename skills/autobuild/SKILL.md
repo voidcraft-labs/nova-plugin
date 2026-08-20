@@ -56,6 +56,11 @@ has a form doing more to cases than saving its own answers:
 
 ToolSearch({query: "select:mcp__plugin_nova_nova__get_case_operations,mcp__plugin_nova_nova__add_case_operations,mcp__plugin_nova_nova__update_case_operation,mcp__plugin_nova_nova__remove_case_operation,mcp__plugin_nova_nova__move_case_operation,mcp__nova__get_case_operations,mcp__nova__add_case_operations,mcp__nova__update_case_operation,mcp__nova__remove_case_operation,mcp__nova__move_case_operation"})
 
+When the task sends a worker to a different form or module after
+submitting, pre-load the after-submit link family:
+
+ToolSearch({query: "select:mcp__plugin_nova_nova__add_form_links,mcp__plugin_nova_nova__update_form_link,mcp__plugin_nova_nova__remove_form_link,mcp__plugin_nova_nova__move_form_link,mcp__nova__add_form_links,mcp__nova__update_form_link,mcp__nova__remove_form_link,mcp__nova__move_form_link"})
+
 When the task requests non-English worker content or multiple app
 languages, pre-load the complete language family:
 

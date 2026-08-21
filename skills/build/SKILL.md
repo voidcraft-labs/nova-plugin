@@ -68,6 +68,13 @@ pre-load the after-submit link family:
 ToolSearch({query: "select:mcp__plugin_nova_nova__add_form_links,mcp__plugin_nova_nova__update_form_link,mcp__plugin_nova_nova__remove_form_link,mcp__plugin_nova_nova__move_form_link,mcp__nova__add_form_links,mcp__nova__update_form_link,mcp__nova__remove_form_link,mcp__nova__move_form_link"})
 ```
 
+When the spec wants a long form walked one page at a time, pre-load the one
+sections tool:
+
+```
+ToolSearch({query: "select:mcp__plugin_nova_nova__set_form_sections,mcp__nova__set_form_sections"})
+```
+
 When the spec requests non-English worker content or multiple app languages,
 pre-load the complete language family:
 
@@ -232,7 +239,7 @@ key may appear once.
 
 A case-bound field is still the simplest way for a form to save its own answers, so reach for `add_case_operations` only when one submission carries a further ordered effect: opening another case, updating or closing a known one, linking, renaming or retyping, assigning an owner, or repeating an effect per repeat entry. Every one of these tools names the form it acts on by `moduleUuid` + `formUuid`: take both from `get_module` or `search_blueprint`, and never guess or construct one. Inside the operation every reference is a UUID: a form answer is `{"kind":"field","uuid":"…"}`, a `forEach` repeat scope is that repeat field's UUID, and an earlier create is targeted as `{"kind":"op","opUuid":"…"}` (its resulting case id, inside a value expression, is `{"kind":"id-of","opUuid":"…"}`). The operation's own `id` stays a readable wire name, never an address. Within a single `add_case_operations` call a later item may consume an earlier create by predeclaring that create's `operationUuid`, so keep producer before consumer. The server-fetched prompt remains authoritative for each action's exact shape; use the loaded schemas for arguments.
 
-Load any additional read or edit tools (`get_app`, `edit_field`, `move_field`, `remove_field`, etc.) on demand if a follow-up step needs them.
+Load any additional read or edit tools (`get_app`, `edit_field`, `move_field`, `remove_field`, etc.) on demand if a follow-up step needs them. To page a form, call `set_form_sections` once with the complete desired partition of its top-level questions; it plans the change itself, and a half-sectioned form is refused by construction, so never assemble pages one `add_fields` or `move_field` call at a time.
 
 ## 2. Resolve ambiguities first
 

@@ -53,6 +53,20 @@ Pre-load the ordered case-operation family the same way when the edit touches wh
 ToolSearch({query: "select:mcp__plugin_nova_nova__get_case_operations,mcp__plugin_nova_nova__add_case_operations,mcp__plugin_nova_nova__update_case_operation,mcp__plugin_nova_nova__remove_case_operation,mcp__plugin_nova_nova__move_case_operation,mcp__nova__get_case_operations,mcp__nova__add_case_operations,mcp__nova__update_case_operation,mcp__nova__remove_case_operation,mcp__nova__move_case_operation"})
 ```
 
+When the edit sends a worker to a different form or module after submitting,
+pre-load the after-submit link family:
+
+```
+ToolSearch({query: "select:mcp__plugin_nova_nova__add_form_links,mcp__plugin_nova_nova__update_form_link,mcp__plugin_nova_nova__remove_form_link,mcp__plugin_nova_nova__move_form_link,mcp__nova__add_form_links,mcp__nova__update_form_link,mcp__nova__remove_form_link,mcp__nova__move_form_link"})
+```
+
+When the edit splits a form into pages, moves a question between pages, or
+merges pages back together, pre-load the one sections tool:
+
+```
+ToolSearch({query: "select:mcp__plugin_nova_nova__set_form_sections,mcp__nova__set_form_sections"})
+```
+
 When the edit touches app languages or translated worker content, pre-load the
 complete language family:
 
@@ -203,7 +217,7 @@ Before pointing a question's choices at a Project data table, call `get_lookup_t
 
 Read the current sequence with `get_case_operations` before changing it, then `update_case_operation`, `remove_case_operation`, and `move_case_operation` by the operation's `operationUuid`. A case-bound field is still the simplest way for a form to save its own answers, so reach for `add_case_operations` only when a submission carries a further ordered effect: opening another case, updating or closing a known one, linking, renaming or retyping, assigning an owner, or repeating an effect per repeat entry. Every one of these tools names the form it acts on by `moduleUuid` + `formUuid`: take both from `get_module` or `search_blueprint`, and never guess or construct one. Inside the operation every reference is a UUID: a form answer is `{"kind":"field","uuid":"…"}`, a `forEach` repeat scope is that repeat field's UUID, and an earlier create is targeted as `{"kind":"op","opUuid":"…"}` (its resulting case id, inside a value expression, is `{"kind":"id-of","opUuid":"…"}`). The operation's own `id` stays a readable wire name, never an address. Within a single `add_case_operations` call a later item may consume an earlier create by predeclaring that create's `operationUuid`, so keep producer before consumer. The server-fetched prompt remains authoritative for each action's exact shape.
 
-Load any additional tools (`create_form`, `remove_form`, `create_module`, `remove_module`, `generate_schema`, `get_module`, `get_form`, `get_field`, `get_lookup_tables`, `set_field_options_source`) on demand if a follow-up step needs them. A new case type enters an existing app through `generate_schema` — record it there before creating a module or fields that use it. To reposition an existing field, use `move_field` — it keeps the field's identity and every reference to it; never remove and re-add a field to move it. To change a field's kind, pass a different `kind` to `edit_field` — it converts in place (same identity/reference guarantee); converting to a select needs an `optionsSource` in the same call, and converting to `hidden` needs a `calculate`. On a case-bound field one call is property-wide — it also converts the property's same-kind writers in the app's other forms and updates its declared type, so never issue per-form convert calls for the same property. Never remove and re-add a field to change its kind either — if the target kind isn't a supported conversion (the error names the valid targets), surface the constraint to the user instead.
+Load any additional tools (`create_form`, `remove_form`, `create_module`, `remove_module`, `generate_schema`, `get_module`, `get_form`, `get_field`, `get_lookup_tables`, `set_field_options_source`) on demand if a follow-up step needs them. A new case type enters an existing app through `generate_schema` — record it there before creating a module or fields that use it. To reposition an existing field, use `move_field` — it keeps the field's identity and every reference to it; never remove and re-add a field to move it. To change a field's kind, pass a different `kind` to `edit_field` — it converts in place (same identity/reference guarantee); converting to a select needs an `optionsSource` in the same call, and converting to `hidden` needs a `calculate`. On a case-bound field one call is property-wide — it also converts the property's same-kind writers in the app's other forms and updates its declared type, so never issue per-form convert calls for the same property. Never remove and re-add a field to change its kind either — if the target kind isn't a supported conversion (the error names the valid targets), surface the constraint to the user instead. A form's pages are sections: `set_form_sections` takes the complete desired partition of the form's top-level questions (kept pages by `sectionUuid`, new pages unnamed, an empty list un-pages the form) and plans the minimal change itself, so never build pages one `add_fields` or `move_field` call at a time — a half-sectioned form is refused by construction.
 
 ## 2. Confirm the change (if unsure)
 

@@ -35,8 +35,8 @@ def main() -> None:
     )
     require(manifest["name"] == "nova", "plugin name must remain nova")
     require(
-        manifest["version"] == "1.26.0",
-        "Place-owner-narrowing release must carry plugin version 1.26.0",
+        manifest["version"] == "1.27.0",
+        "Links-and-sections release must carry plugin version 1.27.0",
     )
 
     for path in GUIDANCE_FILES:

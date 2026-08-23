@@ -36,6 +36,27 @@ and [docs.commcare.app/mcp/tools](https://docs.commcare.app/mcp/tools).
 - `/nova:show <app_id>` — blueprint summary
 - `/nova:upload_to_hq <app_id or name> [project space]` — deploy to CommCare HQ (names a space to upload straight there, otherwise confirms the target first; reports required HQ feature flags that are missing or could not be verified)
 
+## Nested menus
+
+`/nova:build`, `/nova:autobuild`, and `/nova:edit` can organize modules under
+one submenu tier. A parent menu remains a complete module with its own Form or
+case-list surface, and each child is complete too. A child cannot contain
+another child, and a parent that already has children cannot itself become a
+child.
+
+`create_module` accepts an optional `parentModuleUuid`: omit it for a top-level
+module or pass an eligible root module's UUID for a child. `move_module` keeps
+its `after` sibling anchor and adds optional `parentModuleUuid`. Omit the parent
+only to reorder inside the module's current menu, pass `null` to make it
+top-level, or pass an eligible root UUID to move it into that submenu. `after`
+must name a sibling in the resulting destination, or be `null` for first.
+
+Menu parentage controls navigation. It is separate from case parentage, which
+selects related case records at run time. Nested menus also do not duplicate
+forms: every Form has one canonical owning module, with no linked- or
+shadow-form reuse. Separate modules and case-list filters can provide different
+views of the same data.
+
 ## Languages and translations
 
 `/nova:build`, `/nova:autobuild`, and `/nova:edit` understand Nova's app

@@ -18,14 +18,14 @@ ToolSearch({query: "select:mcp__plugin_nova_nova__get_agent_prompt,mcp__nova__ge
 
 Then call the loaded Nova `get_agent_prompt` tool with `mode: "build"`. Treat the returned text as your operating instructions for this build.
 
-A complete prompt ends with the line `NOVA-PROMPT-END`. If yours doesn't, the result was too large to deliver whole and you're holding its opening — identity and voice, none of the build guidance. When the result names a file it was saved to, read that file and use its contents as the prompt. If there's no such file, stop and tell the user `get_agent_prompt` returned a truncated prompt; don't build from the fragment and don't reconstruct the missing guidance from the tool schemas.
+A complete prompt ends with the line `NOVA-PROMPT-END`. If yours doesn't, the result was too large to deliver whole and you're holding its opening — identity and voice, none of the build guidance. When the result names a file it was saved to, read that file and use its contents as the prompt. If there's no such file, stop and tell the user `get_agent_prompt` returned a truncated prompt; don't build from the fragment and don't reconstruct the missing guidance from the tool schemas. A missing marker is a transport failure, never permission to continue from partial instructions.
 
 If you already fetched it earlier in this conversation, reuse what you have — don't fetch again.
 
 The Nova mutation tools are deferred — calling one before its schema is loaded fails with a Zod error. Pre-load the build-path set in a single deterministic ToolSearch call before continuing:
 
 ```
-ToolSearch({query: "select:mcp__plugin_nova_nova__create_app,mcp__plugin_nova_nova__generate_schema,mcp__plugin_nova_nova__create_module,mcp__plugin_nova_nova__update_app,mcp__nova__create_app,mcp__nova__generate_schema,mcp__nova__create_module,mcp__nova__update_app"})
+ToolSearch({query: "select:mcp__plugin_nova_nova__create_app,mcp__plugin_nova_nova__generate_schema,mcp__plugin_nova_nova__create_module,mcp__plugin_nova_nova__move_module,mcp__plugin_nova_nova__update_app,mcp__nova__create_app,mcp__nova__generate_schema,mcp__nova__create_module,mcp__nova__move_module,mcp__nova__update_app"})
 ```
 
 When the spec names a target Nova Project — a shared workspace whose members all see the app — resolve it before creating the app. Load `list_projects`:
@@ -83,6 +83,26 @@ ToolSearch({query: "select:mcp__plugin_nova_nova__get_languages,mcp__plugin_nova
 ```
 
 Each exact selection lists both supported spellings without ranking: `mcp__plugin_nova_nova__*` for plugin OAuth and `mcp__nova__*` for a user-scope API-key override; the spelling that isn't connected simply matches nothing.
+
+Nova supports exactly one submenu tier. Menu parentage organizes navigation;
+case parentage is the separate case-type relationship that selects related
+records at run time. Never infer `parentModuleUuid` from a case type's parent,
+or infer a case relationship from a menu. Every parent and child module must
+still have its own valid Form or case-list surface, and every Form has one
+canonical owning module. Nested menus do not provide linked- or shadow-form
+reuse; use deliberate module composition and case-list filters when several
+views of the same data are needed.
+
+Create an eligible top-level parent before its children and keep its returned
+UUID. For `create_module`, omit `parentModuleUuid` for a top-level module and
+pass that eligible root UUID for a child. A child cannot be a parent, a root
+that already has children cannot become a child, and a parent cannot be empty.
+For `move_module`, `after` remains the sibling anchor: `null` means first in
+the effective destination. Omit `parentModuleUuid` only to reorder within the
+module's current menu, pass `null` to make it top-level, or pass an eligible
+root UUID to move it into that submenu. An `after` UUID must be a sibling in
+that effective destination. Use `move_module`, never `update_module`, for menu
+placement, and move or remove children before trying to remove their parent.
 
 Reply in the language of the user's latest substantive message. That
 conversation language is independent from the app's source, runtime default,
@@ -270,7 +290,7 @@ Use TaskCreate to track the build phases:
 
 ## 4. Build
 
-Work through each phase per the fetched instructions. Create the app first (`create_app`; pass the app's name there, and its returned `app_id` threads through every other call). If the build requests custom worker properties, immediately call `get_users` and `add_user_properties`; do not call `generate_schema`, create a module or form, or author any condition or calculation that may reference those properties first. Then commit the data model with `generate_schema` (the case-type catalog; modules reference the recorded types by name; the app's name is not its concern). Build any requested organization parent-first next, before modules whose case-owner operations need those returned place identities. Then build each module, with its forms and fields, in one atomic `create_module` call, referring to a worker property by its `userPropertyUuid` in every typed slot as described above, never as `#user/<slug>` text. Add requested automations after every identity they reference exists. Configure roles and personas in dependency order after their places exist. Every call is validated as it lands, so there is no separate authoring-validation step. Place-based case-owner rules work in Preview, and one of the two exports: an owner set to a place beneath the current case owner travels as level codes and the case's own owner, which mean the same thing on CommCare HQ. An owner set to one particular place travels as Nova's own place id, names nobody over there, and is refused at every export boundary; report that when such a rule is requested, and offer the other form. Do not mark the build complete until every requested user, organization, and automation authoring call has succeeded and its returned identities are confirmed. Mark each task `in_progress` when you start it and `completed` when it's done.
+Work through each phase per the fetched instructions. Create the app first (`create_app`; pass the app's name there, and its returned `app_id` threads through every other call). If the build requests custom worker properties, immediately call `get_users` and `add_user_properties`; do not call `generate_schema`, create a module or form, or author any condition or calculation that may reference those properties first. Then commit the data model with `generate_schema` (the case-type catalog; modules reference the recorded types by name; the app's name is not its concern). Build any requested organization parent-first next, before modules whose case-owner operations need those returned place identities. Then build each root module before its children, with every module's own forms and fields in one atomic `create_module` call; pass the returned root UUID as a child's `parentModuleUuid`, and refer to a worker property by its `userPropertyUuid` in every typed slot as described above, never as `#user/<slug>` text. Add requested automations after every identity they reference exists. Configure roles and personas in dependency order after their places exist. Every call is validated as it lands, so there is no separate authoring-validation step. Place-based case-owner rules work in Preview, and one of the two exports: an owner set to a place beneath the current case owner travels as level codes and the case's own owner, which mean the same thing on CommCare HQ. An owner set to one particular place travels as Nova's own place id, names nobody over there, and is refused at every export boundary; report that when such a rule is requested, and offer the other form. Do not mark the build complete until every requested user, organization, and automation authoring call has succeeded and its returned identities are confirmed. Mark each task `in_progress` when you start it and `completed` when it's done.
 
 After all source-language content exists, perform the requested language phase
 using the source/default/copy/review contract above. Do not mark the build

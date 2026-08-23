@@ -18,7 +18,39 @@ ToolSearch({query: "select:mcp__plugin_nova_nova__get_agent_prompt,mcp__nova__ge
 
 Then call the loaded Nova `get_agent_prompt` tool with `mode: "edit"` and `app_id: "$0"`. The server inlines the app's current blueprint summary into the returned text — treat the full text as your operating instructions for this edit.
 
-A complete prompt ends with the line `NOVA-PROMPT-END`. If yours doesn't, the result was too large to deliver whole. Edit mode is where this bites hardest: the blueprint summary is appended last, so a short delivery costs you exactly the picture of the app you're about to change. When the result names a file it was saved to, read that file and use its contents as the prompt. If there's no such file, stop and tell the user `get_agent_prompt` returned a truncated prompt; don't edit the app from a fragment, and don't substitute a `get_app` call for the missing summary — the rest of the prompt is missing too. A missing marker is a transport failure, never permission to continue from partial instructions.
+The returned text can instead be a JSON `nova-agent-prompt-page`. When it is,
+assemble the prompt before following any of it:
+
+1. Require `kind` to be `nova-agent-prompt-page` and `protocol_version` to equal
+   `1`. Record the first page's `prompt_sha256` and `prompt_length`; require both
+   values to remain unchanged on every page. You have no shell or hashing tool,
+   so compare the advertised `prompt_sha256` values across pages and do not
+   claim to recompute SHA-256.
+2. Require the first `chunk_start` to be `0`, every later `chunk_start` to equal
+   the preceding `chunk_end`, and each `chunk_end` to equal its `chunk_start`
+   plus the exact `prompt_chunk` length. Save each `prompt_chunk` exactly as
+   returned, without inserting separators or normalizing it.
+3. While `complete` is `false`, require one `next_cursor` and call
+   `get_agent_prompt` again with the same `mode` and `app_id` values (`"edit"`
+   and `"$0"`) plus that cursor. If Nova refuses because the snapshot changed,
+   discard every chunk and restart without a cursor.
+4. On the page where `complete` is `true`, require no `next_cursor` and require
+   final `chunk_end` to equal `prompt_length`. Concatenate the exact
+   `prompt_chunk` values in order, then require the assembled prompt to end with
+   the line `NOVA-PROMPT-END` before acting on it. Stop and report a transport
+   failure if any check fails.
+
+If the response is ordinary text rather than a prompt page, keep the direct
+marker check: a complete prompt ends with the line `NOVA-PROMPT-END`. If it
+doesn't, the result was too large to deliver whole. Edit mode is where this
+bites hardest: the blueprint summary is appended last, so a short delivery
+costs you exactly the picture of the app you're about to change. When the
+result names a file it was saved to, read that file and use its contents as the
+prompt. If there's no such file, stop and tell the user `get_agent_prompt`
+returned a truncated prompt; don't edit the app from a fragment, and don't
+substitute a `get_app` call for the missing summary — the rest of the prompt is
+missing too. A missing marker is a transport failure, never permission to
+continue from partial instructions.
 
 Always fetch fresh in edit mode — the inlined summary reflects the current blueprint, which may have changed since any earlier fetch in this conversation.
 

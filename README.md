@@ -36,6 +36,23 @@ and [docs.commcare.app/mcp/tools](https://docs.commcare.app/mcp/tools).
 - `/nova:show <app_id>` — blueprint summary
 - `/nova:upload_to_hq <app_id or name> [project space]` — deploy to CommCare HQ (names a space to upload straight there, otherwise confirms the target first; reports required HQ feature flags that are missing or could not be verified)
 
+## Agent prompt delivery
+
+Build and edit skills fetch their current operating prompt from Nova before
+changing an app. A prompt that fits arrives as ordinary text ending in
+`NOVA-PROMPT-END`. A larger prompt arrives as JSON pages with kind
+`nova-agent-prompt-page` and `protocol_version: 1`.
+
+The plugin repeats `get_agent_prompt` with the same `mode` and `app_id` plus
+each `next_cursor`. It requires one unchanged advertised `prompt_sha256` and
+`prompt_length`, adjacent `chunk_start`/`chunk_end` offsets, and a final page
+with `complete: true`, no `next_cursor`, and `chunk_end` equal to
+`prompt_length`. It concatenates the exact `prompt_chunk` values in order and
+requires the assembled text to end in `NOVA-PROMPT-END` before acting. The
+agent has no shell or hashing tool, so it compares the advertised digest across
+pages and does not claim to recompute SHA-256. A failed check or a missing
+ordinary-text marker stops the build or edit as a transport failure.
+
 ## Nested menus
 
 `/nova:build`, `/nova:autobuild`, and `/nova:edit` can organize modules under

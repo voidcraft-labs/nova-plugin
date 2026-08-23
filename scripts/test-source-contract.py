@@ -32,11 +32,72 @@ NESTED_MENU_CONTRACT = (
     "canonical owning module",
     "linked- or shadow-form reuse",
 )
+PROMPT_PAGE_FIELDS = (
+    "protocol_version",
+    "prompt_sha256",
+    "prompt_length",
+    "prompt_chunk",
+    "chunk_start",
+    "chunk_end",
+    "complete",
+    "next_cursor",
+)
 
 
 def require(condition: bool, message: str) -> None:
     if not condition:
         raise AssertionError(message)
+
+
+def require_prompt_paging_contract(prose: str, label: str) -> None:
+    require(
+        "nova-agent-prompt-page" in prose,
+        f"{label} omits the paged-prompt discriminator",
+    )
+    for field in PROMPT_PAGE_FIELDS:
+        require(field in prose, f"{label} omits paged-prompt field: {field}")
+    require(
+        "`protocol_version` to equal `1`" in prose,
+        f"{label} does not require prompt protocol version 1",
+    )
+    require(
+        "same `mode` and `app_id` values" in prose,
+        f"{label} does not preserve mode/app_id across prompt pages",
+    )
+    require(
+        "remain unchanged on every page" in prose
+        and "advertised" in prose
+        and "recompute SHA-256" in prose,
+        f"{label} misstates paged-prompt digest/length verification",
+    )
+    require(
+        "first `chunk_start` to be `0`" in prose
+        and "every later `chunk_start` to equal the preceding `chunk_end`" in prose
+        and "plus the exact `prompt_chunk` length" in prose,
+        f"{label} omits adjacent exact prompt offsets",
+    )
+    require(
+        "Save each `prompt_chunk` exactly as returned" in prose
+        and "without inserting separators or normalizing it" in prose,
+        f"{label} permits prompt chunk rewriting",
+    )
+    require(
+        "`complete` is `false`" in prose
+        and "require one `next_cursor`" in prose
+        and "`complete` is `true`" in prose
+        and "require no `next_cursor`" in prose,
+        f"{label} omits continuation/final-page cursor rules",
+    )
+    require(
+        "final `chunk_end` to equal `prompt_length`" in prose
+        and "Concatenate the exact `prompt_chunk` values in order" in prose,
+        f"{label} omits final length or exact concatenation",
+    )
+    require(
+        "ordinary text rather than a prompt page" in prose
+        and "NOVA-PROMPT-END" in prose,
+        f"{label} omits the ordinary-text prompt fallback",
+    )
 
 
 def main() -> None:
@@ -115,6 +176,7 @@ def main() -> None:
             ),
             f"{path.relative_to(ROOT)} does not stop on a missing prompt marker",
         )
+        require_prompt_paging_contract(prose, str(path.relative_to(ROOT)))
 
     for path in GUIDANCE_FILES[:2]:
         text = path.read_text(encoding="utf-8")
@@ -179,6 +241,7 @@ def main() -> None:
         and "Do not build from it" in agent_prose,
         "autonomous agent does not stop on a missing prompt marker",
     )
+    require_prompt_paging_contract(agent_prose, "autonomous agent")
 
     readme = README.read_text(encoding="utf-8")
     readme_prose = " ".join(readme.split())
@@ -214,6 +277,25 @@ def main() -> None:
         and "pass `null` to make it top-level" in readme_prose
         and "`after` sibling anchor" in readme_prose,
         "README omits exact create/move placement semantics",
+    )
+    require(
+        "## Agent prompt delivery" in readme,
+        "README omits paged agent-prompt delivery",
+    )
+    for field in PROMPT_PAGE_FIELDS:
+        require(field in readme_prose, f"README omits paged-prompt field: {field}")
+    require(
+        "nova-agent-prompt-page" in readme_prose
+        and "`protocol_version: 1`" in readme_prose
+        and "same `mode` and `app_id`" in readme_prose
+        and "unchanged advertised `prompt_sha256` and `prompt_length`" in readme_prose
+        and "adjacent `chunk_start`/`chunk_end` offsets" in readme_prose
+        and "`complete: true`" in readme_prose
+        and "no `next_cursor`" in readme_prose
+        and "exact `prompt_chunk` values" in readme_prose
+        and "does not claim to recompute SHA-256" in readme_prose
+        and "ordinary-text marker" in readme_prose,
+        "README omits the complete paged-prompt contract",
     )
 
     print("Nova plugin source contract passed")

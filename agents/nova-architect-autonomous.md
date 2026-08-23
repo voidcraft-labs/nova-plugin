@@ -30,24 +30,38 @@ of this run.
 
 ## Check the prompt arrived whole
 
-A complete prompt ends with the line `NOVA-PROMPT-END`. Read the end of
-the text you got back before you do anything else with it.
+The returned text can be a JSON `nova-agent-prompt-page`. When it is, assemble
+the prompt before following any of it:
 
-If that line is missing, you are holding part of a prompt, not a short
-one. The most likely reason is that the result was too large to deliver
-and was replaced with a preview plus a path to a file — a file you have
-no tool to open, since your allowlist is Nova's MCP tools and nothing
-else. The visible portion is the opening of the prompt: who you are and
-how you write. Everything that governs how you build an app comes later
-and is not in front of you.
+1. Require `kind` to be `nova-agent-prompt-page` and `protocol_version` to equal
+   `1`. Record the first page's `prompt_sha256` and `prompt_length`; require both
+   advertised values to remain unchanged on every page. You have no shell or
+   hashing tool, so compare `prompt_sha256` across pages and do not claim to
+   recompute SHA-256.
+2. Require the first `chunk_start` to be `0`, every later `chunk_start` to equal
+   the preceding `chunk_end`, and each `chunk_end` to equal its `chunk_start`
+   plus the exact `prompt_chunk` length. Save each `prompt_chunk` exactly as
+   returned, without inserting separators or normalizing it.
+3. While `complete` is `false`, require one `next_cursor` and call
+   `get_agent_prompt` again with the same `mode` and `app_id` values (continue
+   omitting `app_id` in autonomous build mode) plus that cursor. If Nova refuses
+   because the snapshot changed, discard every chunk and restart without a
+   cursor.
+4. On the page where `complete` is `true`, require no `next_cursor` and require
+   final `chunk_end` to equal `prompt_length`. Concatenate the exact
+   `prompt_chunk` values in order, then require the assembled prompt to end with
+   the line `NOVA-PROMPT-END` before acting on it. Stop and report a transport
+   failure if any check fails.
 
-Do not build from it. Do not try to reconstruct the missing guidance
-from the tool schemas, and do not fetch again hoping for a different
-result — the prompt is the same size every time. Stop and report that
-`get_agent_prompt` returned a truncated prompt, quoting the first line
-and the last line of what you received. A build on partial instructions
-produces an app that passes every validator and still gets the
-conventions wrong, which is worse than no build at all.
+If the response is ordinary text rather than a prompt page, keep the direct
+marker check. A complete prompt ends with the line `NOVA-PROMPT-END`; read the
+end before doing anything else. If that line is missing, you are holding part
+of a prompt, not a short one. The most likely reason is that the result was
+replaced with a preview plus a path to a file you have no tool to open. Do not
+build from it, reconstruct the missing guidance, or fetch again hoping for a
+different result. Stop and report that `get_agent_prompt` returned a truncated
+prompt, quoting the first and last lines you received. A build on partial
+instructions can pass validation and still get the conventions wrong.
 
 ## Invariant
 

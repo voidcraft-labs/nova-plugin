@@ -25,14 +25,18 @@ Then call the loaded Nova `get_agent_prompt` tool with the mode above
 
 The returned text can instead be a JSON `nova-agent-prompt-page`. When it is,
 assemble the prompt before following any of it. Require `kind` to be
-`nova-agent-prompt-page` and `protocol_version` to equal `1`. Record the first
-page's `prompt_sha256` and `prompt_length` and require both advertised values
-to remain unchanged on every page. You have no shell or hashing tool, so
-compare `prompt_sha256` across pages and do not claim to recompute SHA-256.
+`nova-agent-prompt-page`, `protocol_version` to equal `1`, and `offset_unit` to
+equal `unicode-code-points` on every page. Interpret `chunk_start`, `chunk_end`,
+and `prompt_length` as Unicode code-point counts, never UTF-16 code units or
+bytes. Record the first page's `prompt_sha256` and `prompt_length` and require
+both advertised values to remain unchanged on every page. You have no shell or
+hashing tool, so compare `prompt_sha256` across pages and do not claim to
+recompute SHA-256.
 Require the first `chunk_start` to be `0`, every later `chunk_start` to equal
 the preceding `chunk_end`, and each `chunk_end` to equal its `chunk_start` plus
-the exact `prompt_chunk` length. Save each `prompt_chunk` exactly as returned,
-without inserting separators or normalizing it.
+the number of Unicode code points in the exact `prompt_chunk`. Save each
+`prompt_chunk` exactly as returned, without inserting separators or normalizing
+it.
 
 While `complete` is `false`, require one `next_cursor`; call
 `get_agent_prompt` again with the same `mode` and `app_id` values (continue

@@ -34,6 +34,7 @@ NESTED_MENU_CONTRACT = (
 )
 PROMPT_PAGE_FIELDS = (
     "protocol_version",
+    "offset_unit",
     "prompt_sha256",
     "prompt_length",
     "prompt_chunk",
@@ -61,6 +62,14 @@ def require_prompt_paging_contract(prose: str, label: str) -> None:
         f"{label} does not require prompt protocol version 1",
     )
     require(
+        "`offset_unit` to equal `unicode-code-points` on every page" in prose
+        and "`chunk_start`, `chunk_end`, and `prompt_length` as Unicode code-point counts"
+        in prose
+        and "never UTF-16 code units or bytes" in prose
+        and "number of Unicode code points in the exact `prompt_chunk`" in prose,
+        f"{label} does not require portable Unicode code-point offsets",
+    )
+    require(
         "same `mode` and `app_id` values" in prose,
         f"{label} does not preserve mode/app_id across prompt pages",
     )
@@ -73,7 +82,8 @@ def require_prompt_paging_contract(prose: str, label: str) -> None:
     require(
         "first `chunk_start` to be `0`" in prose
         and "every later `chunk_start` to equal the preceding `chunk_end`" in prose
-        and "plus the exact `prompt_chunk` length" in prose,
+        and "plus the number of Unicode code points in the exact `prompt_chunk`"
+        in prose,
         f"{label} omits adjacent exact prompt offsets",
     )
     require(
@@ -287,12 +297,15 @@ def main() -> None:
     require(
         "nova-agent-prompt-page" in readme_prose
         and "`protocol_version: 1`" in readme_prose
+        and "`offset_unit: unicode-code-points`" in readme_prose
         and "same `mode` and `app_id`" in readme_prose
         and "unchanged advertised `prompt_sha256` and `prompt_length`" in readme_prose
         and "adjacent `chunk_start`/`chunk_end` offsets" in readme_prose
         and "`complete: true`" in readme_prose
         and "no `next_cursor`" in readme_prose
         and "exact `prompt_chunk` values" in readme_prose
+        and "measured in Unicode code points, not UTF-16 code units or bytes"
+        in readme_prose
         and "does not claim to recompute SHA-256" in readme_prose
         and "ordinary-text marker" in readme_prose,
         "README omits the complete paged-prompt contract",

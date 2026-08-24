@@ -29,10 +29,10 @@ assemble the prompt before following any of it:
    have no shell or hashing tool, so compare the advertised `prompt_sha256`
    values across pages and do not claim to recompute SHA-256.
 2. Require the first `chunk_start` to be `0`, every later `chunk_start` to equal
-   the preceding `chunk_end`, and each `chunk_end` to equal its `chunk_start`
-   plus the number of Unicode code points in the exact `prompt_chunk`. Save each
-   `prompt_chunk` exactly as returned, without inserting separators or
-   normalizing it.
+   the preceding `chunk_end`. Nova's deterministic code-point slicer computes
+   and cursor-validates these offsets; do not attempt to recount an arbitrary
+   `prompt_chunk` yourself or claim that you did. Save each `prompt_chunk`
+   exactly as returned, without inserting separators or normalizing it.
 3. While `complete` is `false`, require one `next_cursor` and call
    `get_agent_prompt` again with the same `mode` and `app_id` values (`"edit"`
    and `"$0"`) plus that cursor. If Nova refuses because the snapshot changed,
@@ -130,6 +130,12 @@ submenu. An `after` UUID must be a sibling in that effective destination. A
 child cannot be a parent, a root with children cannot become a child, and a
 parent cannot be empty. Use `move_module`, never `update_module`, for menu
 placement, and move or remove children before trying to remove their parent.
+There is one construction-order exception: when an edit adds a parent form that
+creates the case type shown by its intended child viewer,
+`MISSING_CHILD_CASE_MODULE` requires that viewer first. Create the child viewer
+temporarily top-level, create the parent with its writer form, then use
+`move_module` to place the viewer under the parent. This temporary bootstrap
+changes no final menu or case ancestry.
 
 Reply in the language of the user's latest substantive message. Conversation
 language is independent from the app's source, runtime default, and target

@@ -66,7 +66,8 @@ def require_prompt_paging_contract(prose: str, label: str) -> None:
         and "`chunk_start`, `chunk_end`, and `prompt_length` as Unicode code-point counts"
         in prose
         and "never UTF-16 code units or bytes" in prose
-        and "number of Unicode code points in the exact `prompt_chunk`" in prose,
+        and "Nova's deterministic code-point slicer" in prose
+        and "do not attempt to recount" in prose,
         f"{label} does not require portable Unicode code-point offsets",
     )
     require(
@@ -81,9 +82,7 @@ def require_prompt_paging_contract(prose: str, label: str) -> None:
     )
     require(
         "first `chunk_start` to be `0`" in prose
-        and "every later `chunk_start` to equal the preceding `chunk_end`" in prose
-        and "plus the number of Unicode code points in the exact `prompt_chunk`"
-        in prose,
+        and "every later `chunk_start` to equal the preceding `chunk_end`" in prose,
         f"{label} omits adjacent exact prompt offsets",
     )
     require(
@@ -107,6 +106,16 @@ def require_prompt_paging_contract(prose: str, label: str) -> None:
         "ordinary text rather than a prompt page" in prose
         and "NOVA-PROMPT-END" in prose,
         f"{label} omits the ordinary-text prompt fallback",
+    )
+
+
+def require_nested_menu_construction_contract(prose: str, label: str) -> None:
+    require(
+        "`MISSING_CHILD_CASE_MODULE`" in prose
+        and "child viewer temporarily top-level" in prose
+        and "parent with its writer form" in prose
+        and "then use `move_module`" in prose,
+        f"{label} omits the child-viewer-first construction exception",
     )
 
 
@@ -175,6 +184,9 @@ def main() -> None:
         require(
             "Use `move_module`, never `update_module`, for menu placement" in prose,
             f"{path.relative_to(ROOT)} permits non-atomic menu placement",
+        )
+        require_nested_menu_construction_contract(
+            prose, str(path.relative_to(ROOT))
         )
         require(
             "NOVA-PROMPT-END" in prose
@@ -251,6 +263,7 @@ def main() -> None:
         and "Do not build from it" in agent_prose,
         "autonomous agent does not stop on a missing prompt marker",
     )
+    require_nested_menu_construction_contract(agent_prose, "autonomous agent")
     require_prompt_paging_contract(agent_prose, "autonomous agent")
 
     readme = README.read_text(encoding="utf-8")
@@ -292,6 +305,7 @@ def main() -> None:
         "## Agent prompt delivery" in readme,
         "README omits paged agent-prompt delivery",
     )
+    require_nested_menu_construction_contract(readme_prose, "README")
     for field in PROMPT_PAGE_FIELDS:
         require(field in readme_prose, f"README omits paged-prompt field: {field}")
     require(

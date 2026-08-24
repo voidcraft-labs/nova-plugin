@@ -29,10 +29,10 @@ assemble the prompt before following any of it:
    have no shell or hashing tool, so compare the advertised `prompt_sha256`
    values across pages and do not claim to recompute SHA-256.
 2. Require the first `chunk_start` to be `0`, every later `chunk_start` to equal
-   the preceding `chunk_end`, and each `chunk_end` to equal its `chunk_start`
-   plus the number of Unicode code points in the exact `prompt_chunk`. Save each
-   `prompt_chunk` exactly as returned, without inserting separators or
-   normalizing it.
+   the preceding `chunk_end`. Nova's deterministic code-point slicer computes
+   and cursor-validates these offsets; do not attempt to recount an arbitrary
+   `prompt_chunk` yourself or claim that you did. Save each `prompt_chunk`
+   exactly as returned, without inserting separators or normalizing it.
 3. While `complete` is `false`, require one `next_cursor` and call
    `get_agent_prompt` again with the same `mode` and `app_id` values (continue
    omitting `app_id` for this build) plus that cursor. If Nova refuses because
@@ -130,6 +130,11 @@ Create an eligible top-level parent before its children and keep its returned
 UUID. For `create_module`, omit `parentModuleUuid` for a top-level module and
 pass that eligible root UUID for a child. A child cannot be a parent, a root
 that already has children cannot become a child, and a parent cannot be empty.
+There is one construction-order exception: when a parent form creates the case
+type shown by its intended child viewer, `MISSING_CHILD_CASE_MODULE` requires
+that viewer first. Create the child viewer temporarily top-level, create the
+parent with its writer form, then use `move_module` to place the viewer under
+the parent. This temporary bootstrap changes no final menu or case ancestry.
 For `move_module`, `after` remains the sibling anchor: `null` means first in
 the effective destination. Omit `parentModuleUuid` only to reorder within the
 module's current menu, pass `null` to make it top-level, or pass an eligible

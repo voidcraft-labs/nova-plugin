@@ -53,8 +53,9 @@ points, not UTF-16 code units or bytes. It concatenates the exact
 `prompt_chunk` values in order and requires the assembled text to end in
 `NOVA-PROMPT-END` before acting. The agent has no shell or hashing tool, so it
 compares the advertised digest across pages and does not claim to recompute
-SHA-256. A failed check or a missing ordinary-text marker stops the build or
-edit as a transport failure.
+SHA-256 or recount arbitrary chunks. Nova's deterministic code-point slicer
+computes and cursor-validates the page offsets. A failed check or a missing
+ordinary-text marker stops the build or edit as a transport failure.
 
 ## Nested menus
 
@@ -70,6 +71,13 @@ its `after` sibling anchor and adds optional `parentModuleUuid`. Omit the parent
 only to reorder inside the module's current menu, pass `null` to make it
 top-level, or pass an eligible root UUID to move it into that submenu. `after`
 must name a sibling in the resulting destination, or be `null` for first.
+
+Normally the parent is created before its children. When a parent form creates
+the case type shown by its intended child viewer, Nova's
+`MISSING_CHILD_CASE_MODULE` gate requires the reverse bootstrap: create the
+child viewer temporarily top-level, create the parent with its writer form,
+then use `move_module` to place the viewer under the parent. The final app still
+has the same one-tier hierarchy.
 
 Menu parentage controls navigation. It is separate from case parentage, which
 selects related case records at run time. Nested menus also do not duplicate

@@ -65,6 +65,11 @@ case-list surface, and each child is complete too. A child cannot contain
 another child, and a parent that already has children cannot itself become a
 child.
 
+A top-level parent and child that show different case types require the parent
+to have at least one Form. A case-list-only root is rejected by
+`NESTED_MENU_CROSS_TYPE_ROOT_REQUIRES_FORM` because the two selections cannot
+otherwise be distinguished.
+
 `create_module` accepts an optional `parentModuleUuid`: omit it for a top-level
 module or pass an eligible root module's UUID for a child. `move_module` keeps
 its `after` sibling anchor and adds optional `parentModuleUuid`. Omit the parent

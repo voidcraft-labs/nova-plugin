@@ -117,6 +117,12 @@ def require_nested_menu_construction_contract(prose: str, label: str) -> None:
         and "then use `move_module`" in prose,
         f"{label} omits the child-viewer-first construction exception",
     )
+    require(
+        "different case types require the parent to have at least one Form" in prose
+        and "`NESTED_MENU_CROSS_TYPE_ROOT_REQUIRES_FORM`" in prose
+        and "case-list-only root" in prose,
+        f"{label} omits the cross-type parent-form requirement",
+    )
 
 
 def main() -> None:
@@ -188,6 +194,13 @@ def main() -> None:
         require_nested_menu_construction_contract(
             prose, str(path.relative_to(ROOT))
         )
+        if path.relative_to(ROOT) == Path("skills/build/SKILL.md"):
+            require(
+                "root module before its children except for the child-viewer-first writer bootstrap above"
+                in prose
+                and "For ordinary compositions" in prose,
+                "build skill contradicts the child-viewer-first construction exception",
+            )
         require(
             "NOVA-PROMPT-END" in prose
             and "missing marker is a transport failure" in prose

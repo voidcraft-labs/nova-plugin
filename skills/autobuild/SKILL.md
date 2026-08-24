@@ -116,6 +116,11 @@ owning module. Nested menus do not provide linked- or shadow-form reuse; use
 deliberate module composition and case-list filters when several views of the
 same data are needed.
 
+A top-level parent and child that show different case types require the parent
+to have at least one Form. A case-list-only root is rejected by
+`NESTED_MENU_CROSS_TYPE_ROOT_REQUIRES_FORM` because the two selections cannot
+otherwise be distinguished.
+
 Create an eligible top-level parent before its children and keep its returned
 UUID. For `create_module`, omit `parentModuleUuid` for a top-level module and
 pass that eligible root UUID for a child. A child cannot be a parent, a root

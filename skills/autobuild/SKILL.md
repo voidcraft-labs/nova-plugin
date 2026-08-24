@@ -21,13 +21,42 @@ supported MCP namespace:
 ToolSearch({query: "select:mcp__plugin_nova_nova__get_agent_prompt,mcp__nova__get_agent_prompt"})
 
 Then call the loaded Nova `get_agent_prompt` tool with the mode above
-(no app_id — build modes have no app to read from). Check that the text
-ends with `NOVA-PROMPT-END` before using it; if it doesn't, follow your
-bootstrap invariant and report the truncation instead of building. The
-Nova mutation tools are deferred — pre-load their schemas in one
+(no app_id — build modes have no app to read from).
+
+The returned text can instead be a JSON `nova-agent-prompt-page`. When it is,
+assemble the prompt before following any of it. Require `kind` to be
+`nova-agent-prompt-page`, `protocol_version` to equal `1`, and `offset_unit` to
+equal `unicode-code-points` on every page. Interpret `chunk_start`, `chunk_end`,
+and `prompt_length` as Unicode code-point counts, never UTF-16 code units or
+bytes. Record the first page's `prompt_sha256` and `prompt_length` and require
+both advertised values to remain unchanged on every page. You have no shell or
+hashing tool, so compare `prompt_sha256` across pages and do not claim to
+recompute SHA-256.
+Require the first `chunk_start` to be `0`, every later `chunk_start` to equal
+the preceding `chunk_end`. Nova's deterministic code-point slicer computes and
+cursor-validates these offsets; do not attempt to recount an arbitrary
+`prompt_chunk` yourself or claim that you did. Save each `prompt_chunk` exactly
+as returned, without inserting separators or normalizing it.
+
+While `complete` is `false`, require one `next_cursor`; call
+`get_agent_prompt` again with the same `mode` and `app_id` values (continue
+omitting `app_id`) plus that cursor. If Nova refuses because the snapshot
+changed, discard every chunk and restart without a cursor. On the page where
+`complete` is `true`, require no `next_cursor` and require final `chunk_end` to
+equal `prompt_length`. Concatenate the exact `prompt_chunk` values in order and
+require the assembled prompt to end with `NOVA-PROMPT-END` before using it.
+Stop and report a transport failure when any check fails.
+
+If the response is ordinary text rather than a prompt page, keep the current
+check: require it to end with `NOVA-PROMPT-END` before using it. If it doesn't,
+follow your bootstrap invariant and report the truncation instead of building.
+A missing marker is a transport failure, never permission to continue from
+partial instructions.
+
+The Nova mutation tools are deferred — pre-load their schemas in one
 deterministic ToolSearch call before your first mutation:
 
-ToolSearch({query: "select:mcp__plugin_nova_nova__create_app,mcp__plugin_nova_nova__generate_schema,mcp__plugin_nova_nova__create_module,mcp__plugin_nova_nova__update_app,mcp__nova__create_app,mcp__nova__generate_schema,mcp__nova__create_module,mcp__nova__update_app"})
+ToolSearch({query: "select:mcp__plugin_nova_nova__create_app,mcp__plugin_nova_nova__generate_schema,mcp__plugin_nova_nova__create_module,mcp__plugin_nova_nova__move_module,mcp__plugin_nova_nova__update_app,mcp__nova__create_app,mcp__nova__generate_schema,mcp__nova__create_module,mcp__nova__move_module,mcp__nova__update_app"})
 
 When the task names a target Nova Project — a shared workspace whose
 members all see the app — resolve it before creating the app: select
@@ -77,6 +106,36 @@ for an app-wide rename, and `configure_case_list` or
 way; select it by both spellings before its first use. Then build the
 CommCare app matching the task autonomously. Make every design decision
 yourself.
+
+Nova supports exactly one submenu tier. Menu parentage organizes navigation;
+case parentage is the separate case-type relationship that selects related
+records at run time. Never infer `parentModuleUuid` from a case type's parent,
+or infer a case relationship from a menu. Every parent and child module keeps
+its own valid Form or case-list surface, and every Form has one canonical
+owning module. Nested menus do not provide linked- or shadow-form reuse; use
+deliberate module composition and case-list filters when several views of the
+same data are needed.
+
+A top-level parent and child that show different case types require the parent
+to have at least one Form. A case-list-only root is rejected by
+`NESTED_MENU_CROSS_TYPE_ROOT_REQUIRES_FORM` because the two selections cannot
+otherwise be distinguished.
+
+Create an eligible top-level parent before its children and keep its returned
+UUID. For `create_module`, omit `parentModuleUuid` for a top-level module and
+pass that eligible root UUID for a child. A child cannot be a parent, a root
+that already has children cannot become a child, and a parent cannot be empty.
+There is one construction-order exception: when a parent form creates the case
+type shown by its intended child viewer, `MISSING_CHILD_CASE_MODULE` requires
+that viewer first. Create the child viewer temporarily top-level, create the
+parent with its writer form, then use `move_module` to place the viewer under
+the parent. This temporary bootstrap changes no final menu or case ancestry.
+For `move_module`, `after` remains the sibling anchor: `null` means first in
+the effective destination. Omit `parentModuleUuid` only to reorder within the
+module's current menu, pass `null` to make it top-level, or pass an eligible
+root UUID to move it into that submenu. An `after` UUID must be a sibling in
+that effective destination. Use `move_module`, never `update_module`, for menu
+placement, and move or remove children before trying to remove their parent.
 
 Reply in the language of the user's latest substantive message. That
 conversation language is independent from the app's source, runtime default,

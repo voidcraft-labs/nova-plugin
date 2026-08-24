@@ -36,6 +36,62 @@ and [docs.commcare.app/mcp/tools](https://docs.commcare.app/mcp/tools).
 - `/nova:show <app_id>` — blueprint summary
 - `/nova:upload_to_hq <app_id or name> [project space]` — deploy to CommCare HQ (names a space to upload straight there, otherwise confirms the target first; reports required HQ feature flags that are missing or could not be verified)
 
+## Agent prompt delivery
+
+Build and edit skills fetch their current operating prompt from Nova before
+changing an app. A prompt that fits arrives as ordinary text ending in
+`NOVA-PROMPT-END`. A larger prompt arrives as JSON pages with kind
+`nova-agent-prompt-page`, `protocol_version: 1`, and
+`offset_unit: unicode-code-points`.
+
+The plugin repeats `get_agent_prompt` with the same `mode` and `app_id` plus
+each `next_cursor`. It requires one unchanged advertised `prompt_sha256` and
+`prompt_length`, adjacent `chunk_start`/`chunk_end` offsets, and a final page
+with `complete: true`, no `next_cursor`, and `chunk_end` equal to
+`prompt_length`. All three offset and length fields are measured in Unicode code
+points, not UTF-16 code units or bytes. It concatenates the exact
+`prompt_chunk` values in order and requires the assembled text to end in
+`NOVA-PROMPT-END` before acting. The agent has no shell or hashing tool, so it
+compares the advertised digest across pages and does not claim to recompute
+SHA-256 or recount arbitrary chunks. Nova's deterministic code-point slicer
+computes and cursor-validates the page offsets. A failed check or a missing
+ordinary-text marker stops the build or edit as a transport failure.
+
+## Nested menus
+
+`/nova:build`, `/nova:autobuild`, and `/nova:edit` can organize modules under
+one submenu tier. A parent menu remains a complete module with its own Form or
+case-list surface, and each child is complete too. A child cannot contain
+another child, and a parent that already has children cannot itself become a
+child.
+
+A top-level parent and child that show different case types require the parent
+to have at least one Form. A case-list-only root is rejected by
+`NESTED_MENU_CROSS_TYPE_ROOT_REQUIRES_FORM` because the two selections cannot
+otherwise be distinguished.
+
+`create_module` accepts an optional `parentModuleUuid`: omit it for a top-level
+module or pass an eligible root module's UUID for a child. `move_module` keeps
+its `after` sibling anchor and adds optional `parentModuleUuid`. Omit the parent
+only to reorder inside the module's current menu, pass `null` to make it
+top-level, or pass an eligible root UUID to move it into that submenu. `after`
+must name a sibling in the resulting destination, or be `null` for first.
+
+Normally the parent is created before its children. When a parent form creates
+the case type shown by its intended child viewer, Nova's
+`MISSING_CHILD_CASE_MODULE` gate requires the reverse bootstrap: create the
+child viewer temporarily top-level, create the parent with its writer form,
+then use `move_module` to place the viewer under the parent. The final app still
+has the same one-tier hierarchy. When editing a new or existing parent instead,
+create the viewer temporarily top-level, create or update the writer form on
+the new or existing parent, then use `move_module` to place the viewer.
+
+Menu parentage controls navigation. It is separate from case parentage, which
+selects related case records at run time. Nested menus also do not duplicate
+forms: every Form has one canonical owning module, with no linked- or
+shadow-form reuse. Separate modules and case-list filters can provide different
+views of the same data.
+
 ## Languages and translations
 
 `/nova:build`, `/nova:autobuild`, and `/nova:edit` understand Nova's app

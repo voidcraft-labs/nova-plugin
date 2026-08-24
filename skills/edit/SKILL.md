@@ -18,14 +18,49 @@ ToolSearch({query: "select:mcp__plugin_nova_nova__get_agent_prompt,mcp__nova__ge
 
 Then call the loaded Nova `get_agent_prompt` tool with `mode: "edit"` and `app_id: "$0"`. The server inlines the app's current blueprint summary into the returned text — treat the full text as your operating instructions for this edit.
 
-A complete prompt ends with the line `NOVA-PROMPT-END`. If yours doesn't, the result was too large to deliver whole. Edit mode is where this bites hardest: the blueprint summary is appended last, so a short delivery costs you exactly the picture of the app you're about to change. When the result names a file it was saved to, read that file and use its contents as the prompt. If there's no such file, stop and tell the user `get_agent_prompt` returned a truncated prompt; don't edit the app from a fragment, and don't substitute a `get_app` call for the missing summary — the rest of the prompt is missing too.
+The returned text can instead be a JSON `nova-agent-prompt-page`. When it is,
+assemble the prompt before following any of it:
+
+1. Require `kind` to be `nova-agent-prompt-page`, `protocol_version` to equal
+   `1`, and `offset_unit` to equal `unicode-code-points` on every page. Interpret
+   `chunk_start`, `chunk_end`, and `prompt_length` as Unicode code-point counts,
+   never UTF-16 code units or bytes. Record the first page's `prompt_sha256` and
+   `prompt_length`; require both values to remain unchanged on every page. You
+   have no shell or hashing tool, so compare the advertised `prompt_sha256`
+   values across pages and do not claim to recompute SHA-256.
+2. Require the first `chunk_start` to be `0`, every later `chunk_start` to equal
+   the preceding `chunk_end`. Nova's deterministic code-point slicer computes
+   and cursor-validates these offsets; do not attempt to recount an arbitrary
+   `prompt_chunk` yourself or claim that you did. Save each `prompt_chunk`
+   exactly as returned, without inserting separators or normalizing it.
+3. While `complete` is `false`, require one `next_cursor` and call
+   `get_agent_prompt` again with the same `mode` and `app_id` values (`"edit"`
+   and `"$0"`) plus that cursor. If Nova refuses because the snapshot changed,
+   discard every chunk and restart without a cursor.
+4. On the page where `complete` is `true`, require no `next_cursor` and require
+   final `chunk_end` to equal `prompt_length`. Concatenate the exact
+   `prompt_chunk` values in order, then require the assembled prompt to end with
+   the line `NOVA-PROMPT-END` before acting on it. Stop and report a transport
+   failure if any check fails.
+
+If the response is ordinary text rather than a prompt page, keep the direct
+marker check: a complete prompt ends with the line `NOVA-PROMPT-END`. If it
+doesn't, the result was too large to deliver whole. Edit mode is where this
+bites hardest: the blueprint summary is appended last, so a short delivery
+costs you exactly the picture of the app you're about to change. When the
+result names a file it was saved to, read that file and use its contents as the
+prompt. If there's no such file, stop and tell the user `get_agent_prompt`
+returned a truncated prompt; don't edit the app from a fragment, and don't
+substitute a `get_app` call for the missing summary — the rest of the prompt is
+missing too. A missing marker is a transport failure, never permission to
+continue from partial instructions.
 
 Always fetch fresh in edit mode — the inlined summary reflects the current blueprint, which may have changed since any earlier fetch in this conversation.
 
 The Nova mutation tools are deferred — their schemas only appear in your context after a ToolSearch call. Don't rely on training memory of these tool shapes; pre-load the edit-path set in one ToolSearch call before continuing:
 
 ```
-ToolSearch({query: "+nova get_app search_blueprint add_fields edit_field move_field remove_field update_form update_module", max_results: 8})
+ToolSearch({query: "+nova get_app search_blueprint add_fields edit_field move_field remove_field update_form update_module move_module", max_results: 9})
 ```
 
 Pre-load the complete worker-information, role, and persona family with a separate deterministic exact selection:
@@ -75,6 +110,37 @@ ToolSearch({query: "select:mcp__plugin_nova_nova__get_languages,mcp__plugin_nova
 ```
 
 `+nova` keeps the core search namespace-neutral. Each exact family selection lists both supported spellings without ranking: `mcp__plugin_nova_nova__*` for plugin OAuth and `mcp__nova__*` for a user-scope API-key override.
+
+Nova supports exactly one submenu tier. Menu parentage organizes navigation;
+case parentage is the separate case-type relationship that selects related
+records at run time. Never infer `parentModuleUuid` from a case type's parent,
+or infer a case relationship from a menu. Every parent and child module must
+still have its own valid Form or case-list surface, and every Form has one
+canonical owning module. Nested menus do not provide linked- or shadow-form
+reuse; use deliberate module composition and case-list filters when several
+views of the same data are needed.
+
+A top-level parent and child that show different case types require the parent
+to have at least one Form. A case-list-only root is rejected by
+`NESTED_MENU_CROSS_TYPE_ROOT_REQUIRES_FORM` because the two selections cannot
+otherwise be distinguished.
+
+Read the current module tree and stable UUIDs before changing placement. For
+`create_module`, omit `parentModuleUuid` for a top-level module and pass an
+eligible root UUID for a child. For `move_module`, `after` remains the sibling
+anchor: `null` means first in the effective destination. Omit
+`parentModuleUuid` only to reorder within the module's current menu, pass
+`null` to make it top-level, or pass an eligible root UUID to move it into that
+submenu. An `after` UUID must be a sibling in that effective destination. A
+child cannot be a parent, a root with children cannot become a child, and a
+parent cannot be empty. Use `move_module`, never `update_module`, for menu
+placement, and move or remove children before trying to remove their parent.
+There is one construction-order exception: when an edit adds a form or case
+change that creates the case type shown by its intended child viewer,
+`MISSING_CHILD_CASE_MODULE` requires that viewer first. Create the child viewer
+temporarily top-level, create or update the writer form on the new or existing
+parent, then use `move_module` to place the viewer under the parent. This
+temporary bootstrap changes no final menu or case ancestry.
 
 Reply in the language of the user's latest substantive message. Conversation
 language is independent from the app's source, runtime default, and target
@@ -217,7 +283,7 @@ Before pointing a question's choices at a Project data table, call `get_lookup_t
 
 Read the current sequence with `get_case_operations` before changing it, then `update_case_operation`, `remove_case_operation`, and `move_case_operation` by the operation's `operationUuid`. A case-bound field is still the simplest way for a form to save its own answers, so reach for `add_case_operations` only when a submission carries a further ordered effect: opening another case, updating or closing a known one, linking, renaming or retyping, assigning an owner, or repeating an effect per repeat entry. Every one of these tools names the form it acts on by `moduleUuid` + `formUuid`: take both from `get_module` or `search_blueprint`, and never guess or construct one. Inside the operation every reference is a UUID: a form answer is `{"kind":"field","uuid":"…"}`, a `forEach` repeat scope is that repeat field's UUID, and an earlier create is targeted as `{"kind":"op","opUuid":"…"}` (its resulting case id, inside a value expression, is `{"kind":"id-of","opUuid":"…"}`). The operation's own `id` stays a readable wire name, never an address. Within a single `add_case_operations` call a later item may consume an earlier create by predeclaring that create's `operationUuid`, so keep producer before consumer. The server-fetched prompt remains authoritative for each action's exact shape.
 
-Load any additional tools (`create_form`, `remove_form`, `create_module`, `remove_module`, `generate_schema`, `get_module`, `get_form`, `get_field`, `get_lookup_tables`, `set_field_options_source`) on demand if a follow-up step needs them. A new case type enters an existing app through `generate_schema` — record it there before creating a module or fields that use it. To reposition an existing field, use `move_field` — it keeps the field's identity and every reference to it; never remove and re-add a field to move it. To change a field's kind, pass a different `kind` to `edit_field` — it converts in place (same identity/reference guarantee); converting to a select needs an `optionsSource` in the same call, and converting to `hidden` needs a `calculate`. On a case-bound field one call is property-wide — it also converts the property's same-kind writers in the app's other forms and updates its declared type, so never issue per-form convert calls for the same property. Never remove and re-add a field to change its kind either — if the target kind isn't a supported conversion (the error names the valid targets), surface the constraint to the user instead. A form's pages are sections: `set_form_sections` takes the complete desired partition of the form's top-level questions (kept pages by `sectionUuid`, new pages unnamed, an empty list un-pages the form) and plans the minimal change itself, so never build pages one `add_fields` or `move_field` call at a time — a half-sectioned form is refused by construction.
+Load any additional tools (`create_form`, `remove_form`, `create_module`, `move_module`, `remove_module`, `generate_schema`, `get_module`, `get_form`, `get_field`, `get_lookup_tables`, `set_field_options_source`) on demand if a follow-up step needs them. A new case type enters an existing app through `generate_schema` — record it there before creating a module or fields that use it. To reposition an existing field, use `move_field` — it keeps the field's identity and every reference to it; never remove and re-add a field to move it. To change a field's kind, pass a different `kind` to `edit_field` — it converts in place (same identity/reference guarantee); converting to a select needs an `optionsSource` in the same call, and converting to `hidden` needs a `calculate`. On a case-bound field one call is property-wide — it also converts the property's same-kind writers in the app's other forms and updates its declared type, so never issue per-form convert calls for the same property. Never remove and re-add a field to change its kind either — if the target kind isn't a supported conversion (the error names the valid targets), surface the constraint to the user instead. A form's pages are sections: `set_form_sections` takes the complete desired partition of the form's top-level questions (kept pages by `sectionUuid`, new pages unnamed, an empty list un-pages the form) and plans the minimal change itself, so never build pages one `add_fields` or `move_field` call at a time — a half-sectioned form is refused by construction.
 
 ## 2. Confirm the change (if unsure)
 

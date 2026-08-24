@@ -82,7 +82,9 @@ the case type shown by its intended child viewer, Nova's
 `MISSING_CHILD_CASE_MODULE` gate requires the reverse bootstrap: create the
 child viewer temporarily top-level, create the parent with its writer form,
 then use `move_module` to place the viewer under the parent. The final app still
-has the same one-tier hierarchy.
+has the same one-tier hierarchy. When editing a new or existing parent instead,
+create the viewer temporarily top-level, create or update the writer form on
+the new or existing parent, then use `move_module` to place the viewer.
 
 Menu parentage controls navigation. It is separate from case parentage, which
 selects related case records at run time. Nested menus also do not duplicate

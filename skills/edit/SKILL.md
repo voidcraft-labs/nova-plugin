@@ -135,12 +135,12 @@ submenu. An `after` UUID must be a sibling in that effective destination. A
 child cannot be a parent, a root with children cannot become a child, and a
 parent cannot be empty. Use `move_module`, never `update_module`, for menu
 placement, and move or remove children before trying to remove their parent.
-There is one construction-order exception: when an edit adds a parent form that
-creates the case type shown by its intended child viewer,
+There is one construction-order exception: when an edit adds a form or case
+change that creates the case type shown by its intended child viewer,
 `MISSING_CHILD_CASE_MODULE` requires that viewer first. Create the child viewer
-temporarily top-level, create the parent with its writer form, then use
-`move_module` to place the viewer under the parent. This temporary bootstrap
-changes no final menu or case ancestry.
+temporarily top-level, create or update the writer form on the new or existing
+parent, then use `move_module` to place the viewer under the parent. This
+temporary bootstrap changes no final menu or case ancestry.
 
 Reply in the language of the user's latest substantive message. Conversation
 language is independent from the app's source, runtime default, and target

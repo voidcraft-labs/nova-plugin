@@ -113,7 +113,6 @@ def require_nested_menu_construction_contract(prose: str, label: str) -> None:
     require(
         "`MISSING_CHILD_CASE_MODULE`" in prose
         and "child viewer temporarily top-level" in prose
-        and "parent with its writer form" in prose
         and "then use `move_module`" in prose,
         f"{label} omits the child-viewer-first construction exception",
     )
@@ -194,6 +193,20 @@ def main() -> None:
         require_nested_menu_construction_contract(
             prose, str(path.relative_to(ROOT))
         )
+        if path.relative_to(ROOT) in {
+            Path("skills/build/SKILL.md"),
+            Path("skills/autobuild/SKILL.md"),
+        }:
+            require(
+                "parent with its writer form" in prose,
+                f"{path.relative_to(ROOT)} omits the new-parent writer bootstrap",
+            )
+        if path.relative_to(ROOT) == Path("skills/edit/SKILL.md"):
+            require(
+                "create or update the writer form on the new or existing parent"
+                in prose,
+                "edit skill omits the existing-parent writer bootstrap",
+            )
         if path.relative_to(ROOT) == Path("skills/build/SKILL.md"):
             require(
                 "root module before its children except for the child-viewer-first writer bootstrap above"
@@ -277,6 +290,11 @@ def main() -> None:
         "autonomous agent does not stop on a missing prompt marker",
     )
     require_nested_menu_construction_contract(agent_prose, "autonomous agent")
+    require(
+        "create or update the writer form on the new or existing parent"
+        in agent_prose,
+        "autonomous agent omits the existing-parent writer bootstrap",
+    )
     require_prompt_paging_contract(agent_prose, "autonomous agent")
 
     readme = README.read_text(encoding="utf-8")
@@ -319,6 +337,11 @@ def main() -> None:
         "README omits paged agent-prompt delivery",
     )
     require_nested_menu_construction_contract(readme_prose, "README")
+    require(
+        "create or update the writer form on the new or existing parent"
+        in readme_prose,
+        "README omits the existing-parent writer bootstrap",
+    )
     for field in PROMPT_PAGE_FIELDS:
         require(field in readme_prose, f"README omits paged-prompt field: {field}")
     require(

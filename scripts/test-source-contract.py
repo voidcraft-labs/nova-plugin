@@ -16,6 +16,25 @@ LANGUAGE_TOOLS = (
     "remove_language",
     "update_translations",
 )
+LOOKUP_TOOLS = (
+    "get_lookup_tables",
+    "get_lookup_table_rows",
+    "create_lookup_table",
+    "update_lookup_table",
+    "edit_lookup_columns",
+    "edit_lookup_rows",
+    "replace_lookup_rows",
+    "remove_lookup_table",
+    "set_field_options_source",
+)
+LOOKUP_WORKFLOW_CONTRACT = (
+    "current request explicitly asks",
+    "affect every app in the Project",
+    "complete desired row",
+    "`optionsSource` in the same `create_module`, `create_form`, or `add_fields` call",
+    "`optionsSource` in the same `edit_field` call",
+    "`set_field_options_source` is only for changing an already-valid select",
+)
 GUIDANCE_FILES = (
     ROOT / "skills" / "build" / "SKILL.md",
     ROOT / "skills" / "autobuild" / "SKILL.md",
@@ -130,8 +149,8 @@ def main() -> None:
     )
     require(manifest["name"] == "nova", "plugin name must remain nova")
     require(
-        manifest["version"] == "1.28.0",
-        "Nested-menus release must carry plugin version 1.28.0",
+        manifest["version"] == "1.29.0",
+        "Plugin source contract requires version 1.29.0",
     )
 
     for path in GUIDANCE_FILES:
@@ -143,6 +162,25 @@ def main() -> None:
                     f"{namespace}{tool}" in text,
                     f"{path.relative_to(ROOT)} omits {namespace}{tool}",
                 )
+        for tool in LOOKUP_TOOLS:
+            for namespace in ("mcp__plugin_nova_nova__", "mcp__nova__"):
+                require(
+                    f"{namespace}{tool}" in text,
+                    f"{path.relative_to(ROOT)} omits {namespace}{tool}",
+                )
+        require(
+            "reusable answer list" in prose
+            and "Project-scoped" in prose
+            and "expectedTableRevision" in prose
+            and "human-readable discovery" in prose
+            and "not addresses" in prose,
+            f"{path.relative_to(ROOT)} omits the lookup authoring workflow",
+        )
+        for phrase in LOOKUP_WORKFLOW_CONTRACT:
+            require(
+                phrase in prose,
+                f"{path.relative_to(ROOT)} omits lookup safety: {phrase}",
+            )
         require(
             "latest substantive message" in prose,
             f"{path.relative_to(ROOT)} omits the conversation-language rule",
@@ -243,6 +281,12 @@ def main() -> None:
                 f"{namespace}{tool}" in frontmatter,
                 f"autonomous agent allowlist omits {namespace}{tool}",
             )
+    for tool in LOOKUP_TOOLS:
+        for namespace in ("mcp__plugin_nova_nova__", "mcp__nova__"):
+            require(
+                f"{namespace}{tool}" in frontmatter,
+                f"autonomous agent allowlist omits {namespace}{tool}",
+            )
     for namespace in ("mcp__plugin_nova_nova__", "mcp__nova__"):
         require(
             f"{namespace}move_module" in frontmatter,
@@ -269,6 +313,19 @@ def main() -> None:
         and "concurrency refusal" in agent_prose,
         "autonomous agent omits translation concurrency fencing",
     )
+    require(
+        "reusable answer list" in agent_prose
+        and "Project-scoped" in agent_prose
+        and "expectedTableRevision" in agent_prose
+        and "human-readable discovery" in agent_prose
+        and "not addresses" in agent_prose,
+        "autonomous agent omits the lookup authoring workflow",
+    )
+    for phrase in LOOKUP_WORKFLOW_CONTRACT:
+        require(
+            phrase in agent_prose,
+            f"autonomous agent omits lookup safety: {phrase}",
+        )
     for phrase in NESTED_MENU_CONTRACT:
         require(
             phrase in agent_prose,
@@ -318,6 +375,25 @@ def main() -> None:
         "## Nested menus" in readme,
         "README omits the public nested-menu contract",
     )
+    require(
+        "## Project data tables" in readme,
+        "README omits the public Project-data contract",
+    )
+    for tool in LOOKUP_TOOLS:
+        require(tool in readme, f"README omits lookup tool: {tool}")
+    require(
+        "reusable answer list" in readme_prose
+        and "Project-scoped" in readme_prose
+        and "expectedTableRevision" in readme_prose
+        and "human-readable discovery" in readme_prose
+        and "not addresses" in readme_prose,
+        "README omits the lookup authoring workflow",
+    )
+    for phrase in LOOKUP_WORKFLOW_CONTRACT:
+        require(
+            phrase in readme_prose,
+            f"README omits lookup safety: {phrase}",
+        )
     for phrase in NESTED_MENU_CONTRACT:
         require(
             phrase in readme_prose,

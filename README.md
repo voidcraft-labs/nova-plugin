@@ -92,6 +92,39 @@ forms: every Form has one canonical owning module, with no linked- or
 shadow-form reuse. Separate modules and case-list filters can provide different
 views of the same data.
 
+## Project data tables
+
+Build and edit skills can use a Project data table when one reusable answer list
+should keep the same saved values and labels across questions, forms, case
+lists, or apps. A question-specific list stays inline. Tables are
+Project-scoped and live outside any one app blueprint, so a change may affect
+every app in the Project that uses it. A reusable list is a design signal, not
+authority to change shared data: the agent writes Project data only when the
+user's current request explicitly asks for that change, and explains the
+Project-wide effect before the write. Asking to reuse a list authorizes reading
+and referencing an existing table, not changing its underlying data.
+
+The agent reads `get_lookup_tables` through its final page before writing and
+uses `get_lookup_table_rows` when it needs the current values. Names, tags,
+labels, and wire names support human-readable discovery; they are not
+addresses. Table, column, and row UUIDs are the stable identities carried into
+later calls.
+
+`create_lookup_table` creates a complete initial schema and optional rows
+atomically. `update_lookup_table`, `edit_lookup_columns`, `edit_lookup_rows`,
+and `replace_lookup_rows` change an existing table. Every one of those later
+writes carries `expectedTableRevision`; the agent chains the returned table
+revision and re-reads after a conflict. An `edit_lookup_rows` update sends the
+complete desired row because omitted cells become missing values.
+`remove_lookup_table` only removes an unreferenced table.
+
+A new lookup-backed select carries its table and column UUIDs as `optionsSource`
+in the same `create_module`, `create_form`, or `add_fields` call. When converting
+a field to a select, pass that `optionsSource` in the same `edit_field` call.
+`set_field_options_source` is only for changing an
+already-valid select's complete source, so the app never passes through an
+invalid source-less state or copies table rows into temporary inline choices.
+
 ## Languages and translations
 
 `/nova:build`, `/nova:autobuild`, and `/nova:edit` understand Nova's app

@@ -94,11 +94,15 @@ views of the same data.
 
 ## Project data tables
 
-Build and edit skills use a Project data table when one reusable answer list
+Build and edit skills can use a Project data table when one reusable answer list
 should keep the same saved values and labels across questions, forms, case
 lists, or apps. A question-specific list stays inline. Tables are
-Project-scoped and live outside any one app blueprint, so changing one may
-affect several apps in the Project.
+Project-scoped and live outside any one app blueprint, so a change may affect
+every app in the Project that uses it. A reusable list is a design signal, not
+authority to change shared data: the agent writes Project data only when the
+user's current request explicitly asks for that change, and explains the
+Project-wide effect before the write. Asking to reuse a list authorizes reading
+and referencing an existing table, not changing its underlying data.
 
 The agent reads `get_lookup_tables` through its final page before writing and
 uses `get_lookup_table_rows` when it needs the current values. Names, tags,
@@ -110,10 +114,15 @@ later calls.
 atomically. `update_lookup_table`, `edit_lookup_columns`, `edit_lookup_rows`,
 and `replace_lookup_rows` change an existing table. Every one of those later
 writes carries `expectedTableRevision`; the agent chains the returned table
-revision and re-reads after a conflict. `remove_lookup_table` only removes an
-unreferenced table. Finally, `set_field_options_source` points a single- or
-multiple-choice field at the table UUID plus its saved-value and display-column
-UUIDs, so the app reuses the table instead of copying its rows into each field.
+revision and re-reads after a conflict. An `edit_lookup_rows` update sends the
+complete desired row because omitted cells become missing values.
+`remove_lookup_table` only removes an unreferenced table.
+
+A new lookup-backed select carries its table and column UUIDs as `optionsSource`
+in the same field-creation call, and a conversion carries it in the same
+`edit_field` call. `set_field_options_source` is only for changing an
+already-valid select's complete source, so the app never passes through an
+invalid source-less state or copies table rows into temporary inline choices.
 
 ## Languages and translations
 

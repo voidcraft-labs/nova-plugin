@@ -27,6 +27,13 @@ LOOKUP_TOOLS = (
     "remove_lookup_table",
     "set_field_options_source",
 )
+LOOKUP_WORKFLOW_CONTRACT = (
+    "current request explicitly asks",
+    "affect every app in the Project",
+    "complete desired row",
+    "`optionsSource` in the same",
+    "`set_field_options_source` is only for changing an already-valid select",
+)
 GUIDANCE_FILES = (
     ROOT / "skills" / "build" / "SKILL.md",
     ROOT / "skills" / "autobuild" / "SKILL.md",
@@ -168,6 +175,11 @@ def main() -> None:
             and "not addresses" in prose,
             f"{path.relative_to(ROOT)} omits the lookup authoring workflow",
         )
+        for phrase in LOOKUP_WORKFLOW_CONTRACT:
+            require(
+                phrase in prose,
+                f"{path.relative_to(ROOT)} omits lookup safety: {phrase}",
+            )
         require(
             "latest substantive message" in prose,
             f"{path.relative_to(ROOT)} omits the conversation-language rule",
@@ -308,6 +320,11 @@ def main() -> None:
         and "not addresses" in agent_prose,
         "autonomous agent omits the lookup authoring workflow",
     )
+    for phrase in LOOKUP_WORKFLOW_CONTRACT:
+        require(
+            phrase in agent_prose,
+            f"autonomous agent omits lookup safety: {phrase}",
+        )
     for phrase in NESTED_MENU_CONTRACT:
         require(
             phrase in agent_prose,
@@ -371,6 +388,11 @@ def main() -> None:
         and "not addresses" in readme_prose,
         "README omits the lookup authoring workflow",
     )
+    for phrase in LOOKUP_WORKFLOW_CONTRACT:
+        require(
+            phrase in readme_prose,
+            f"README omits lookup safety: {phrase}",
+        )
     for phrase in NESTED_MENU_CONTRACT:
         require(
             phrase in readme_prose,

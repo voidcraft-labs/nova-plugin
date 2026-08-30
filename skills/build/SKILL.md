@@ -123,23 +123,38 @@ pre-load the complete Project-data family:
 ToolSearch({query: "select:mcp__plugin_nova_nova__get_lookup_tables,mcp__plugin_nova_nova__get_lookup_table_rows,mcp__plugin_nova_nova__create_lookup_table,mcp__plugin_nova_nova__update_lookup_table,mcp__plugin_nova_nova__edit_lookup_columns,mcp__plugin_nova_nova__edit_lookup_rows,mcp__plugin_nova_nova__replace_lookup_rows,mcp__plugin_nova_nova__remove_lookup_table,mcp__plugin_nova_nova__set_field_options_source,mcp__nova__get_lookup_tables,mcp__nova__get_lookup_table_rows,mcp__nova__create_lookup_table,mcp__nova__update_lookup_table,mcp__nova__edit_lookup_columns,mcp__nova__edit_lookup_rows,mcp__nova__replace_lookup_rows,mcp__nova__remove_lookup_table,mcp__nova__set_field_options_source"})
 ```
 
-A Project data table is Project-scoped, outside the app blueprint, so one edit
-may affect several apps. Use it for a genuinely reusable answer list; keep a
-question-specific list inline. Create the app first because every MCP lookup
-call needs its `app_id`, then read `get_lookup_tables` through `complete: true`
-before writing. Names, tags, labels, and wire names support human-readable
-discovery; they are not addresses. Keep the returned table and column UUIDs,
-and page `get_lookup_table_rows` to inspect values when needed.
+A Project data table is Project-scoped, outside the app blueprint, so changing
+it affects every app in the Project that uses it. A reusable answer list is a
+design signal, not authority to change shared data. Call a Project-data write
+only when the user's current request explicitly asks to create, change,
+replace, or remove that data. Adding a lookup-backed question or asking to
+reuse a list authorizes reading and referencing a matching table, not changing
+the underlying table. Before any Project-data write, tell the user that it may
+affect every app in the Project. Keep a question-specific list inline.
+
+Create the app first because every MCP lookup call needs its `app_id`, then read
+`get_lookup_tables` through `complete: true` before every write. Names, tags,
+labels, and wire names support human-readable discovery; they are not
+addresses. Keep the returned table and column UUIDs. Read the relevant current
+rows with `get_lookup_table_rows` before editing, moving, replacing, or removing
+them, and address existing rows only by the returned row UUIDs.
 
 `create_lookup_table` atomically creates the complete initial schema and rows;
 its request-local column keys are only handles for that call, while the result
 returns the durable UUIDs. Every later write takes `expectedTableRevision`:
 chain the returned `revisions.tableRevision`, and re-read after a conflict.
-Use `edit_lookup_columns` and `edit_lookup_rows` for bounded atomic changes,
-`replace_lookup_rows` only for a deliberate whole-row replacement, and
-`remove_lookup_table` only when the table is unreferenced. Finally pass the
-table UUID plus saved-value and display-column UUIDs to
-`set_field_options_source`; never duplicate the table rows as inline choices.
+Use `edit_lookup_columns` and `edit_lookup_rows` for bounded atomic changes.
+An `edit_lookup_rows` update replaces one complete row: send the complete
+desired row, including every cell that must remain. Use `replace_lookup_rows`
+only for a deliberate replacement of the table's entire row set, and
+`remove_lookup_table` only when the table is unreferenced.
+
+For a new lookup-backed select, pass the table, saved-value column, and display
+column UUIDs as its `optionsSource` in the same `create_form` or `add_fields`
+call. When converting a field to a select, pass that `optionsSource` in the same
+`edit_field` call. `set_field_options_source` is only for changing an
+already-valid select's complete source. Never create a temporary inline source
+or duplicate the table rows as inline choices.
 
 Each exact selection lists both supported spellings without ranking: `mcp__plugin_nova_nova__*` for plugin OAuth and `mcp__nova__*` for a user-scope API-key override; the spelling that isn't connected simply matches nothing.
 

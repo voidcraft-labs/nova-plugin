@@ -92,6 +92,29 @@ forms: every Form has one canonical owning module, with no linked- or
 shadow-form reuse. Separate modules and case-list filters can provide different
 views of the same data.
 
+## Project data tables
+
+Build and edit skills use a Project data table when one reusable answer list
+should keep the same saved values and labels across questions, forms, case
+lists, or apps. A question-specific list stays inline. Tables are
+Project-scoped and live outside any one app blueprint, so changing one may
+affect several apps in the Project.
+
+The agent reads `get_lookup_tables` through its final page before writing and
+uses `get_lookup_table_rows` when it needs the current values. Names, tags,
+labels, and wire names support human-readable discovery; they are not
+addresses. Table, column, and row UUIDs are the stable identities carried into
+later calls.
+
+`create_lookup_table` creates a complete initial schema and optional rows
+atomically. `update_lookup_table`, `edit_lookup_columns`, `edit_lookup_rows`,
+and `replace_lookup_rows` change an existing table. Every one of those later
+writes carries `expectedTableRevision`; the agent chains the returned table
+revision and re-reads after a conflict. `remove_lookup_table` only removes an
+unreferenced table. Finally, `set_field_options_source` points a single- or
+multiple-choice field at the table UUID plus its saved-value and display-column
+UUIDs, so the app reuses the table instead of copying its rows into each field.
+
 ## Languages and translations
 
 `/nova:build`, `/nova:autobuild`, and `/nova:edit` understand Nova's app

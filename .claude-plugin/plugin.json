@@ -1,6 +1,6 @@
 {
   "name": "nova",
-  "version": "1.28.0",
+  "version": "1.29.0",
   "description": "Build, edit, compile, and deploy CommCare apps from Claude Code",
   "author": {
     "name": "voidcraft-labs"

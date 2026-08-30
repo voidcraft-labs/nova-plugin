@@ -109,6 +109,31 @@ complete language family:
 ToolSearch({query: "select:mcp__plugin_nova_nova__get_languages,mcp__plugin_nova_nova__get_translatable_content,mcp__plugin_nova_nova__add_language,mcp__plugin_nova_nova__update_language,mcp__plugin_nova_nova__remove_language,mcp__plugin_nova_nova__update_translations,mcp__nova__get_languages,mcp__nova__get_translatable_content,mcp__nova__add_language,mcp__nova__update_language,mcp__nova__remove_language,mcp__nova__update_translations"})
 ```
 
+When the edit has a reusable answer list whose saved values and labels should
+stay consistent across questions, forms, case lists, or apps in one Project,
+pre-load the complete Project-data family:
+
+```
+ToolSearch({query: "select:mcp__plugin_nova_nova__get_lookup_tables,mcp__plugin_nova_nova__get_lookup_table_rows,mcp__plugin_nova_nova__create_lookup_table,mcp__plugin_nova_nova__update_lookup_table,mcp__plugin_nova_nova__edit_lookup_columns,mcp__plugin_nova_nova__edit_lookup_rows,mcp__plugin_nova_nova__replace_lookup_rows,mcp__plugin_nova_nova__remove_lookup_table,mcp__plugin_nova_nova__set_field_options_source,mcp__nova__get_lookup_tables,mcp__nova__get_lookup_table_rows,mcp__nova__create_lookup_table,mcp__nova__update_lookup_table,mcp__nova__edit_lookup_columns,mcp__nova__edit_lookup_rows,mcp__nova__replace_lookup_rows,mcp__nova__remove_lookup_table,mcp__nova__set_field_options_source"})
+```
+
+A Project data table is Project-scoped, outside the app blueprint, so one edit
+may affect several apps. Use it for a genuinely reusable answer list; keep a
+question-specific list inline. Read `get_lookup_tables` through `complete: true`
+before writing. Names, tags, labels, and wire names support human-readable
+discovery; they are not addresses. Keep the returned table and column UUIDs,
+and page `get_lookup_table_rows` to inspect values before changing them.
+
+`create_lookup_table` atomically creates the complete initial schema and rows;
+its request-local column keys are only handles for that call, while the result
+returns the durable UUIDs. Every later write takes `expectedTableRevision`:
+chain the returned `revisions.tableRevision`, and re-read after a conflict.
+Use `edit_lookup_columns` and `edit_lookup_rows` for bounded atomic changes,
+`replace_lookup_rows` only for a deliberate whole-row replacement, and
+`remove_lookup_table` only when the table is unreferenced. Finally pass the
+table UUID plus saved-value and display-column UUIDs to
+`set_field_options_source`; never duplicate the table rows as inline choices.
+
 `+nova` keeps the core search namespace-neutral. Each exact family selection lists both supported spellings without ranking: `mcp__plugin_nova_nova__*` for plugin OAuth and `mcp__nova__*` for a user-scope API-key override.
 
 Nova supports exactly one submenu tier. Menu parentage organizes navigation;

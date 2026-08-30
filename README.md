@@ -119,8 +119,9 @@ complete desired row because omitted cells become missing values.
 `remove_lookup_table` only removes an unreferenced table.
 
 A new lookup-backed select carries its table and column UUIDs as `optionsSource`
-in the same field-creation call, and a conversion carries it in the same
-`edit_field` call. `set_field_options_source` is only for changing an
+in the same `create_module`, `create_form`, or `add_fields` call. When converting
+a field to a select, pass that `optionsSource` in the same `edit_field` call.
+`set_field_options_source` is only for changing an
 already-valid select's complete source, so the app never passes through an
 invalid source-less state or copies table rows into temporary inline choices.
 

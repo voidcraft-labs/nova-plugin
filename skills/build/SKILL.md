@@ -150,11 +150,11 @@ only for a deliberate replacement of the table's entire row set, and
 `remove_lookup_table` only when the table is unreferenced.
 
 For a new lookup-backed select, pass the table, saved-value column, and display
-column UUIDs as its `optionsSource` in the same `create_form` or `add_fields`
-call. When converting a field to a select, pass that `optionsSource` in the same
-`edit_field` call. `set_field_options_source` is only for changing an
-already-valid select's complete source. Never create a temporary inline source
-or duplicate the table rows as inline choices.
+column UUIDs as its `optionsSource` in the same `create_module`, `create_form`,
+or `add_fields` call. When converting a field to a select, pass that
+`optionsSource` in the same `edit_field` call. `set_field_options_source` is
+only for changing an already-valid select's complete source. Never create a
+temporary inline source or duplicate the table rows as inline choices.
 
 Each exact selection lists both supported spellings without ranking: `mcp__plugin_nova_nova__*` for plugin OAuth and `mcp__nova__*` for a user-scope API-key override; the spelling that isn't connected simply matches nothing.
 

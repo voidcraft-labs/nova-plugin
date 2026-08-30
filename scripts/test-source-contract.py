@@ -31,7 +31,8 @@ LOOKUP_WORKFLOW_CONTRACT = (
     "current request explicitly asks",
     "affect every app in the Project",
     "complete desired row",
-    "`optionsSource` in the same",
+    "`optionsSource` in the same `create_module`, `create_form`, or `add_fields` call",
+    "`optionsSource` in the same `edit_field` call",
     "`set_field_options_source` is only for changing an already-valid select",
 )
 GUIDANCE_FILES = (

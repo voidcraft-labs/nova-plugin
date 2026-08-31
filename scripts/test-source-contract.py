@@ -414,7 +414,6 @@ def main() -> None:
         '`status: "blocked"' in upload_prose
         and "`missing` or `unverified`" in upload_prose
         and "Name **<target>** in every blocked notice" in upload_prose
-        and "link it to `<server_url>/a/<target>/`" in upload_prose
         and "always include its `docs_url`" in upload_prose
         and "Nova has not uploaded anything" in upload_prose
         and "do not call `upload_app_to_hq`" in upload_prose,

@@ -1,6 +1,6 @@
 ---
 name: upload_to_hq
-description: Upload an existing Nova app to CommCare HQ using the user's stored API key, along with the lookup tables it reads and the places in its organization, then report what is left to do there and offer to make a mobile worker for each persona. The first upload to a project space creates the HQ app; uploading again updates that same app in place. Name a project space to upload straight there; otherwise it confirms the target with the user first.
+description: Upload an existing Nova app to CommCare HQ using the user's stored API key, after checking that the selected project space can run it, along with the lookup tables it reads and the places in its organization. Then report what is left to do there and offer to make a mobile worker for each persona. The first upload to a project space creates the HQ app; uploading again updates that same app in place. Name a project space to upload straight there; otherwise it confirms the target with the user first.
 argument-hint: <app_id or name> [project space]
 ---
 
@@ -48,8 +48,8 @@ the friendly name and the stable id.
 
 ## 3. Resolve the exact HQ target
 
-Call Nova's `get_hq_connection` (no arguments) before the feature-flag check or
-upload. `configured: false` → tell the user "CommCare HQ isn't connected yet.
+Call Nova's `get_hq_connection` (no arguments) before the compatibility check
+or upload. `configured: false` → tell the user "CommCare HQ isn't connected yet.
 Add your HQ API key in Settings (picking the CommCare server your account lives
 on — US, India, or EU) before uploading." and stop.
 
@@ -69,52 +69,60 @@ A configured connection carries `server_url` and `available_domains`:
 Call the chosen slug the **target**. The upload lands on `server_url`; US,
 India, and EU are separate CommCare HQ deployments.
 
-## 4. Check and disclose the target's feature flags
+## 4. Check whether the target can run the app
 
-Call Nova's `get_app_hq_feature_flags` with
+Call Nova's `check_project_space_compatibility` with
 `{app_id: "<resolved app_id>", domain: "<target>"}` before asking for upload
-confirmation or invoking the upload. Read
-`feature_flag_requirements` literally:
+confirmation or invoking the upload. The domain is mandatory here: check the
+exact project space the user selected, never an unselected or inferred space.
+Read `project_space_compatibility` literally:
 
-- `missing_flags` contains only flags Nova confirmed are not enabled on this
-  target. Name each label and slug, include its app-specific `reasons`, link its
-  `docs_url`, and tell the user to contact the returned `support_email` with the
-  target project-space name.
-- `unverified_flags` contains required flags whose state HQ's diagnostic could
-  not answer. Name them, but say they are **not confirmed missing**.
-- `verification: "verified"` means every diagnostic answered; it does **not**
-  mean every flag is enabled, so still inspect `missing_flags`.
-- `verification: "not_required"` needs only a quiet sentence, or no extra
-  feature-flag copy when the surrounding confirmation is already clear.
+- `status: "not_needed"` means the app needs no destination-specific check.
+  Proceed quietly.
+- `status: "ready"` means every required capability is available. Do not make
+  the confirmation noisy by listing available capabilities. If an `advisories`
+  entry is `missing` or `unverified`, relay its friendly `title` and `message`
+  as performance guidance; an advisory never blocks the upload.
+- `status: "blocked"` means at least one required capability in `blockers` is
+  `missing` or `unverified`. Use each blocker's friendly `label`, `description`,
+  and app-specific `reasons` where they help. Preserve the distinction: missing
+  support is confirmed unavailable, while unverified support could not be
+  confirmed. Name **<target>** in every blocked notice, relay the report's
+  `message` and next step, and always include its `docs_url`; include
+  `support_email` when useful. Say that Nova has not uploaded anything, then
+  stop. Do not ask for upload confirmation and do not call `upload_app_to_hq`.
 
-This is deployment information, never a Nova authoring gate. Do not remove,
-undo, avoid, or revise app functionality because of it, and do not block the
-upload based on requirements alone. The upload response checks the same target
-again after import.
+Speak in app capabilities, not implementation settings: never show capability
+`id` values, private project-space setting names, or private setting slugs. This
+is a destination check, never a Nova authoring constraint. Do not remove, undo,
+avoid, or revise requested app functionality because of it. The upload repeats
+the check immediately before its first remote write, so an earlier ready result
+cannot become stale permission to publish.
 
 If the check returns `hq_not_configured`, stop with the Settings guidance from
 step 3. If it returns `domain_not_authorized`, refresh the connection, show the
 reachable spaces, and ask the user to select one; never silently substitute a
-different target. If the diagnostic itself is partially unavailable, continue
-with its honest `unverified_flags` result.
+different target. A check that cannot confirm required support returns a
+blocked report, not permission to continue.
 
 ## 5. Confirm and upload
 
-For an explicit target, step 1's named space already confirmed the upload; show
-the step 4 disclosure and proceed without asking again.
+For an explicit target, step 1's named space already confirmed the upload. Show
+any non-blocking performance guidance from step 4 and proceed without asking
+again.
 
-Otherwise, confirm now (substitute real values and include the step 4
-feature-flag disclosure in the same message; `<host>` is `server_url` without
-the scheme):
+Otherwise, confirm now. Substitute real values and include any non-blocking
+performance guidance from step 4 in the same message; `<host>` is `server_url`
+without the scheme:
 
-> **"App Name"** (app_id) is already saved in Nova and you can keep editing
-> it here anytime — this **also** uploads it to CommCare HQ at
+> **"App Name"** (app_id) is already saved in Nova, and you can keep editing
+> it here anytime. This **also** uploads it to CommCare HQ at
 > `<host>/a/<target>/`, using your API key: a first upload creates the app
 > there, and a later one updates that same HQ app in place. Any Project data
 > tables the app reads and any places in its organization go up with it. Your
 > Nova copy stays put.
 >
-> Proceed?
+> Upload it to **<target>** now?
 
 Wait for confirmation. If the user declines, stop. Then call Nova's
 `upload_app_to_hq` tool with
@@ -124,7 +132,7 @@ target explicitly.
 ## 6. Report
 
 On success the response has
-`{hq_app_id, hq_app_action, url, warnings, feature_flag_requirements,
+`{hq_app_id, hq_app_action, url, warnings, project_space_compatibility,
 deployment_state, deployment, setup_artifact}`. `hq_app_action` says whether
 this upload created the HQ app or updated it in place — say which happened
 (e.g. "Uploaded" for `created`, "Updated" for `updated`).
@@ -288,24 +296,13 @@ space's custom user-data field definitions; both are on the upload's
 `setup_artifact` list. Say so if the user expects a worker to arrive with a
 role.
 
-Then interpret `feature_flag_requirements` literally; never infer a flag's
-state from the app alone:
-
-- `missing_flags` — Nova checked the target after the successful upload and
-  confirmed these flags are not enabled. Name every flag (label and slug), say
-  it is confirmed missing for the target project space, and tell the user to
-  contact `support@dimagi.com` to enable it for that named space.
-- `unverified_flags` — Nova could not determine these flags' state. Name every
-  flag (label and slug), make clear they are required but **not confirmed
-  missing**, and tell the user to contact `support@dimagi.com` if they need a
-  flag enabled for that named space.
-- `verification: "verified"` with both lists empty — a short sentence that Nova
-  verified all required flags are enabled is enough.
-- `verification: "not_required"` — do not add feature-flag noise.
-
-The upload has already succeeded even when flags are missing or could not be
-checked. Present this as follow-up information, never as an upload failure.
-Link to `https://docs.commcare.app/feature-flags` when useful.
+On a successful upload, interpret `project_space_compatibility` literally.
+Success guarantees that `blockers` is empty. Do not list available required
+capabilities. Relay only `advisories` whose state is `missing` or `unverified`,
+using each friendly `title` and `message`; these are performance guidance and
+the upload has already succeeded. Link to the report's `docs_url` when useful.
+Ignore any legacy compatibility projection that may coexist in a rollout
+response.
 
 On a failed upload, surface `error_type` and `message` from the response:
 
@@ -313,11 +310,21 @@ On a failed upload, surface `error_type` and `message` from the response:
   The `message` already names every space it CAN reach, so relay that in one
   turn rather than making the user re-run the command — e.g. "`<space>` isn't
   connected to your key, but these are: `<list>`. Want me to upload to one of
-  those?" — then upload to their pick.
+  those?" After they choose, run the step 4 compatibility check for that exact
+  space, then continue through step 5.
 - `domain_ambiguous` — only happens with no `domain`; resolve the target via
-  step 3, run the step 4 feature-flag check for that target, and retry step 5.
+  step 3, run the step 4 compatibility check for that target, and retry step 5.
 - `hq_not_configured` — the user needs to connect CommCare HQ in Settings
   (pick the server their account lives on and add their API key).
+- `project_space_incompatible` — the upload's authoritative pre-write check
+  found required support missing or unverified after the earlier check. Nothing
+  was uploaded in this attempt. Interpret
+  `project_space_compatibility.blockers` exactly as in step 4, relay the
+  report's next step, and stop. Never work around it by changing the app unless
+  the user separately asks to change the app itself.
+- `hq_app_state_unknown` — Nova could not safely read the current HQ app before
+  updating it, so it left the existing app unchanged. Relay the `message` and
+  try again only when the user asks.
 - `remote_app_missing` — the HQ app this one updates in place was deleted on
   HQ. Nothing was changed; relay the `message` (uploading again creates a
   fresh app there).

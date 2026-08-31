@@ -34,7 +34,7 @@ and [docs.commcare.app/mcp/tools](https://docs.commcare.app/mcp/tools).
 - `/nova:edit <app_id> "<instruction>"` — edit an existing app
 - `/nova:list` — list your apps
 - `/nova:show <app_id>` — blueprint summary
-- `/nova:upload_to_hq <app_id or name> [project space]` — deploy to CommCare HQ (names a space to upload straight there, otherwise confirms the target first; reports required HQ feature flags that are missing or could not be verified)
+- `/nova:upload_to_hq <app_id or name> [project space]` — deploy to CommCare HQ (names a space to upload straight there, otherwise confirms the target first; checks whether that project space can run the app before sending anything)
 
 ## Agent prompt delivery
 
@@ -156,11 +156,14 @@ The agent replies in the language of your latest substantive message. That
 conversation language is independent from the app's source, default, and
 target worker languages.
 
-Agents connected directly over MCP can call `get_app_hq_feature_flags` before
-publishing. It returns only the CommCare HQ flags the app uses, why each
-applies, inline plain-language descriptions, and public docs links. With no
-domain it makes no claim about what is off; with one explicit connected domain
-it reports confirmed missing flags separately from checks HQ could not answer.
+Agents connected directly over MCP can call
+`check_project_space_compatibility` after the user selects an exact CommCare HQ
+project space. It returns the app capabilities that need destination support,
+why the app uses them, and whether that space is ready. Missing or unverified
+required support blocks a direct upload before anything is sent. Performance
+advice never blocks, and `upload_app_to_hq` repeats the check immediately before
+its first remote write. See
+[Project-space compatibility](https://docs.commcare.app/project-space-compatibility).
 
 Build and edit skills also expose automatic case updates and conditional alerts
 through `get_automations`, `add_automations`, `update_automation`, and
@@ -198,9 +201,9 @@ equality/regex, and every standard scalar in dynamic-only restart/event-time
 slots are refused. After trimming, case-property event-time values must begin
 with `H:MM` or `HH:MM`, and the whole value must parse as a time. Suffixes such
 as AM/PM or seconds are accepted; blank, nonmatching, or unparseable values use
-12:00 PM. Email content chooses one plain-text or rich-text body form;
-rich HTML requires the domain toggle, is sanitized and rewrapped by HQ, and has
-its plaintext derived rather than authored in parallel.
+12:00 PM. Email content chooses one plain-text or rich-text body form. Use rich
+text when the message needs authored HTML; HQ sanitizes and rewraps it, then
+derives its plaintext rather than accepting a separately authored version.
 Message fields use canonical structural `parts`: literal `text` never becomes
 a reference, even when it looks like `{case.foo}`; the guide escapes literal
 braces before HQ's Python Formatter evaluates them. An explicit `case-property`
@@ -213,13 +216,12 @@ property, or use `context-property` for the actual case-owner or recipient
 context. Registered custom handler IDs and setup-only
 instructions must be exact, trimmed, and nonblank; never invent placeholder
 values. Setup-only criteria distinguish UCR filters from registered custom
-criteria so the guide can name the required `CASE_UPDATES_UCR_FILTERS` toggle
-or system-administrator access. HQ requires a system administrator to save an alert that uses a
+criteria, and the returned guide explains any project-space or administrator
+setup. HQ requires a system administrator to save an alert that uses a
 registered custom recipient or custom content handler; a project administrator
 cannot complete that returned setup guide alone.
-Preserve content-specific guide caveats too: SMS Survey requires Inbound SMS
-access, while Connect requires the `COMMCARE_CONNECT` domain toggle and every
-resolved recipient to be a CommCare mobile worker with an active PersonalID link.
+Preserve content-specific guidance returned by Nova. Every resolved Connect
+recipient must be a CommCare mobile worker with an active PersonalID link.
 Checkbox-style, case-property, and custom recipient kinds are singletons;
 list-backed kinds may use a concrete target only once, and concrete HQ IDs must
 be trimmed and nonblank. Descendant controls

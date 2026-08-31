@@ -299,11 +299,10 @@ fields accept custom properties only. After trimming, case-property event-time
 values must begin with `H:MM` or `HH:MM`, and the whole value must parse as a
 time. Suffixes such as AM/PM or seconds are accepted; blank, nonmatching, or
 unparseable values use 12:00 PM.
-Email content has one `body`:
-`plain-text { message }` targets a domain without Rich text emails, while
-`rich-text { html }` requires the toggle and is sanitized/rewrapped by HQ with
-plaintext derived from it. Never invent parallel email bodies or promise
-byte-exact rich output.
+Email content has one `body`. Use `plain-text { message }` for prose and
+`rich-text { html }` when the message needs authored HTML. HQ sanitizes and
+rewraps rich HTML, then derives its plaintext. Never invent parallel email
+bodies or promise byte-exact rich output.
 Message fields are structural `parts`: ordinary `text` remains literal even
 when it looks like `{case.foo}` and the guide escapes its braces for HQ. An
 explicit `case-property` part carries scope plus `(caseType, property)`
@@ -316,10 +315,9 @@ same-named custom case data; rename the custom property, or use
 custom handler IDs, language codes, and setup-only
 instructions are exact trimmed nonblank values, not instructional placeholders.
 Use `ucr-filter` only for a UCR definition and `registered-custom` only for an
-instance-registered criterion; the returned guide names the former's
-`CASE_UPDATES_UCR_FILTERS` toggle and the latter's system-administrator save
-requirement. Recipient-filter values are structural exact literals or custom
-case-property references. Empty and whitespace literals are meaningful; never
+instance-registered criterion; preserve the additional setup in the returned
+guide. Recipient-filter values are structural exact literals
+or custom case-property references. Empty and whitespace literals are meaningful; never
 encode a lookup as a brace-wrapped literal because HQ executes it dynamically.
 Every triggering case must contain each referenced property because HQ raises
 when its direct lookup is missing. HQ filters only contacts that resolve to
@@ -331,9 +329,8 @@ prerequisite when multiple keys/values or blank/whitespace values require it.
 An alert using a registered custom recipient or custom content handler requires
 an HQ system administrator to save it; preserve that returned setup-guide
 caveat because project-admin access alone is insufficient.
-Preserve content-specific caveats too: SMS Survey requires Inbound SMS access,
-while Connect requires the `COMMCARE_CONNECT` domain toggle and every resolved
-recipient to be a CommCare mobile worker with an active PersonalID link.
+Preserve content-specific guidance returned by Nova. Every resolved Connect
+recipient must be a CommCare mobile worker with an active PersonalID link.
 Checkbox-style, case-property,
 and custom recipient kinds are singletons; list-backed kinds may use each
 concrete target only once, and every concrete HQ ID is trimmed and nonblank.

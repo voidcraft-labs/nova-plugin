@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 
@@ -42,6 +43,29 @@ GUIDANCE_FILES = (
 )
 AUTONOMOUS_AGENT = ROOT / "agents" / "nova-architect-autonomous.md"
 README = ROOT / "README.md"
+UPLOAD_SKILL = ROOT / "skills" / "upload_to_hq" / "SKILL.md"
+LEGACY_FEATURE_TOOL = "get_app_hq_" + "feature_flags"
+LEGACY_FEATURE_RESPONSE = "feature_flag_" + "requirements"
+PRIVATE_DEPLOYMENT_TOKENS = (
+    "search" + "_claim",
+    "SYNC_SEARCH_CASE" + "_CLAIM",
+    "case_search" + "_advanced",
+    "CASE_SEARCH" + "_ADVANCED",
+    "commcare" + "_connect",
+    "COMMCARE" + "_CONNECT",
+    "mm_case" + "_properties",
+    "MM_CASE" + "_PROPERTIES",
+    "view_form" + "_attachments",
+    "VIEW_FORM" + "_ATTACHMENT",
+    "custom" + "_properties",
+    "CUSTOM" + "_PROPERTIES",
+    "CASE_UPDATES" + "_UCR_FILTERS",
+    "NAMESPACE" + "_DOMAIN",
+    "TAG" + "_FROZEN",
+    "TAG_CONNECT" + "_DIVISION",
+    "TAG" + "_DEPRECATED",
+    "TAG_GA" + "_PATH",
+)
 
 NESTED_MENU_CONTRACT = (
     "parentModuleUuid",
@@ -149,8 +173,8 @@ def main() -> None:
     )
     require(manifest["name"] == "nova", "plugin name must remain nova")
     require(
-        manifest["version"] == "1.29.0",
-        "Plugin source contract requires version 1.29.0",
+        manifest["version"] == "1.30.0",
+        "Plugin source contract requires version 1.30.0",
     )
 
     for path in GUIDANCE_FILES:
@@ -354,6 +378,64 @@ def main() -> None:
     )
     require_prompt_paging_contract(agent_prose, "autonomous agent")
 
+    for path in (*GUIDANCE_FILES, AUTONOMOUS_AGENT):
+        text = path.read_text(encoding="utf-8")
+        require(
+            "check_project_space_compatibility" not in text
+            and "project_space_compatibility" not in text
+            and LEGACY_FEATURE_TOOL not in text
+            and LEGACY_FEATURE_RESPONSE not in text
+            and "project-space" not in text.lower()
+            and "project space" not in text.lower()
+            and "feature flag" not in text.lower()
+            and "domain toggle" not in text.lower(),
+            f"{path.relative_to(ROOT)} must stay focused on app design, not destination compatibility",
+        )
+
+    upload_text = UPLOAD_SKILL.read_text(encoding="utf-8")
+    upload_prose = " ".join(upload_text.split())
+    require(
+        "`check_project_space_compatibility`" in upload_prose
+        and "exact project space the user selected" in upload_prose
+        and "`project_space_compatibility`" in upload_prose,
+        "upload skill omits the explicit-destination compatibility check",
+    )
+    require(
+        '`status: "blocked"' in upload_prose
+        and "`missing` or `unverified`" in upload_prose
+        and "Nova has not uploaded anything" in upload_prose
+        and "do not call `upload_app_to_hq`" in upload_prose,
+        "upload skill does not stop before writes when required support is blocked",
+    )
+    require(
+        "an advisory never blocks the upload" in upload_prose
+        and "performance guidance" in upload_prose
+        and "Success guarantees that `blockers` is empty" in upload_prose,
+        "upload skill misstates non-blocking performance advice",
+    )
+    require(
+        "never show capability `id` values" in upload_prose
+        and "private project-space setting names" in upload_prose
+        and "private setting slugs" in upload_prose,
+        "upload skill does not protect the semantic compatibility vocabulary",
+    )
+    require(
+        "`project_space_incompatible`" in upload_prose
+        and "`hq_app_state_unknown`" in upload_prose,
+        "upload skill omits current pre-write failure handling",
+    )
+    require(
+        "After they choose, run the step 4 compatibility check for that exact space"
+        in upload_prose
+        and "Upload it to **<target>** now?" in upload_prose,
+        "upload recovery or confirmation bypasses the selected destination",
+    )
+    require(
+        LEGACY_FEATURE_TOOL not in upload_text
+        and LEGACY_FEATURE_RESPONSE not in upload_text,
+        "upload skill still depends on the legacy feature-setting contract",
+    )
+
     readme = README.read_text(encoding="utf-8")
     readme_prose = " ".join(readme.split())
     require(
@@ -435,6 +517,37 @@ def main() -> None:
         and "does not claim to recompute SHA-256" in readme_prose
         and "ordinary-text marker" in readme_prose,
         "README omits the complete paged-prompt contract",
+    )
+    require(
+        "`check_project_space_compatibility`" in readme_prose
+        and "exact CommCare HQ project space" in readme_prose
+        and "Missing or unverified required support blocks" in readme_prose
+        and "Performance advice never blocks" in readme_prose,
+        "README omits the semantic project-space compatibility contract",
+    )
+    require(
+        LEGACY_FEATURE_TOOL not in readme
+        and LEGACY_FEATURE_RESPONSE not in readme,
+        "README still publishes the legacy feature-setting contract",
+    )
+    public_guidance = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in (*GUIDANCE_FILES, AUTONOMOUS_AGENT, README, UPLOAD_SKILL)
+    )
+    for private_name in PRIVATE_DEPLOYMENT_TOKENS:
+        require(
+            re.search(
+                rf"(?<![A-Za-z0-9_]){re.escape(private_name)}(?![A-Za-z0-9_])",
+                public_guidance,
+            )
+            is None,
+            f"public plugin guidance exposes private project-space setting: {private_name}",
+        )
+    require(
+        "feature flag" not in public_guidance.lower()
+        and "domain toggle" not in public_guidance.lower()
+        and "requires the toggle" not in public_guidance.lower(),
+        "public plugin guidance exposes private deployment settings",
     )
 
     print("Nova plugin source contract passed")

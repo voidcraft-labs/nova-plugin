@@ -46,6 +46,13 @@ README = ROOT / "README.md"
 UPLOAD_SKILL = ROOT / "skills" / "upload_to_hq" / "SKILL.md"
 LEGACY_FEATURE_TOOL = "get_app_hq_" + "feature_flags"
 LEGACY_FEATURE_RESPONSE = "feature_flag_" + "requirements"
+RETIRED_FEATURE_CONTRACT_NAMES = (
+    LEGACY_FEATURE_TOOL,
+    LEGACY_FEATURE_RESPONSE,
+    "nova_hq_" + "feature_flag_requirements",
+    "nova/" + "featureFlagRequirements",
+    "X-Nova-Hq-" + "Feature-Flag-Report",
+)
 PRIVATE_DEPLOYMENT_TOKENS = (
     "search" + "_claim",
     "SYNC_SEARCH_CASE" + "_CLAIM",
@@ -60,6 +67,9 @@ PRIVATE_DEPLOYMENT_TOKENS = (
     "custom" + "_properties",
     "CUSTOM" + "_PROPERTIES",
     "CASE_UPDATES" + "_UCR_FILTERS",
+    "RUN_AUTO_CASE_UPDATES" + "_ON_SAVE",
+    "cc-index-case-search-" + "results",
+    "cc-sync-after-" + "form",
     "NAMESPACE" + "_DOMAIN",
     "TAG" + "_FROZEN",
     "TAG_CONNECT" + "_DIVISION",
@@ -403,6 +413,8 @@ def main() -> None:
     require(
         '`status: "blocked"' in upload_prose
         and "`missing` or `unverified`" in upload_prose
+        and "Name **<target>** in every blocked notice" in upload_prose
+        and "always include its `docs_url`" in upload_prose
         and "Nova has not uploaded anything" in upload_prose
         and "do not call `upload_app_to_hq`" in upload_prose,
         "upload skill does not stop before writes when required support is blocked",
@@ -542,6 +554,11 @@ def main() -> None:
             )
             is None,
             f"public plugin guidance exposes private project-space setting: {private_name}",
+        )
+    for retired_name in RETIRED_FEATURE_CONTRACT_NAMES:
+        require(
+            retired_name not in public_guidance,
+            f"public plugin guidance retains retired compatibility contract: {retired_name}",
         )
     require(
         "feature flag" not in public_guidance.lower()

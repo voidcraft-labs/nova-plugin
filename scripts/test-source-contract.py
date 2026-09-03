@@ -28,6 +28,32 @@ LOOKUP_TOOLS = (
     "remove_lookup_table",
     "set_field_options_source",
 )
+CASE_SELECTION_TOOLS = ("configure_case_selection",)
+CASE_SELECTION_AUTHORING_CONTRACT = (
+    "Several-case selection belongs to a follow-up or close form",
+    "For a new module that owns its consuming form",
+    '`selection: { kind: "multiple", maximum: N }`',
+    "`N` is 1 through 100",
+    "starts blank instead of borrowing one case's value",
+    "even when the worker selects only one case",
+    "Every nonblank shared answer is saved to every selected case",
+    "blank preserves each case's existing value",
+    "configured starting value or calculation",
+    "Never choose a representative case",
+    "A new `case-list-only` parent whose same-case child owns the consuming form is the exception",
+    "create the parent without selection",
+    "create the child atomically with selection and its consuming form",
+    "then use `configure_case_selection` on the parent after the child exists",
+    "`configure_case_selection` returns an `outcome`",
+    "`applied` and `unchanged` are complete",
+    '`outcome: "needs_changes"` applies no changes',
+    "UUID-located blockers",
+    '`needs: "repair"`',
+    '`needs: "refresh"`',
+    '`needs: "confirmation"`',
+    "confirmation values from an older result",
+    '`outcome: "unavailable"` also applies no changes',
+)
 LOOKUP_WORKFLOW_CONTRACT = (
     "current request explicitly asks",
     "affect every app in the Project",
@@ -177,14 +203,22 @@ def require_nested_menu_construction_contract(prose: str, label: str) -> None:
     )
 
 
+def require_case_selection_authoring_contract(prose: str, label: str) -> None:
+    for phrase in CASE_SELECTION_AUTHORING_CONTRACT:
+        require(
+            phrase in prose,
+            f"{label} omits several-case authoring contract: {phrase}",
+        )
+
+
 def main() -> None:
     manifest = json.loads(
         (ROOT / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8")
     )
     require(manifest["name"] == "nova", "plugin name must remain nova")
     require(
-        manifest["version"] == "1.30.0",
-        "Plugin source contract requires version 1.30.0",
+        manifest["version"] == "1.31.0",
+        "Plugin source contract requires version 1.31.0",
     )
 
     for path in GUIDANCE_FILES:
@@ -197,6 +231,12 @@ def main() -> None:
                     f"{path.relative_to(ROOT)} omits {namespace}{tool}",
                 )
         for tool in LOOKUP_TOOLS:
+            for namespace in ("mcp__plugin_nova_nova__", "mcp__nova__"):
+                require(
+                    f"{namespace}{tool}" in text,
+                    f"{path.relative_to(ROOT)} omits {namespace}{tool}",
+                )
+        for tool in CASE_SELECTION_TOOLS:
             for namespace in ("mcp__plugin_nova_nova__", "mcp__nova__"):
                 require(
                     f"{namespace}{tool}" in text,
@@ -265,6 +305,19 @@ def main() -> None:
         require_nested_menu_construction_contract(
             prose, str(path.relative_to(ROOT))
         )
+        require_case_selection_authoring_contract(
+            prose, str(path.relative_to(ROOT))
+        )
+        if path.relative_to(ROOT) in {
+            Path("skills/build/SKILL.md"),
+            Path("skills/edit/SKILL.md"),
+        }:
+            require(
+                "`confirmedModuleUuids` exactly equal to `requiredConfirmedModuleUuids`"
+                in prose
+                and "`confirmationToken` unchanged" in prose,
+                f"{path.relative_to(ROOT)} omits reviewed several-case confirmation",
+            )
         if path.relative_to(ROOT) in {
             Path("skills/build/SKILL.md"),
             Path("skills/autobuild/SKILL.md"),
@@ -273,11 +326,42 @@ def main() -> None:
                 "parent with its writer form" in prose,
                 f"{path.relative_to(ROOT)} omits the new-parent writer bootstrap",
             )
+            require(
+                "same `create_module` call as its case type, consuming form, fields, and Results columns"
+                in prose
+                and "The module is born complete" in prose,
+                f"{path.relative_to(ROOT)} omits born-valid several-case creation",
+            )
         if path.relative_to(ROOT) == Path("skills/edit/SKILL.md"):
             require(
                 "create or update the writer form on the new or existing parent"
                 in prose,
                 "edit skill omits the existing-parent writer bootstrap",
+            )
+            require(
+                "Pass `selection: null` to return to one case at a time" in prose
+                and "Do not remove and recreate the module" in prose,
+                "edit skill omits in-place several-case selection changes",
+            )
+            require(
+                "changes whether a module opens one case or several, or changes the maximum number of cases"
+                in prose,
+                "edit skill does not load case selection for maximum-only changes",
+            )
+            require(
+                "same `create_module` call as its case type, consuming form, fields, and Results columns"
+                in prose
+                and "The module is born complete" in prose,
+                "edit skill omits born-valid several-case creation",
+            )
+        if path.relative_to(ROOT) == Path("skills/autobuild/SKILL.md"):
+            require(
+                "For `needs: \"confirmation\"`, do not submit confirmation fields"
+                in prose
+                and "An autonomous run has no person reviewing the current linked-module effects"
+                in prose
+                and "later interactive edit" in prose,
+                "autobuild skill may approve linked changes without human review",
             )
         if path.relative_to(ROOT) == Path("skills/build/SKILL.md"):
             require(
@@ -316,6 +400,12 @@ def main() -> None:
                 f"autonomous agent allowlist omits {namespace}{tool}",
             )
     for tool in LOOKUP_TOOLS:
+        for namespace in ("mcp__plugin_nova_nova__", "mcp__nova__"):
+            require(
+                f"{namespace}{tool}" in frontmatter,
+                f"autonomous agent allowlist omits {namespace}{tool}",
+            )
+    for tool in CASE_SELECTION_TOOLS:
         for namespace in ("mcp__plugin_nova_nova__", "mcp__nova__"):
             require(
                 f"{namespace}{tool}" in frontmatter,
@@ -381,6 +471,21 @@ def main() -> None:
         "autonomous agent does not stop on a missing prompt marker",
     )
     require_nested_menu_construction_contract(agent_prose, "autonomous agent")
+    require_case_selection_authoring_contract(agent_prose, "autonomous agent")
+    require(
+        "same `create_module` call as its case type, consuming form, fields, and Results columns"
+        in agent_prose
+        and "The module is born complete" in agent_prose,
+        "autonomous agent omits born-valid several-case creation",
+    )
+    require(
+        "For `needs: \"confirmation\"`, do not submit confirmation fields"
+        in agent_prose
+        and "An autonomous run has no person reviewing the current linked-module effects"
+        in agent_prose
+        and "later interactive edit" in agent_prose,
+        "autonomous agent may approve linked changes without human review",
+    )
     require(
         "create or update the writer form on the new or existing parent"
         in agent_prose,
@@ -472,6 +577,25 @@ def main() -> None:
     require(
         "## Project data tables" in readme,
         "README omits the public Project-data contract",
+    )
+    require(
+        "## Several-case forms" in readme,
+        "README omits the public several-case contract",
+    )
+    require(
+        "choose up to 100 cases" in readme_prose
+        and "follow-up or close form" in readme_prose
+        and "one representative case" in readme_prose
+        and "Each nonblank answer is saved to every selected case" in readme_prose
+        and "leaving it blank preserves each case's existing value" in readme_prose
+        and "starting value or calculation" in readme_prose
+        and "Shared calculations and conditions cannot read an arbitrary case"
+        in readme_prose
+        and "applies nothing until the user accepts" in readme_prose
+        and "the old review applies nothing" in readme_prose
+        and "exact app item to repair" in readme_prose
+        and "Preview creates neither" in readme_prose,
+        "README omits visible several-case behavior or review safety",
     )
     for tool in LOOKUP_TOOLS:
         require(tool in readme, f"README omits lookup tool: {tool}")

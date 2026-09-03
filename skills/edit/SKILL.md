@@ -63,6 +63,14 @@ The Nova mutation tools are deferred — their schemas only appear in your conte
 ToolSearch({query: "+nova get_app search_blueprint add_fields edit_field move_field remove_field update_form update_module move_module", max_results: 9})
 ```
 
+When the edit changes whether a module opens one case or several, or changes
+the maximum number of cases a worker can select, load the dedicated selection
+tool under both supported MCP spellings:
+
+```
+ToolSearch({query: "select:mcp__plugin_nova_nova__configure_case_selection,mcp__nova__configure_case_selection"})
+```
+
 Pre-load the complete worker-information, role, and persona family with a separate deterministic exact selection:
 
 ```
@@ -181,6 +189,40 @@ change that creates the case type shown by its intended child viewer,
 temporarily top-level, create or update the writer form on the new or existing
 parent, then use `move_module` to place the viewer under the parent. This
 temporary bootstrap changes no final menu or case ancestry.
+
+Several-case selection belongs to a follow-up or close form that applies one
+shared answer set to a bounded group. For a new module that owns its consuming
+form, pass
+`selection: { kind: "multiple", maximum: N }`, where `N` is 1 through 100, in
+the same `create_module` call as its case type, consuming form, fields, and
+Results columns. The module is born complete; do not create that shape in
+one-case mode and switch it afterward. A new `case-list-only` parent whose
+same-case child owns the consuming form is the exception: create the parent
+without selection, create the child atomically with selection and its consuming
+form, then use `configure_case_selection` on the parent after the child exists.
+Use `configure_case_selection` for that handoff, to change an existing module
+to several cases, or to change its maximum. Pass
+`selection: null` to return to one case at a time. Do not remove and recreate
+the module to change this behavior.
+
+In a several-case form, a question that saves to the selected case starts
+blank instead of borrowing one case's value, even when the worker selects only
+one case. Every nonblank shared answer is saved to every selected case, while
+blank preserves each case's existing value. A configured starting value or
+calculation is an answer too and is saved to every selected case when it
+produces a value. Never choose a representative case for a shared calculation,
+condition, or other read.
+
+`configure_case_selection` returns an `outcome`. `applied` and `unchanged` are
+complete. An `outcome: "needs_changes"` applies no changes. Repair its
+UUID-located blockers before retrying `needs: "repair"`. For `needs: "refresh"`,
+retry without confirmation fields. For `needs: "confirmation"`, show the
+user the complete linked-module effects, then repeat the same request only
+after they accept, with `confirmedModuleUuids` exactly equal to
+`requiredConfirmedModuleUuids` and the returned `confirmationToken` unchanged.
+Never approve linked changes on the user's behalf or reuse confirmation values
+from an older result. An `outcome: "unavailable"` also applies no changes; use
+its reason to resolve the current app state before trying again.
 
 Reply in the language of the user's latest substantive message. Conversation
 language is independent from the app's source, runtime default, and target

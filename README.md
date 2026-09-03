@@ -92,6 +92,36 @@ forms: every Form has one canonical owning module, with no linked- or
 shadow-form reuse. Separate modules and case-list filters can provide different
 views of the same data.
 
+## Several-case forms
+
+Nova can let a worker choose up to 100 cases before opening one follow-up or
+close form that applies the same answers to the whole group. When the list and
+form share a module, Build and autobuild create its case type, form, fields,
+Results columns, and selection limit together. If a list-only menu hands its
+selection to a child menu, Nova creates the child's complete form before
+turning on several-case selection for the parent. Edit uses
+`configure_case_selection` to change an existing module between one case and a
+bounded group.
+
+A several-case form never borrows starting values from one representative
+case, even when the worker selects only one. A question that saves to the
+selected cases starts blank. Each nonblank answer is saved to every selected
+case, while leaving it blank preserves each case's existing value. A configured
+starting value or calculation is also saved to every selected case when it
+produces an answer. Shared calculations and conditions cannot read an arbitrary
+case from the selection.
+
+Changing selection can also stop a Results tile from staying above forms, and
+the result explains that change. When linked modules must change too, Nova
+returns the complete effect and applies nothing until the user accepts the
+current review. If the app changes before confirmation, the old review applies
+nothing and Nova prepares a fresh one. Issues that need an authoring decision
+apply nothing and name the exact app item to repair.
+
+A file answer changes its case destination only when the submitted app provides
+the stored file or published link. Preview creates neither, so trying that form
+there preserves every selected case's existing file destination.
+
 ## Project data tables
 
 Build and edit skills can use a Project data table when one reusable answer list

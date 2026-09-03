@@ -61,6 +61,13 @@ The Nova mutation tools are deferred — calling one before its schema is loaded
 ToolSearch({query: "select:mcp__plugin_nova_nova__create_app,mcp__plugin_nova_nova__generate_schema,mcp__plugin_nova_nova__create_module,mcp__plugin_nova_nova__move_module,mcp__plugin_nova_nova__update_app,mcp__nova__create_app,mcp__nova__generate_schema,mcp__nova__create_module,mcp__nova__move_module,mcp__nova__update_app"})
 ```
 
+When a build changes an existing module's case selection, load the dedicated
+edit tool under both supported MCP spellings:
+
+```
+ToolSearch({query: "select:mcp__plugin_nova_nova__configure_case_selection,mcp__nova__configure_case_selection"})
+```
+
 When the spec names a target Nova Project — a shared workspace whose members all see the app — resolve it before creating the app. Load `list_projects`:
 
 ```
@@ -187,6 +194,38 @@ module's current menu, pass `null` to make it top-level, or pass an eligible
 root UUID to move it into that submenu. An `after` UUID must be a sibling in
 that effective destination. Use `move_module`, never `update_module`, for menu
 placement, and move or remove children before trying to remove their parent.
+
+Several-case selection belongs to a follow-up or close form that applies one
+shared answer set to a bounded group. For a new module that owns its consuming
+form, pass
+`selection: { kind: "multiple", maximum: N }`, where `N` is 1 through 100, in
+the same `create_module` call as its case type, consuming form, fields, and
+Results columns. The module is born complete; do not create that shape in
+one-case mode and switch it afterward. A new `case-list-only` parent whose
+same-case child owns the consuming form is the exception: create the parent
+without selection, create the child atomically with selection and its consuming
+form, then use `configure_case_selection` on the parent after the child exists.
+Use `configure_case_selection` for that handoff or when an existing module
+needs to change during build refinement.
+
+In a several-case form, a question that saves to the selected case starts
+blank instead of borrowing one case's value, even when the worker selects only
+one case. Every nonblank shared answer is saved to every selected case, while
+blank preserves each case's existing value. A configured starting value or
+calculation is an answer too and is saved to every selected case when it
+produces a value. Never choose a representative case for a shared calculation,
+condition, or other read.
+
+`configure_case_selection` returns an `outcome`. `applied` and `unchanged` are
+complete. An `outcome: "needs_changes"` applies no changes. Repair its
+UUID-located blockers before retrying `needs: "repair"`. For `needs: "refresh"`,
+retry without confirmation fields. For `needs: "confirmation"`, review
+the complete linked-module effects with the user, then repeat the same request
+with `confirmedModuleUuids` exactly equal to `requiredConfirmedModuleUuids`
+and the returned `confirmationToken` unchanged. Never approve linked changes
+on the user's behalf or reuse confirmation values from an older result. An
+`outcome: "unavailable"` also applies no changes; use its reason to resolve the
+current app state before trying again.
 
 Reply in the language of the user's latest substantive message. That
 conversation language is independent from the app's source, runtime default,

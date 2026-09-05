@@ -365,6 +365,51 @@ Read the current sequence with `get_case_operations` before changing it, then `u
 
 Load any additional tools (`create_form`, `remove_form`, `create_module`, `move_module`, `remove_module`, `generate_schema`, `get_module`, `get_form`, `get_field`, `get_lookup_tables`, `set_field_options_source`) on demand if a follow-up step needs them. A new case type enters an existing app through `generate_schema` — record it there before creating a module or fields that use it. To reposition an existing field, use `move_field` — it keeps the field's identity and every reference to it; never remove and re-add a field to move it. To change a field's kind, pass a different `kind` to `edit_field` — it converts in place (same identity/reference guarantee); converting to a select needs an `optionsSource` in the same call, and converting to `hidden` needs a `calculate`. On a case-bound field one call is property-wide — it also converts the property's same-kind writers in the app's other forms and updates its declared type, so never issue per-form convert calls for the same property. Never remove and re-add a field to change its kind either — if the target kind isn't a supported conversion (the error names the valid targets), surface the constraint to the user instead. A form's pages are sections: `set_form_sections` takes the complete desired partition of the form's top-level questions (kept pages by `sectionUuid`, new pages unnamed, an empty list un-pages the form) and plans the minimal change itself, so never build pages one `add_fields` or `move_field` call at a time — a half-sectioned form is refused by construction.
 
+### Deep links
+
+When the request needs a named entry point, load the four authoring tools under
+both supported MCP spellings:
+
+```
+ToolSearch({query: "select:mcp__plugin_nova_nova__get_entry_points,mcp__plugin_nova_nova__add_entry_point,mcp__plugin_nova_nova__update_entry_point,mcp__plugin_nova_nova__remove_entry_point,mcp__nova__get_entry_points,mcp__nova__add_entry_point,mcp__nova__update_entry_point,mcp__nova__remove_entry_point"})
+```
+
+Create the complete destination first, then use `add_entry_point` for an
+eligible module, case list, or form. `target` names its owning `moduleUuid`
+and, for a form, `formUuid`; the target `kind` is `module`, `case-list`, or
+`form`. Read `get_entry_points` before editing and address an existing point
+by its immutable `entryPointUuid`. Its external `id` stays stable when the
+destination is renamed. Omit `id` on creation to let Nova suggest an unused
+one; explicitly changing it can break distributed links. `update_entry_point`
+changes only named patch settings; `remove_entry_point` removes the entry
+point without removing its destination.
+
+Respect display conditions by default. Only a form entry point can set
+`ignoreDisplayConditions: true`; `null` restores condition checks and omission
+keeps the setting on update. This never grants access. A direct search-first
+case-list destination before selection and a no-matches registration form are
+not eligible. Use the returned destination and `requiredSelections`, including
+cardinality and maximum, instead of inventing a navigation path or arbitrary
+session variables. Do not handcraft CommCare wire.
+
+Link generation is a separate MCP-only operation, `get_entry_point_link`.
+Load it only when the user needs a link for an uploaded and released app:
+
+```
+ToolSearch({query: "select:mcp__plugin_nova_nova__get_entry_point_link,mcp__nova__get_entry_point_link"})
+```
+
+Pass `{app_id, server, domain, entry_point_uuid, selections}`; each selection is
+`{module_uuid, case_ids}`. Supply external HQ case IDs, never Nova case row IDs,
+and preserve the selected order. Let Nova derive argument names and encode the
+URL. Each call freshly checks the released build and deployment evidence;
+relay a refusal and its next step instead of constructing a URL yourself.
+The canonical public `/app/v1/` URL is not pinned to that checked build: HQ's
+recipient latest-build policy controls the version subsequently opened.
+Preview tests navigation and bindings against real Project cases; it does not
+simulate HQ claim or sync. Do not open a generated link as a verification probe,
+because opening it can claim cases.
+
 ## 2. Confirm the change (if unsure)
 
 Most edit instructions are specific enough to act on directly. If the instruction is clear, proceed.

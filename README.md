@@ -92,6 +92,26 @@ forms: every Form has one canonical owning module, with no linked- or
 shadow-form reuse. Separate modules and case-list filters can provide different
 views of the same data.
 
+## Deep links
+
+Build and edit skills can explicitly enable named entry points for eligible
+modules, case lists, and forms with `add_entry_point`. Use `get_entry_points`
+to discover their immutable UUIDs, stable external IDs, destinations, and
+required case selections. `update_entry_point` and `remove_entry_point` address
+that UUID. Destination renames preserve the external ID; changing it can break
+links people already have. Form entry points can explicitly bypass display
+conditions, but never authorization. Search-first lists cannot offer a direct
+pre-selection entry point, and no-matches registration forms are not eligible.
+
+The MCP-only `get_entry_point_link` generates a link after checking a complete
+publish, the actual released build, and required resources on the selected HQ
+server and project space. Supply external HQ case IDs, never Nova case row IDs.
+Reverify after every upload, including a partial or failed attempt. Nova cannot
+build or release through HQ's API; complete those steps in HQ first. The public
+`/app/v1/` URL is not pinned to the checked build: HQ's recipient latest-build
+policy controls the version subsequently opened. Preview can test navigation
+and bindings on real Project cases, but does not simulate HQ claim or sync.
+
 ## Several-case forms
 
 Nova can let a worker choose up to 100 cases before opening one follow-up or

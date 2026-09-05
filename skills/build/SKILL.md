@@ -375,6 +375,51 @@ A case-bound field is still the simplest way for a form to save its own answers,
 
 Load any additional read or edit tools (`get_app`, `edit_field`, `move_field`, `remove_field`, etc.) on demand if a follow-up step needs them. To page a form, call `set_form_sections` once with the complete desired partition of its top-level questions; it plans the change itself, and a half-sectioned form is refused by construction, so never assemble pages one `add_fields` or `move_field` call at a time.
 
+### Deep links
+
+When the request needs a named entry point, load the four authoring tools under
+both supported MCP spellings:
+
+```
+ToolSearch({query: "select:mcp__plugin_nova_nova__get_entry_points,mcp__plugin_nova_nova__add_entry_point,mcp__plugin_nova_nova__update_entry_point,mcp__plugin_nova_nova__remove_entry_point,mcp__nova__get_entry_points,mcp__nova__add_entry_point,mcp__nova__update_entry_point,mcp__nova__remove_entry_point"})
+```
+
+Create the complete destination first, then use `add_entry_point` for an
+eligible module, case list, or form. `target` names its owning `moduleUuid`
+and, for a form, `formUuid`; the target `kind` is `module`, `case-list`, or
+`form`. Read `get_entry_points` before editing and address an existing point
+by its immutable `entryPointUuid`. Its external `id` stays stable when the
+destination is renamed. Omit `id` on creation to let Nova suggest an unused
+one; explicitly changing it can break distributed links. `update_entry_point`
+changes only named patch settings; `remove_entry_point` removes the entry
+point without removing its destination.
+
+Respect display conditions by default. Only a form entry point can set
+`ignoreDisplayConditions: true`; `null` restores condition checks and omission
+keeps the setting on update. This never grants access. A direct search-first
+case-list destination before selection and a no-matches registration form are
+not eligible. Use the returned destination and `requiredSelections`, including
+cardinality and maximum, instead of inventing a navigation path or arbitrary
+session variables. Do not handcraft CommCare wire.
+
+Link generation is a separate MCP-only operation, `get_entry_point_link`.
+Load it only when the user needs a link for an uploaded and released app:
+
+```
+ToolSearch({query: "select:mcp__plugin_nova_nova__get_entry_point_link,mcp__nova__get_entry_point_link"})
+```
+
+Pass `{app_id, server, domain, entry_point_uuid, selections}`; each selection is
+`{module_uuid, case_ids}`. Supply external HQ case IDs, never Nova case row IDs,
+and preserve the selected order. Let Nova derive argument names and encode the
+URL. Each call freshly checks the released build and deployment evidence;
+relay a refusal and its next step instead of constructing a URL yourself.
+The canonical public `/app/v1/` URL is not pinned to that checked build: HQ's
+recipient latest-build policy controls the version subsequently opened.
+Preview tests navigation and bindings against real Project cases; it does not
+simulate HQ claim or sync. Do not open a generated link as a verification probe,
+because opening it can claim cases.
+
 ## 2. Resolve ambiguities first
 
 Short or generic specs almost always hide design ambiguities. Don't assume you know what shape the user wants — they often have a specific vision that doesn't match the canonical pattern.

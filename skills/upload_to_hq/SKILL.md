@@ -364,3 +364,33 @@ On a failed upload, surface `error_type` and `message` from the response:
   Levels page. Nova cannot create levels there: HQ's API is read-only for them,
   so `setup_artifact` carries every level the app needs, in the order to make
   them.
+
+## Deep links after publishing
+
+Uploading is not building or releasing. Nova cannot build or release an app
+through the HQ API; follow the returned setup steps and have the user complete
+those actions in HQ before asking Nova for a link.
+
+When a user requests a deep link, load `get_entry_points` and the MCP-only
+`get_entry_point_link` under both supported spellings:
+
+```
+ToolSearch({query: "select:mcp__plugin_nova_nova__get_entry_points,mcp__nova__get_entry_points,mcp__plugin_nova_nova__get_entry_point_link,mcp__nova__get_entry_point_link"})
+```
+
+Read `get_entry_points` to choose the authored immutable `entryPointUuid` and
+its `requiredSelections`. Call `get_entry_point_link` with
+`{app_id, server, domain, entry_point_uuid, selections}`, using the exact
+selected server and project space. Each selection is `{module_uuid, case_ids}`;
+use external HQ case IDs, never Nova case row IDs. Preserve order and supply
+every required selection within its cardinality and maximum.
+
+Call the verifier again after each upload, including a failed or partial
+upload. Never reuse earlier verification as evidence for the new publish.
+Nova checks the actual released build and required deployment resources before
+returning a canonical public `/app/v1/` URL. If it refuses, relay the next step;
+do not handcraft the URL or promise readiness from an upload response.
+The URL is not pinned to the checked build: HQ's recipient latest-build policy
+controls the version subsequently opened. Report the check time and observed
+build from the result, keeping that distinction clear. Do not open the link
+as a verification probe, because opening it can claim cases.

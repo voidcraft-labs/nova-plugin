@@ -28,6 +28,36 @@ LOOKUP_TOOLS = (
     "remove_lookup_table",
     "set_field_options_source",
 )
+ENTRY_POINT_TOOLS = (
+    "get_entry_points",
+    "add_entry_point",
+    "update_entry_point",
+    "remove_entry_point",
+)
+ENTRY_POINT_LINK_TOOL = "get_entry_point_link"
+ENTRY_POINT_AUTHORING_CONTRACT = (
+    "Create the complete destination first",
+    "immutable `entryPointUuid`",
+    "external `id` stays stable",
+    "changing it can break distributed links",
+    "Respect display conditions by default",
+    "Only a form entry point",
+    "`null` restores condition checks",
+    "This never grants access",
+    "no-matches registration form",
+    "`requiredSelections`, including cardinality and maximum",
+    "arbitrary session variables",
+    "Do not handcraft CommCare wire",
+    "separate MCP-only operation",
+    "{app_id, server, domain, entry_point_uuid, selections}",
+    "{module_uuid, case_ids}",
+    "external HQ case IDs, never Nova case row IDs",
+    "Each call freshly checks the released build",
+    "`/app/v1/` URL is not pinned",
+    "recipient latest-build policy",
+    "does not simulate HQ claim or sync",
+    "opening it can claim cases",
+)
 CASE_SELECTION_TOOLS = ("configure_case_selection",)
 CASE_SELECTION_AUTHORING_CONTRACT = (
     "Several-case selection belongs to a follow-up or close form",
@@ -211,18 +241,31 @@ def require_case_selection_authoring_contract(prose: str, label: str) -> None:
         )
 
 
+def require_entry_point_contract(text: str, label: str) -> None:
+    prose = " ".join(text.split())
+    for tool in (*ENTRY_POINT_TOOLS, ENTRY_POINT_LINK_TOOL):
+        for namespace in ("mcp__plugin_nova_nova__", "mcp__nova__"):
+            require(
+                f"{namespace}{tool}" in text,
+                f"{label} omits {namespace}{tool}",
+            )
+    for phrase in ENTRY_POINT_AUTHORING_CONTRACT:
+        require(phrase in prose, f"{label} omits deep-link contract: {phrase}")
+
+
 def main() -> None:
     manifest = json.loads(
         (ROOT / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8")
     )
     require(manifest["name"] == "nova", "plugin name must remain nova")
     require(
-        manifest["version"] == "1.31.0",
-        "Plugin source contract requires version 1.31.0",
+        manifest["version"] == "1.32.0",
+        "Plugin source contract requires version 1.32.0",
     )
 
     for path in GUIDANCE_FILES:
         text = path.read_text(encoding="utf-8")
+        require_entry_point_contract(text, str(path.relative_to(ROOT)))
         prose = " ".join(text.split())
         for tool in LANGUAGE_TOOLS:
             for namespace in ("mcp__plugin_nova_nova__", "mcp__nova__"):
@@ -392,6 +435,15 @@ def main() -> None:
 
     agent_text = AUTONOMOUS_AGENT.read_text(encoding="utf-8")
     agent_prose = " ".join(agent_text.split())
+    require_entry_point_contract(agent_text, "autonomous agent")
+    agent_allowlist = re.search(r"^tools: \[(.+)\]$", agent_text, re.MULTILINE)
+    require(agent_allowlist is not None, "autonomous agent has no tool allowlist")
+    for tool in (*ENTRY_POINT_TOOLS, ENTRY_POINT_LINK_TOOL):
+        for namespace in ("mcp__plugin_nova_nova__", "mcp__nova__"):
+            require(
+                f"{namespace}{tool}" in agent_allowlist.group(1),
+                f"autonomous agent allowlist omits {namespace}{tool}",
+            )
     frontmatter = agent_text.split("---", 2)[1]
     for tool in LANGUAGE_TOOLS:
         for namespace in ("mcp__plugin_nova_nova__", "mcp__nova__"):
@@ -690,6 +742,26 @@ def main() -> None:
         and "requires the toggle" not in public_guidance.lower(),
         "public plugin guidance exposes private deployment settings",
     )
+
+    upload_text = UPLOAD_SKILL.read_text(encoding="utf-8")
+    upload_prose = " ".join(upload_text.split())
+    for namespace in ("mcp__plugin_nova_nova__", "mcp__nova__"):
+        require(
+            f"{namespace}{ENTRY_POINT_LINK_TOOL}" in upload_text,
+            f"upload skill omits {namespace}{ENTRY_POINT_LINK_TOOL}",
+        )
+    for phrase in (
+        "Nova cannot build or release an app through the HQ API",
+        "{app_id, server, domain, entry_point_uuid, selections}",
+        "{module_uuid, case_ids}",
+        "external HQ case IDs, never Nova case row IDs",
+        "Call the verifier again after each upload, including a failed or partial upload",
+        "recipient latest-build policy",
+        "Do not open the link as a verification probe",
+    ):
+        require(phrase in upload_prose, f"upload skill omits deep-link contract: {phrase}")
+    for tool in (*ENTRY_POINT_TOOLS, ENTRY_POINT_LINK_TOOL):
+        require(tool in readme, f"README omits {tool}")
 
     print("Nova plugin source contract passed")
 

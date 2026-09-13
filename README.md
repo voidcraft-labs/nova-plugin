@@ -29,259 +29,31 @@ and [docs.commcare.app/mcp/tools](https://docs.commcare.app/mcp/tools).
 
 ## Skills
 
-- `/nova:build <spec>` — interactive build; subagent asks clarifying questions
+- `/nova:build <spec>` — interactive build in the current conversation
 - `/nova:autobuild <spec>` — autonomous build; subagent commits to defaults
 - `/nova:edit <app_id> "<instruction>"` — edit an existing app
 - `/nova:list` — list your apps
-- `/nova:show <app_id>` — blueprint summary
+- `/nova:show <app_id>` — app overview
 - `/nova:upload_to_hq <app_id or name> [project space]` — deploy to CommCare HQ (names a space to upload straight there, otherwise confirms the target first; checks whether that project space can run the app before sending anything)
 
-## Agent prompt delivery
+## Authoring guidance
 
-Build and edit skills fetch their current operating prompt from Nova before
-changing an app. A prompt that fits arrives as ordinary text ending in
-`NOVA-PROMPT-END`. A larger prompt arrives as JSON pages with kind
-`nova-agent-prompt-page`, `protocol_version: 1`, and
-`offset_unit: unicode-code-points`.
+Build and edit skills fetch current guidance from Nova. The prompt stays small
+because app state and feature references are read separately. Agents write
+wording and expressions as text; Nova resolves references and preserves stable
+identities when content is renamed.
 
-The plugin repeats `get_agent_prompt` with the same `mode` and `app_id` plus
-each `next_cursor`. It requires one unchanged advertised `prompt_sha256` and
-`prompt_length`, adjacent `chunk_start`/`chunk_end` offsets, and a final page
-with `complete: true`, no `next_cursor`, and `chunk_end` equal to
-`prompt_length`. All three offset and length fields are measured in Unicode code
-points, not UTF-16 code units or bytes. It concatenates the exact
-`prompt_chunk` values in order and requires the assembled text to end in
-`NOVA-PROMPT-END` before acting. The agent has no shell or hashing tool, so it
-compares the advertised digest across pages and does not claim to recompute
-SHA-256 or recount arbitrary chunks. Nova's deterministic code-point slicer
-computes and cursor-validates the page offsets. A failed check or a missing
-ordinary-text marker stops the build or edit as a transport failure.
+`get_app` provides an overview. Agents can inspect individual modules, forms,
+fields, languages, organization settings and automations as needed. The
+[tool reference](https://docs.commcare.app/mcp/tools) describes current
+capabilities and input conventions.
 
-## Nested menus
+Version 1.33 requires Nova's current authoring interface. Refresh the plugin
+when that server update is deployed: `get_agent_prompt` now accepts only `mode`
+and returns one text response ending in `NOVA-PROMPT-END`. It no longer carries
+app data or prompt pages.
 
-`/nova:build`, `/nova:autobuild`, and `/nova:edit` can organize modules under
-one submenu tier. A parent menu remains a complete module with its own Form or
-case-list surface, and each child is complete too. A child cannot contain
-another child, and a parent that already has children cannot itself become a
-child.
-
-A top-level parent and child that show different case types require the parent
-to have at least one Form. A case-list-only root is rejected by
-`NESTED_MENU_CROSS_TYPE_ROOT_REQUIRES_FORM` because the two selections cannot
-otherwise be distinguished.
-
-`create_module` accepts an optional `parentModuleUuid`: omit it for a top-level
-module or pass an eligible root module's UUID for a child. `move_module` keeps
-its `after` sibling anchor and adds optional `parentModuleUuid`. Omit the parent
-only to reorder inside the module's current menu, pass `null` to make it
-top-level, or pass an eligible root UUID to move it into that submenu. `after`
-must name a sibling in the resulting destination, or be `null` for first.
-
-Normally the parent is created before its children. When a parent form creates
-the case type shown by its intended child viewer, Nova's
-`MISSING_CHILD_CASE_MODULE` gate requires the reverse bootstrap: create the
-child viewer temporarily top-level, create the parent with its writer form,
-then use `move_module` to place the viewer under the parent. The final app still
-has the same one-tier hierarchy. When editing a new or existing parent instead,
-create the viewer temporarily top-level, create or update the writer form on
-the new or existing parent, then use `move_module` to place the viewer.
-
-Menu parentage controls navigation. It is separate from case parentage, which
-selects related case records at run time. Nested menus also do not duplicate
-forms: every Form has one canonical owning module, with no linked- or
-shadow-form reuse. Separate modules and case-list filters can provide different
-views of the same data.
-
-## Deep links
-
-Build and edit skills can explicitly enable named entry points for eligible
-modules, case lists, and forms with `add_entry_point`. Use `get_entry_points`
-to discover their immutable UUIDs, stable external IDs, destinations, and
-required case selections. `update_entry_point` and `remove_entry_point` address
-that UUID. Destination renames preserve the external ID; changing it can break
-links people already have. Form entry points can explicitly bypass display
-conditions, but never authorization. Search-first lists cannot offer a direct
-pre-selection entry point, and no-matches registration forms are not eligible.
-
-The MCP-only `get_entry_point_link` generates a link after checking a complete
-publish, the actual released build, and required resources on the selected HQ
-server and project space. Supply external HQ case IDs, never Nova case row IDs.
-Reverify after every upload, including a partial or failed attempt. Nova cannot
-build or release through HQ's API; complete those steps in HQ first. The public
-`/app/v1/` URL is not pinned to the checked build: HQ's recipient latest-build
-policy controls the version subsequently opened. Preview can test navigation
-and bindings on real Project cases, but does not simulate HQ claim or sync.
-
-## Several-case forms
-
-Nova can let a worker choose up to 100 cases before opening one follow-up or
-close form that applies the same answers to the whole group. When the list and
-form share a module, Build and autobuild create its case type, form, fields,
-Results columns, and selection limit together. If a list-only menu hands its
-selection to a child menu, Nova creates the child's complete form before
-turning on several-case selection for the parent. Edit uses
-`configure_case_selection` to change an existing module between one case and a
-bounded group.
-
-A several-case form never borrows starting values from one representative
-case, even when the worker selects only one. A question that saves to the
-selected cases starts blank. Each nonblank answer is saved to every selected
-case, while leaving it blank preserves each case's existing value. A configured
-starting value or calculation is also saved to every selected case when it
-produces an answer. Shared calculations and conditions cannot read an arbitrary
-case from the selection.
-
-Changing selection can also stop a Results tile from staying above forms, and
-the result explains that change. When linked modules must change too, Nova
-returns the complete effect and applies nothing until the user accepts the
-current review. If the app changes before confirmation, the old review applies
-nothing and Nova prepares a fresh one. Issues that need an authoring decision
-apply nothing and name the exact app item to repair.
-
-A file answer changes its case destination only when the submitted app provides
-the stored file or published link. Preview creates neither, so trying that form
-there preserves every selected case's existing file destination.
-
-## Project data tables
-
-Build and edit skills can use a Project data table when one reusable answer list
-should keep the same saved values and labels across questions, forms, case
-lists, or apps. A question-specific list stays inline. Tables are
-Project-scoped and live outside any one app blueprint, so a change may affect
-every app in the Project that uses it. A reusable list is a design signal, not
-authority to change shared data: the agent writes Project data only when the
-user's current request explicitly asks for that change, and explains the
-Project-wide effect before the write. Asking to reuse a list authorizes reading
-and referencing an existing table, not changing its underlying data.
-
-The agent reads `get_lookup_tables` through its final page before writing and
-uses `get_lookup_table_rows` when it needs the current values. Names, tags,
-labels, and wire names support human-readable discovery; they are not
-addresses. Table, column, and row UUIDs are the stable identities carried into
-later calls.
-
-`create_lookup_table` creates a complete initial schema and optional rows
-atomically. `update_lookup_table`, `edit_lookup_columns`, `edit_lookup_rows`,
-and `replace_lookup_rows` change an existing table. Every one of those later
-writes carries `expectedTableRevision`; the agent chains the returned table
-revision and re-reads after a conflict. An `edit_lookup_rows` update sends the
-complete desired row because omitted cells become missing values.
-`remove_lookup_table` only removes an unreferenced table.
-
-A new lookup-backed select carries its table and column UUIDs as `optionsSource`
-in the same `create_module`, `create_form`, or `add_fields` call. When converting
-a field to a select, pass that `optionsSource` in the same `edit_field` call.
-`set_field_options_source` is only for changing an
-already-valid select's complete source, so the app never passes through an
-invalid source-less state or copies table rows into temporary inline choices.
-
-## Languages and translations
-
-`/nova:build`, `/nova:autobuild`, and `/nova:edit` understand Nova's app
-language catalog. A language is an identity object
-`{language, script?, region?}`: one individual living ISO 639 language, its
-writing system where the language has more than one, and optional regional
-conventions. Every individual living language can be added, copied, edited,
-previewed, and exported; that does not imply that Nova can automatically
-translate the same language direction. Macrolanguages and two-letter codes
-are rejected with the identifiers to use instead, and each language's name
-and text direction come from the identity itself.
-
-For an existing app, ask `/nova:edit` to add or manage a language. The agent
-first reads the source and runtime-default languages, then adds each target by
-copying a complete existing language so the app is never born with blank
-worker text. It can page through every contextual string, save translations
-you provide, and mark an exact unchanged value reviewed. Copied and
-machine-authored values stay **Needs review** until that explicit review step.
-
-`get_languages` reports automatic translation independently for each exact
-source-to-target direction as **Available**, **Not evaluated**, or **Withheld**.
-Nova's launch policy marks pairs between distinct members of its 57-language
-launch set Available. The plugin has no paid automatic MCP action and does not
-treat a model's general language fluency as permission to bulk-translate through
-the ordinary manual edit tool. It continues with copied content and tells you
-what needs human translation and review.
-
-The agent replies in the language of your latest substantive message. That
-conversation language is independent from the app's source, default, and
-target worker languages.
-
-Agents connected directly over MCP can call
-`check_project_space_compatibility` after the user selects an exact CommCare HQ
-project space. It returns the app capabilities that need destination support,
-why the app uses them, and whether that space is ready. Missing or unverified
-required support blocks a direct upload before anything is sent. Performance
-advice never blocks, and `upload_app_to_hq` repeats the check immediately before
-its first remote write. See
-[Project-space compatibility](https://docs.commcare.app/project-space-compatibility).
-
-Build and edit skills also expose automatic case updates and conditional alerts
-through `get_automations`, `add_automations`, `update_automation`, and
-`remove_automation`. Nova can describe supported matching, but it does not
-execute or install the rule. Builder Preview owns the count; MCP
-`get_automations` and successful add/update results return the regenerated
-manual CommCare HQ setup guidance and locally omitted criteria.
-Schedule definitions use one content type and are constrained to one CommCare
-HQ setup form, including shared timing/content, event ordering, window, day,
-offset, and survey rules.
-The shared schema keeps the forms' criteria distinct: automatic updates admit
-case/parent/host value and date comparisons, one standard closed-parent
-condition, and server-modified age; alerts admit direct-case value comparisons
-and portable regex. Both admit at most one UUID-backed location condition and
-an explicit descendant flag; HQ executes and form-accepts it even though the
-current visible editors hide the picker, so returned guidance names the
-administrator application path. Names and literals
-are canonical nonblank values. Date conditions compare the current date directly
-with the case-property date plus a signed day offset; a datetime contributes its
-written calendar date only, discarding its time and explicit offset. The schema
-also enforces
-recipient compatibility and the rule-trigger requirement for timed restarts.
-Host-scoped references remain representable only while the app has one
-unambiguous canonical extension relation for the automated case type. If an
-advanced case operation can add a second extension, Nova refuses host-scoped
-criteria, update targets, update sources, and message case-property parts rather
-than choose from HQ's unordered extensions. Every host-scoped reference also
-requires exactly one live extension at runtime. Retained extra extension
-indices make the current-match count unavailable when a criterion reads the
-host, and HQ does not define which extension it chooses as the host.
-Automation input uses Nova standard property names and setup guidance projects
-them to HQ's automation model-field names, including `case_type` to `type`;
-`case_id` and `case_type` are read-only. Divergent `status`, datetime
-equality/regex, and every standard scalar in dynamic-only restart/event-time
-slots are refused. After trimming, case-property event-time values must begin
-with `H:MM` or `HH:MM`, and the whole value must parse as a time. Suffixes such
-as AM/PM or seconds are accepted; blank, nonmatching, or unparseable values use
-12:00 PM. Email content chooses one plain-text or rich-text body form. Use rich
-text when the message needs authored HTML; HQ sanitizes and rewraps it, then
-derives its plaintext rather than accepting a separately authored version.
-Message fields use canonical structural `parts`: literal `text` never becomes
-a reference, even when it looks like `{case.foo}`; the guide escapes literal
-braces before HQ's Python Formatter evaluates them. An explicit `case-property`
-part carries scope plus the Nova `(caseType, property)` identity, while a
-`context-property` part explicitly names a case-owner or recipient field. Both
-project to HQ syntax only in the returned guide. A message `case-property` part
-cannot use `owner`, `host`, or `last_modified_by` in any scope because HQ's
-formatter context shadows same-named custom case data; rename the custom
-property, or use `context-property` for the actual case-owner or recipient
-context. Registered custom handler IDs and setup-only
-instructions must be exact, trimmed, and nonblank; never invent placeholder
-values. Setup-only criteria distinguish UCR filters from registered custom
-criteria, and the returned guide explains any project-space or administrator
-setup. HQ requires a system administrator to save an alert that uses a
-registered custom recipient or custom content handler; a project administrator
-cannot complete that returned setup guide alone.
-Preserve content-specific guidance returned by Nova. Every resolved Connect
-recipient must be a CommCare mobile worker with an active PersonalID link.
-Checkbox-style, case-property, and custom recipient kinds are singletons;
-list-backed kinds may use a concrete target only once, and concrete HQ IDs must
-be trimmed and nonblank. Descendant controls
-require a location recipient, level filters require descendants, and each
-worker-property filter key may appear once. Its values are structural exact
-literals or custom case-property references: empty and whitespace literals are
-meaningful, while brace-wrapped literals are refused because HQ executes them
-as lookups. Every triggering case must contain each referenced property because
-HQ raises when its direct lookup is missing. Filters apply only to contacts
-that resolve to user accounts, so the schema refuses filters with case,
-parent/child-case, case-email, case-group, or registered custom recipients;
-those contacts bypass the filter or have an unknown runtime type. Multiple keys/values or exact blank/whitespace values use HQ's JSON
-mode, whose new-alert system-administrator prerequisite appears in the guide.
+Preview uses real Project case data. A saved app is distinct from a tested
+workflow or a deployment to CommCare HQ. Publishing checks the selected target;
+automations return setup guidance for the remaining work in HQ. Shared Project
+data changes and publishing follow the scope authorized by the user's request.

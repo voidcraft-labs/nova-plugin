@@ -48,10 +48,13 @@ fields, languages, organization settings and automations as needed. The
 [tool reference](https://docs.commcare.app/mcp/tools) describes current
 capabilities and input conventions.
 
-Version 1.33 requires Nova's current authoring interface. Refresh the plugin
-when that server update is deployed: `get_agent_prompt` now accepts only `mode`
-and returns one text response ending in `NOVA-PROMPT-END`. It no longer carries
-app data or prompt pages.
+Version 1.34 requires Nova's isolated app-test tools: `start_app_test`,
+`continue_app_test` and `read_app_test`. Release this plugin only after the
+compatible Nova server is live. Agents can observe entry, saved Preview identities,
+selection, answers, isolated submission effects and the next task, with recorded
+steps available in Builder. Tests pin the saved app revision and never write their
+fictional records or place assignments into the user's live data. They do not
+establish native-device, offline-sync or external-service behavior.
 
 Preview uses real Project case data. A saved app is distinct from a tested
 workflow or a deployment to CommCare HQ. Publishing checks the selected target;

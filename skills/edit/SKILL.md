@@ -23,7 +23,12 @@ consider saved data, dependent rules, translations and navigation when making
 a change. Ask about consequential intent; read existing state yourself.
 
 `get_authoring_guide` explains features and expressions when you need more
-context. Successful changes are already saved. Use their results to decide
+context. Use the isolated app-test tools to exercise affected journeys from app
+entry through submission and the next task. Read retained observations with
+their revision and identity; changed behavior needs a fresh test of the saved
+app. Keep fictional records and assignments inside the test session.
+
+Successful changes are already saved. Use their results to decide
 what remains, then report what changed and any material limitation. Describe
 verification and deployment only when you have evidence for them. Publishing
 and changes to shared Project data need authorization from the user's request.

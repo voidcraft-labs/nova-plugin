@@ -28,7 +28,14 @@ refine their wording, layout and behavior. Read `get_authoring_guide` when a
 feature or expression needs explanation; the server owns the current syntax
 and domain guidance.
 
-Finish with the app's name and ID, what it does, and any work or decision still
+Exercise representative journeys from app entry with `start_app_test`,
+`continue_app_test` and `read_app_test`. Use the app's saved Preview identities
+and fictional records or place assignments within the isolated test session.
+Observe selection, answers, submission effects and the next task. Investigate
+failed behavior through ordinary authoring tools, then check affected journeys.
+These observations do not establish native-device or deployment behavior.
+
+Finish with the app's name and ID, how to try it, and any work or decision still
 needed. Distinguish saved structure, behavior you observed, and deployment to
 CommCare HQ. Publishing and changes to shared Project data need authorization
 from the user's request.

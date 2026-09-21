@@ -48,7 +48,11 @@ fields, languages, organization settings and automations as needed. The
 [tool reference](https://docs.commcare.app/mcp/tools) describes current
 capabilities and input conventions.
 
-Version 1.34 requires Nova's isolated app-test tools: `start_app_test`,
+Version 1.35 also requires `remove_case_properties` for unused-definition cleanup.
+The server refuses properties still used by the app or holding saved or set-aside
+values; cleanup never deletes collected data.
+
+The plugin requires Nova's isolated app-test tools: `start_app_test`,
 `continue_app_test` and `read_app_test`. Release this plugin only after the
 compatible Nova server is live. Agents can observe entry, saved Preview identities,
 selection, answers, isolated submission effects and the next task, with recorded

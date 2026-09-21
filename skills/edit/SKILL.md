@@ -21,6 +21,9 @@ Read `get_app` for app `$0`, then inspect the modules, forms or fields relevant
 to the request. Discover those tools as needed. Preserve unrelated work, and
 consider saved data, dependent rules, translations and navigation when making
 a change. Ask about consequential intent; read existing state yourself.
+For unused custom property definitions, `remove_case_properties` checks app
+references and saved values. If saved values prevent removal, preserve them and
+report the need for a reviewed migration.
 
 `get_authoring_guide` explains features and expressions when you need more
 context. Use the isolated app-test tools to exercise affected journeys from app

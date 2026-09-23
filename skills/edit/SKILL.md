@@ -27,7 +27,8 @@ report the need for a reviewed migration.
 
 `get_authoring_guide` explains features and expressions when you need more
 context. Use the isolated app-test tools to exercise affected journeys from app
-entry through submission and the next task. Read retained observations with
+entry through record details, submission and the next task. Follow the offered
+Continue action from Details, and use Back when inspecting the return path. Read retained observations with
 their revision and identity; omit `testId` from `read_app_test` to discover recent
 tests when needed. Changed behavior needs a fresh test of the saved app. Keep fictional records and assignments inside the test session.
 

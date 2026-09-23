@@ -56,6 +56,9 @@ Version 1.36 requires recent-test discovery: call `read_app_test` without a
 `testId` to find saved observations by purpose, revision and full identity, then
 read the selected test.
 
+Version 1.37 requires record Details and the `continue`/`back` app-test actions.
+Details observations use the same labels and formatted values as Preview.
+
 The plugin requires Nova's isolated app-test tools: `start_app_test`,
 `continue_app_test` and `read_app_test`. Release this plugin only after the
 compatible Nova server is live. Agents can observe entry, saved Preview identities,

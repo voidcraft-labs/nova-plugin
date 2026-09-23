@@ -31,6 +31,8 @@ Work through the request to a useful app. Exercise representative worker journey
 from app entry with the isolated app-test tools. Use saved Preview identities for
 roles, and keep fictional records and place assignments inside the test session.
 Follow observed submissions into the next task and inspect the resulting records.
+Find retained observations by calling `read_app_test` without `testId`, then read
+the returned identity for the relevant purpose and revision.
 A form evaluation alone does not test submission, navigation or a native device.
 
 Report the app's name and ID,

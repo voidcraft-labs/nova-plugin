@@ -28,8 +28,8 @@ report the need for a reviewed migration.
 `get_authoring_guide` explains features and expressions when you need more
 context. Use the isolated app-test tools to exercise affected journeys from app
 entry through submission and the next task. Read retained observations with
-their revision and identity; changed behavior needs a fresh test of the saved
-app. Keep fictional records and assignments inside the test session.
+their revision and identity; omit `testId` from `read_app_test` to discover recent
+tests when needed. Changed behavior needs a fresh test of the saved app. Keep fictional records and assignments inside the test session.
 
 Successful changes are already saved. Use their results to decide
 what remains, then report what changed and any material limitation. Describe

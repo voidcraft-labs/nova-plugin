@@ -52,6 +52,10 @@ Version 1.35 also requires `remove_case_properties` for unused-definition cleanu
 The server refuses properties still used by the app or holding saved or set-aside
 values; cleanup never deletes collected data.
 
+Version 1.36 requires recent-test discovery: call `read_app_test` without a
+`testId` to find saved observations by purpose, revision and full identity, then
+read the selected test.
+
 The plugin requires Nova's isolated app-test tools: `start_app_test`,
 `continue_app_test` and `read_app_test`. Release this plugin only after the
 compatible Nova server is live. Agents can observe entry, saved Preview identities,

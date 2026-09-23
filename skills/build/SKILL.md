@@ -31,7 +31,8 @@ and domain guidance.
 Exercise representative journeys from app entry with `start_app_test`,
 `continue_app_test` and `read_app_test`. Use the app's saved Preview identities
 and fictional records or place assignments within the isolated test session.
-Observe selection, answers, submission effects and the next task. Investigate
+Observe selection, record details, answers, submission effects and the next task.
+Follow the offered Continue action from Details; use Back to revisit the prior screen. Investigate
 failed behavior through ordinary authoring tools, then check affected journeys.
 To reuse recorded evidence, call `read_app_test` without `testId` to list recent
 tests, then read the returned identity for the relevant purpose and revision.

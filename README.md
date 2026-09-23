@@ -59,6 +59,10 @@ read the selected test.
 Version 1.37 requires record Details and the `continue`/`back` app-test actions.
 Details observations use the same labels and formatted values as Preview.
 
+Version 1.38 requires the form `section` app-test action and current-page
+observations. Forward page turns validate answers; revisiting a page retains
+its existing rows and answers.
+
 The plugin requires Nova's isolated app-test tools: `start_app_test`,
 `continue_app_test` and `read_app_test`. Release this plugin only after the
 compatible Nova server is live. Agents can observe entry, saved Preview identities,

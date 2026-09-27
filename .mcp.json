@@ -2,8 +2,7 @@
   "mcpServers": {
     "nova": {
       "type": "http",
-      "url": "https://mcp.commcare.app/mcp",
-      "headersHelper": "if [ -n \"$NOVA_API_KEY\" ]; then printf '{\"Authorization\":\"Bearer %s\"}' \"$NOVA_API_KEY\"; else printf '{}'; fi"
+      "url": "https://mcp.commcare.app/mcp"
     }
   }
 }

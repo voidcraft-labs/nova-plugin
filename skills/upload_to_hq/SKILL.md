@@ -43,6 +43,10 @@ The app reference may be an app id or a name search phrase.
     shared workspaces.
   - Exactly one → use it.
 
+Upload uses the saved app. If this conversation has pending authoring work,
+finish and save the intended changes before publishing, or explicitly explain
+that the pending changes are excluded. Upload never saves private work for you.
+
 Throughout, refer to the app as **"App Name" (app_id)** so the user sees both
 the friendly name and the stable id.
 
@@ -301,8 +305,6 @@ Success guarantees that `blockers` is empty. Do not list available required
 capabilities. Relay only `advisories` whose state is `missing` or `unverified`,
 using each friendly `title` and `message`; these are performance guidance and
 the upload has already succeeded. Link to the report's `docs_url` when useful.
-Ignore any legacy compatibility projection that may coexist in a rollout
-response.
 
 On a failed upload, surface `error_type` and `message` from the response:
 

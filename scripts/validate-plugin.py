@@ -55,7 +55,10 @@ def main() -> None:
         server["url"] == "https://mcp.commcare.app/mcp",
         "The shipping plugin must pin Nova's production endpoint",
     )
-    require(bool(server.get("headersHelper")), "Nova API-key authentication is missing")
+    require(
+        not server.get("headersHelper") and not server.get("headers"),
+        "The bundled server must leave authentication to Claude Code's OAuth flow",
+    )
     print("Plugin packaging and entrypoints passed.")
 
 

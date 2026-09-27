@@ -9,14 +9,29 @@ Build, edit, compile, and deploy CommCare apps from Claude Code.
 
 ## Authenticate
 
-**Browser sign-in (default).** The first time you use a `/nova:*` skill, Claude Code
-opens your browser to sign in at commcare.app. Tokens are stored in Claude Code's
-credential store; revoke via `/mcp` → nova → Clear authentication.
+**Browser sign-in (default).** Run `/mcp`, select Nova, and follow the browser
+sign-in at commcare.app. Tokens are stored in Claude Code's credential store;
+revoke via `/mcp` → nova → Clear authentication.
 
 **API key.** For unattended runs, set `NOVA_API_KEY` in your environment to a
-key from [commcare.app/settings](https://commcare.app/settings). The plugin
-picks it up automatically — no browser, no extra setup. Unset it to fall back
-to browser sign-in.
+key from [commcare.app/settings](https://commcare.app/settings), then add a
+personal server configuration once:
+
+```bash
+claude mcp add-json --scope user nova '{"type":"http","url":"https://mcp.commcare.app/mcp","headers":{"Authorization":"Bearer ${NOVA_API_KEY}"}}'
+```
+
+The single quotes keep the key out of the saved configuration. Claude Code
+reads it from the environment at startup. Keep it set for each unattended run.
+Claude Code uses this personal connection in place of the plugin's connection
+to the same endpoint; the plugin's skills and autonomous agent support both.
+To return to browser sign-in, run `claude mcp remove --scope user nova` and
+restart Claude Code. Unsetting the key alone leaves the API-key connection
+configured and does not enable browser sign-in.
+
+This uses Claude Code's [server precedence](https://code.claude.com/docs/en/mcp#scope-hierarchy-and-precedence)
+and [environment expansion](https://code.claude.com/docs/en/mcp#environment-variable-expansion-in-mcpjson).
+Plugin-provided header helpers cannot read credential environment variables.
 
 **Working as a team?** Don't share one account. Create a shared Nova Project and
 invite your teammates — everyone signs in as themselves, and every member sees

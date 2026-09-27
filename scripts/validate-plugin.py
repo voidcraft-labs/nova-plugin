@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate plugin entrypoints and autonomous tool access without matching prose."""
+"""Validate shipping plugin artifacts, not a copy of the server tool contract."""
 from __future__ import annotations
 
 import json
@@ -40,17 +40,23 @@ def main() -> None:
     target = f"Agent(nova:{agent['name']})"
     require(skills["autobuild"].get("allowed-tools") == target, "Autobuild must invoke its declared architect")
     require(int(agent["maxTurns"]) > 0, "Autonomous runs need a finite turn limit")
-    raw_tools = agent["tools"]
-    require(raw_tools.startswith("[") and raw_tools.endswith("]"), "Expected an explicit tool allowlist")
-    tools = [tool.strip() for tool in raw_tools[1:-1].split(",")]
-    require(len(tools) == len(set(tools)), "Duplicate autonomous tool permission")
-    namespaces = ("mcp__plugin_nova_nova__", "mcp__nova__")
-    require("ToolSearch" in tools, "The architect cannot discover tools")
-    require(all(tool == "ToolSearch" or tool.startswith(namespaces) for tool in tools), "The autonomous architect may access only Nova and tool discovery")
-    available = [{tool.removeprefix(prefix) for tool in tools if tool.startswith(prefix)} for prefix in namespaces]
-    require(available[0] == available[1], "Installed and standalone Nova namespaces must expose the same capabilities")
-    require({"get_agent_prompt", "get_authoring_guide", "create_app", "get_app"} <= available[0], "The architect cannot reach current guidance and app state")
-    print("Plugin entrypoints and autonomous tool permissions passed.")
+    tools = json.loads(agent["tools"])
+    require(
+        isinstance(tools, list)
+        and len(tools) == 3
+        and set(tools) == {"ToolSearch", "mcp__plugin_nova_nova__*", "mcp__nova__*"},
+        "The architect needs tool discovery and both Nova server patterns only",
+    )
+    mcp = json.loads((ROOT / ".mcp.json").read_text())
+    require(set(mcp["mcpServers"]) == {"nova"}, "The plugin must connect only Nova")
+    server = mcp["mcpServers"]["nova"]
+    require(server["type"] == "http", "Nova uses the HTTP MCP transport")
+    require(
+        server["url"] == "https://mcp.commcare.app/mcp",
+        "The shipping plugin must pin Nova's production endpoint",
+    )
+    require(bool(server.get("headersHelper")), "Nova API-key authentication is missing")
+    print("Plugin packaging and entrypoints passed.")
 
 
 if __name__ == "__main__":

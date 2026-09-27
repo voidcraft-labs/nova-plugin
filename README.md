@@ -48,30 +48,55 @@ fields, languages, organization settings and automations as needed. The
 [tool reference](https://docs.commcare.app/mcp/tools) describes current
 capabilities and input conventions.
 
-Version 1.35 also requires `remove_case_properties` for unused-definition cleanup.
-The server refuses properties still used by the app or holding saved or set-aside
-values; cleanup never deletes collected data.
+Agents build and edit in durable private work. `begin_work` opens it;
+`list_work` and `get_work` find and inspect retained work. Focused operations
+create modules, forms and questions separately. `save_work` publishes a complete,
+valid checkpoint; a refused save leaves private work available for correction.
+`discard_work` abandons pending changes while keeping the work ID and earlier
+saved checkpoints. A concurrent saved change requires an explicit restart from
+current state, never an automatic merge.
 
-Version 1.36 requires recent-test discovery: call `read_app_test` without a
-`testId` to find saved observations by purpose, revision and full identity, then
-read the selected test.
+A work ID remains stable across checkpoints. Each write has its own request ID,
+reused only for an exact retry. Save and discard bind the opaque revision of the
+candidate being acted on. Shared reads select the candidate with `work_id` or
+the saved app with `app_id`; `get_app` always reads saved state.
 
-Version 1.37 requires record Details and the `continue`/`back` app-test actions.
-Details observations use the same labels and formatted values as Preview.
+The isolated app-test tools exercise saved checkpoints, with steps available in
+Builder. Starting and continuing a journey accepts either saved app or work
+identity and requires a request ID; reading retained observations does not. Tests never write their fictional records or place assignments into
+the user's live data. They do not establish native-device, offline-sync or
+external-service behavior. Preview uses real Project case data.
 
-Version 1.38 requires the form `section` app-test action and current-page
-observations. Forward page turns validate answers; revisiting a page retains
-its existing rows and answers.
+A saved app is distinct from a tested workflow or a deployment to CommCare HQ.
+Publishing checks the selected target with `check_project_space_compatibility`;
+automations return setup guidance for the remaining work in HQ. Project data,
+real organization records, media service writes and deployment are separate
+immediate effects. Discarding app work cannot undo them; these actions follow
+the scope authorized by the user's request.
 
-The plugin requires Nova's isolated app-test tools: `start_app_test`,
-`continue_app_test` and `read_app_test`. Release this plugin only after the
-compatible Nova server is live. Agents can observe entry, saved Preview identities,
-selection, answers, isolated submission effects and the next task, with recorded
-steps available in Builder. Tests pin the saved app revision and never write their
-fictional records or place assignments into the user's live data. They do not
-establish native-device, offline-sync or external-service behavior.
+## Updating to version 2
 
-Preview uses real Project case data. A saved app is distinct from a tested
-workflow or a deployment to CommCare HQ. Publishing checks the selected target;
-automations return setup guidance for the remaining work in HQ. Shared Project
-data changes and publishing follow the scope authorized by the user's request.
+Version 2 requires the workspace-first Nova server from
+[CommCare Nova PR #693](https://github.com/voidcraft-labs/commcare-nova/pull/693).
+Release this plugin only after that server is deployed and verified. Earlier
+plugin versions must be updated for the new authoring contract; there is no
+legacy immediate-save or nested-creation mode.
+
+Update the plugin, then restart Claude Code:
+
+    /plugin update nova
+
+Use current Claude Code with MCP server-pattern support for subagent tools.
+The autonomous agent discovers Nova's live tool surface through the two
+supported server namespaces. Its permissions contain no copied tool inventory.
+
+## Development checks
+
+    python3 scripts/validate-plugin.py
+
+This checks plugin packaging, entrypoint links, Nova-only autonomous tool access
+and the production MCP endpoint. It does not duplicate Nova's tool schemas or
+require an artificial version increment. Runtime authoring and schema behavior
+are verified in Nova. Test a paired change against the local Nova server using
+Nova's dev launcher with `--nova-plugin` pointing to this plugin worktree; the
+generated `.dev-plugin` overlay is not authored source.

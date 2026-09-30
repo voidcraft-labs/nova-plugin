@@ -64,3 +64,18 @@ or changes to shared Project data need authorization from the user's request.
 Project data, real organization records, media service writes and deployment
 have separate immediate effects; discarding app work does not undo them.
 If unfinished, include the work ID and what remains instead of claiming delivery.
+
+
+Journey tests accept a configured worker language at start and a `language`
+action without clearing answers or repeat rows. Use the structured language
+identity (for example `{language: "spa"}`); observations report platform fallback.
+Results and Details include formatted values and route context. Up to eight
+ordered `actions: [{action, expect?}, ...]` can share one continuation request.
+Each retains its own step; a refusal or unmet screen/module/form/submission
+expectation stops with the completed prefix. An already completed submission
+stays completed. Exact retries replay the entire response. The 200-action bound
+still counts individual actions.
+Read evidence by following `nextCursor` with its fixed `throughStep`. Large
+steps offer explicit `inspect` paths and offsets so all retained evidence remains
+accessible. Case transaction evidence does not establish serialized submission,
+retained report, native-device or deployment behavior.

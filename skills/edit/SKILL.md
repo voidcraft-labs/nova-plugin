@@ -32,6 +32,14 @@ Shared edits use that ID and a unique `request_id`; shared reads choose exactly
 one of `work_id` for the candidate or `app_id` for the saved app.
 `get_authoring_guide` explains features and expressions against that target.
 
+Form and case-operation reads, plus operation edit feedback, include
+`operationSemantics`: record targets, condition/value dependencies and possible
+read/write overlaps. Read it when changing competing actions. Native conditions
+can retain an open form's initialized record view even after another form updates
+the same local store; they do not compare-and-set current records at submission.
+Preview transaction reads have a separate provenance. An empty overlap inventory
+does not establish concurrency protection.
+
 Refine the app privately, using focused operations rather than nested creation.
 Save complete progress with `save_work`: pass `work_id`, a unique `request_id`,
 and `expected_revision` copied from the latest candidate result. Validation

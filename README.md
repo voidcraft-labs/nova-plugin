@@ -86,8 +86,16 @@ external-service behavior. A submission receipt records case effects and replay
 identity; it does not archive a standalone report's answers. Preview uses real
 Project case data.
 
-Version 2.1's retained-session and page-action guidance requires the paired Nova
-server release. Publish this plugin after that server is live and verified.
+Form and case-operation feedback includes record targets and condition/value
+dependencies. Native conditions can retain an open form's initialized record
+view after another local form changes the record; they do not compare-and-set
+current records at submission. Preview transaction reads have separate
+provenance. A read/write overlap inventory describes dependencies, not concurrency
+protection.
+
+Version 2.1's retained-session, page-action and operation-feedback guidance
+requires the paired Nova server release. Publish this plugin after that server
+is live and verified.
 
 A saved app is distinct from a tested workflow or a deployment to CommCare HQ.
 Publishing checks the selected target with `check_project_space_compatibility`;

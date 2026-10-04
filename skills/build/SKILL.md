@@ -34,6 +34,14 @@ select exactly one of `work_id` for private state or `app_id` for saved state.
 Read `get_authoring_guide` against that target when a feature needs explanation; the server owns the current syntax
 and domain guidance.
 
+Form and case-operation reads, plus operation edit feedback, include
+`operationSemantics`: record targets, condition/value dependencies and possible
+read/write overlaps. Read it when designing competing actions. Native conditions
+can retain an open form's initialized record view even after another form updates
+the same local store; they do not compare-and-set current records at submission.
+Preview transaction reads have a separate provenance. An empty overlap inventory
+does not establish concurrency protection.
+
 Save meaningful progress with `save_work`, using `work_id`, a unique
 `request_id`, and `expected_revision` copied from the latest candidate result.
 Staged edits are not saved. If validation refuses, correct the private candidate

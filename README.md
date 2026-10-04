@@ -77,10 +77,17 @@ candidate being acted on. Shared reads select the candidate with `work_id` or
 the saved app with `app_id`; `get_app` always reads saved state.
 
 The isolated app-test tools exercise saved checkpoints, with steps available in
-Builder. Starting and continuing a journey accepts either saved app or work
+Builder. A test can retain up to four named worker sessions sharing disposable
+records while keeping separate open forms, identities and languages. Page
+navigation and task routes have distinct actions. Starting and continuing a journey accepts either saved app or work
 identity and requires a request ID; reading retained observations does not. Tests never write their fictional records or place assignments into
 the user's live data. They do not establish native-device, offline-sync or
-external-service behavior. Preview uses real Project case data.
+external-service behavior. A submission receipt records case effects and replay
+identity; it does not archive a standalone report's answers. Preview uses real
+Project case data.
+
+Version 2.1's retained-session and page-action guidance requires the paired Nova
+server release. Publish this plugin after that server is live and verified.
 
 A saved app is distinct from a tested workflow or a deployment to CommCare HQ.
 Publishing checks the selected target with `check_project_space_compatibility`;

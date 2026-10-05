@@ -40,6 +40,11 @@ the same local store; they do not compare-and-set current records at submission.
 Preview transaction reads have a separate provenance. An empty overlap inventory
 does not establish concurrency protection.
 
+Read the resolved navigation returned by form tools. After a submission,
+Previous resumes the preceding task or record selection. That can be the same
+form's record picker or a menu for the retained records. Ordinary Back follows
+visited screens. Check the actual next task after submitting.
+
 Refine the app privately, using focused operations rather than nested creation.
 Save complete progress with `save_work`: pass `work_id`, a unique `request_id`,
 and `expected_revision` copied from the latest candidate result. Validation
@@ -55,7 +60,8 @@ entry through record details, submission and the next task. Start and continue
 calls take a unique `request_id` and exactly one of `app_id` or `work_id`; both
 target the saved checkpoint, never the pending candidate. `read_app_test` is a
 shared read and takes no request ID. Follow the offered
-`routeContinue` action from Details, and use `routeBack` for the prior screen.
+`routeContinue` action from Details. `routeBack` follows visited screens; it
+does not predict the next task after a submission.
 Use `pageNext`, `pagePrevious` and the offered `section` action to check form
 pages and forward validation.
 Read retained observations with their revision and identity; omit `testId` from `read_app_test` to discover recent

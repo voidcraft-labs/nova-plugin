@@ -93,7 +93,11 @@ current records at submission. Preview transaction reads have separate
 provenance. A read/write overlap inventory describes dependencies, not concurrency
 protection.
 
-Version 2.1's retained-session, page-action and operation-feedback guidance
+Form tools also report the resolved navigation after a submission. Previous
+resumes the preceding task or record selection; ordinary Back follows visited
+screens. Test the next task after a save instead of inferring it from Back.
+
+Version 2.1's retained-session, page-action, operation-feedback and navigation guidance
 requires the paired Nova server release. Publish this plugin after that server
 is live and verified.
 

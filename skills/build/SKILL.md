@@ -42,6 +42,11 @@ the same local store; they do not compare-and-set current records at submission.
 Preview transaction reads have a separate provenance. An empty overlap inventory
 does not establish concurrency protection.
 
+Read the resolved navigation returned by form tools. After a submission,
+Previous resumes the preceding task or record selection. That can be the same
+form's record picker or a menu for the retained records. Ordinary Back follows
+visited screens. Check the actual next task after submitting.
+
 Save meaningful progress with `save_work`, using `work_id`, a unique
 `request_id`, and `expected_revision` copied from the latest candidate result.
 Staged edits are not saved. If validation refuses, correct the private candidate

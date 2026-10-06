@@ -51,7 +51,8 @@ exactly one of `app_id` or `work_id`; either target exercises the saved app,
 never pending edits. `read_app_test` is a shared read and takes no request ID.
 Use saved Preview identities for
 roles, and keep fictional records and place assignments inside the test session.
-Use offered sections to inspect form pages and their forward validation.
+Use `pageNext`, `pagePrevious` and offered sections to inspect form pages and
+their forward validation; `routeContinue` and `routeBack` follow task routes.
 Follow observed submissions into the next task and inspect the resulting records.
 Find retained observations by calling `read_app_test` without `testId`, then read
 the returned identity for the relevant purpose and revision.
@@ -69,8 +70,14 @@ If unfinished, include the work ID and what remains instead of claiming delivery
 Journey tests accept a configured worker language at start and a `language`
 action without clearing answers or repeat rows. Use the structured language
 identity (for example `{language: "spa"}`); observations report platform fallback.
-Results and Details include formatted values and route context. Up to eight
-ordered `actions: [{action, expect?}, ...]` can share one continuation request.
+Results and Details include formatted values and route context. Up to four
+named sessions can share disposable records while retaining separate identities,
+languages, navigation and open forms. Use `sessions` at start and `sessionId` on
+each addressed continuation item; omission selects the primary session. For
+competing actions, retain one form while another session submits, then return to
+the retained form. Sync refreshes that session's record catalog and keeps its
+open-form entry snapshot. Observations identify retained and current-store reads.
+Up to eight ordered `actions: [{sessionId?, action, expect?}, ...]` can share one continuation request.
 Each retains its own step; a refusal or unmet screen/module/form/submission
 expectation stops with the completed prefix. An already completed submission
 stays completed. Exact retries replay the entire response. The 200-action bound

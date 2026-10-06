@@ -34,6 +34,19 @@ select exactly one of `work_id` for private state or `app_id` for saved state.
 Read `get_authoring_guide` against that target when a feature needs explanation; the server owns the current syntax
 and domain guidance.
 
+Form and case-operation reads, plus operation edit feedback, include
+`operationSemantics`: record targets, condition/value dependencies and possible
+read/write overlaps. Read it when designing competing actions. Native conditions
+can retain an open form's initialized record view even after another form updates
+the same local store; they do not compare-and-set current records at submission.
+Preview transaction reads have a separate provenance. An empty overlap inventory
+does not establish concurrency protection.
+
+Read the resolved navigation returned by form tools. After a submission,
+Previous resumes the preceding task or record selection. That can be the same
+form's record picker or a menu for the retained records. Ordinary Back follows
+visited screens. Check the actual next task after submitting.
+
 Save meaningful progress with `save_work`, using `work_id`, a unique
 `request_id`, and `expected_revision` copied from the latest candidate result.
 Staged edits are not saved. If validation refuses, correct the private candidate
@@ -50,9 +63,11 @@ checkpoint. `read_app_test` is a shared read and takes no request ID.
 Use the app's saved Preview identities
 and fictional records or place assignments within the isolated test session.
 Observe selection, record details, answers, submission effects and the next task.
-Follow the offered Continue action from Details; use Back to revisit the prior
-screen. In a sectioned form, use the offered `section` action and answer the
-current page before advancing. Investigate failed behavior through ordinary authoring tools, then check affected journeys.
+Follow the offered `routeContinue` action from Details; `routeBack` revisits the
+prior screen. In a sectioned form, `pageNext` and `pagePrevious` turn form pages;
+the offered `section` action also selects a page. Answer the current page before
+advancing. Investigate failed behavior through ordinary authoring tools, then
+check affected journeys.
 To reuse recorded evidence, call `read_app_test` without `testId` to list recent
 tests, then read the returned identity for the relevant purpose and revision.
 These observations do not establish native-device or deployment behavior.
@@ -68,8 +83,14 @@ them. If work remains private, include its work ID and what still needs attentio
 Journey tests accept a configured worker language at start and a `language`
 action without clearing answers or repeat rows. Use the structured language
 identity (for example `{language: "spa"}`); observations report platform fallback.
-Results and Details include formatted values and route context. Up to eight
-ordered `actions: [{action, expect?}, ...]` can share one continuation request.
+Results and Details include formatted values and route context. Up to four
+named sessions can share disposable records while retaining separate identities,
+languages, navigation and open forms. Use `sessions` at start and `sessionId` on
+each addressed continuation item; omission selects the primary session. For
+competing actions, retain one form while another session submits, then return to
+the retained form. Sync refreshes that session's record catalog and keeps its
+open-form entry snapshot. Observations identify retained and current-store reads.
+Up to eight ordered `actions: [{sessionId?, action, expect?}, ...]` can share one continuation request.
 Each retains its own step; a refusal or unmet screen/module/form/submission
 expectation stops with the completed prefix. An already completed submission
 stays completed. Exact retries replay the entire response. The 200-action bound

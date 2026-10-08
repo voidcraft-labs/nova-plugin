@@ -67,6 +67,15 @@ have separate immediate effects; discarding app work does not undo them.
 If unfinished, include the work ID and what remains instead of claiming delivery.
 
 
+Case-backed choices offer records already available to the worker and save exact
+record IDs. Filters do not fetch additional cases or broaden access: an
+all-clinics selector still shows only the clinics restored for that worker. Use
+the shared-data authoring guide for the current source and filter syntax, and
+test a representative worker with the intended location assignments. For batch
+checklists, test selection, deselection, Back, and submission; inspect which
+existing records changed. A retained repeating row alone does not prove final
+checklist membership.
+
 Journey tests accept a configured worker language at start and a `language`
 action without clearing answers or repeat rows. Use the structured language
 identity (for example `{language: "spa"}`); observations report platform fallback.

@@ -76,6 +76,18 @@ reused only for an exact retry. Save and discard bind the opaque revision of the
 candidate being acted on. Shared reads select the candidate with `work_id` or
 the saved app with `app_id`; `get_app` always reads saved state.
 
+Agents can discover documents already in the selected Project with
+`list_media_assets` and read them with `read_source`, without another attachment
+or upload. Search covers the library before pagination. Reads return bounded
+pages of Nova's prepared requirements extract with one revision per read sequence.
+Later reads can use newer prepared extracts. These reads do not promise lossless
+original-file access. MCP reports documents needing preparation without
+starting model calls. Prepare or retry those documents in Nova's Library.
+
+Version 2.1.2's document discovery and reading guidance requires the paired Nova
+server release. Keep this plugin release unmerged until that server is live and
+verified.
+
 The isolated app-test tools exercise saved checkpoints, with steps available in
 Builder. A test can retain up to four named worker sessions sharing disposable
 records while keeping separate open forms, identities and languages. Page

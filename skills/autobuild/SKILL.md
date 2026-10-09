@@ -7,7 +7,9 @@ allowed-tools: Agent(nova:nova-architect-autonomous)
 
 Start `nova:nova-architect-autonomous` with the Agent tool. Pass the user's
 request, `$ARGUMENTS`, and relevant context or constraints from this conversation.
-The architect owns its Nova startup and completes the build without questions.
+Include any named Project and library-document references. The architect owns
+its Nova startup and completes the build without questions; unavailable source
+preparation remains a reported limitation.
 
 Wait for its result, then report the app's name and ID, the resulting workflow,
 and any remaining limitations or setup. Preserve its distinction between

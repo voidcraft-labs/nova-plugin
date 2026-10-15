@@ -84,7 +84,7 @@ Later reads can use newer prepared extracts. These reads do not promise lossless
 original-file access. MCP reports documents needing preparation without
 starting model calls. Prepare or retry those documents in Nova's Library.
 
-Version 2.1.2's document discovery and reading guidance requires the paired Nova
+Version 2.1.3's authoring-input recovery guidance requires the paired Nova
 server release. Keep this plugin release unmerged until that server is live and
 verified.
 
@@ -146,3 +146,9 @@ require an artificial version increment. Runtime authoring and schema behavior
 are verified in Nova. Test a paired change against the local Nova server using
 Nova's dev launcher with `--nova-plugin` pointing to this plugin worktree; the
 generated `.dev-plugin` overlay is not authored source.
+
+Work IDs must be copied from Nova responses. Correctable journey setup errors
+identify the input to repair. A rejected submission retains completed preceding
+actions and returns the stopping step; a changed request needs a new request ID.
+After editing and saving an app calculation, start a fresh test so it exercises
+the new saved checkpoint.

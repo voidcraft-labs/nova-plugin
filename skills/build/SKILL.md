@@ -122,3 +122,11 @@ Read evidence by following `nextCursor` with its fixed `throughStep`. Large
 steps offer explicit `inspect` paths and offsets so all retained evidence remains
 accessible. Case transaction evidence does not establish serialized submission,
 retained report, native-device or deployment behavior.
+
+Use work identities returned by Nova; never substitute a label or placeholder.
+If a journey refuses test records or other input, correct the reported input and
+use a new request ID. A failed submission can retain the completed actions before
+it: read the returned step and stop reason before continuing. Correct answers in
+that test when appropriate. If the saved app's calculation needs a change, edit
+and save it, then start a fresh test of the new checkpoint. Replaying an unchanged
+request returns its original result.

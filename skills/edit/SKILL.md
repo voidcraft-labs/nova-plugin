@@ -19,7 +19,8 @@ Nova authoring.
 
 Read `get_app` for app `$0`, then inspect the modules, forms or fields relevant
 to the request. If `notices` is non-empty, tell the user what each one says
-before anything else, and offer `dismiss_app_notice` once they have read it.
+before anything else, and once they have read them, offer `dismiss_app_notice`
+with each notice's `id` as `notice_id`.
 Discover those tools as needed. Preserve unrelated work, and
 consider saved data, dependent rules, translations and navigation when making
 a change. Ask about consequential intent; read existing state yourself.

@@ -113,6 +113,11 @@ Version 2.1's retained-session, page-action, operation-feedback and navigation g
 requires the paired Nova server release. Publish this plugin after that server
 is live and verified.
 
+Version 2.2's publishing guidance (confirmations about the project space, the
+CommCare version stop, changes made in CommCare HQ, and app notices) requires
+the paired Nova server release. Publish this plugin after that server is live
+and verified.
+
 A saved app is distinct from a tested workflow or a deployment to CommCare HQ.
 Publishing checks the selected target with `check_project_space_compatibility`;
 automations return setup guidance for the remaining work in HQ. Project data,

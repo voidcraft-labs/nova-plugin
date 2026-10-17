@@ -18,7 +18,10 @@ incomplete delivery before changing the app. Use the returned guidance for
 Nova authoring.
 
 Read `get_app` for app `$0`, then inspect the modules, forms or fields relevant
-to the request. Discover those tools as needed. Preserve unrelated work, and
+to the request. If `notices` is non-empty, tell the user what each one says
+before anything else, and once they have read them, offer `dismiss_app_notice`
+with each notice's `id` as `notice_id`.
+Discover those tools as needed. Preserve unrelated work, and
 consider saved data, dependent rules, translations and navigation when making
 a change. Ask about consequential intent; read existing state yourself.
 For unused custom property definitions, `remove_case_properties` checks app

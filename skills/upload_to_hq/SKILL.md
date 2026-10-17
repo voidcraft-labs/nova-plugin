@@ -50,6 +50,13 @@ that the pending changes are excluded. Upload never saves private work for you.
 Throughout, refer to the app as **"App Name" (app_id)** so the user sees both
 the friendly name and the stable id.
 
+Read `get_app` for the resolved app if you have not already. If its `notices`
+is non-empty, tell the user what each one says before the upload, and wait for
+their answer before calling `upload_app_to_hq`, even when they named the
+project space: a notice can say what the next upload there does. Once they
+have read them, offer `dismiss_app_notice` with each notice's `id` as
+`notice_id`.
+
 ## 3. Resolve the exact HQ target
 
 Call Nova's `get_hq_connection` (no arguments) before the compatibility check
@@ -87,14 +94,32 @@ Read `project_space_compatibility` literally:
   the confirmation noisy by listing available capabilities. If an `advisories`
   entry is `missing` or `unverified`, relay its friendly `title` and `message`
   as performance guidance; an advisory never blocks the upload.
-- `status: "blocked"` means at least one required capability in `blockers` is
-  `missing` or `unverified`. Use each blocker's friendly `label`, `description`,
-  and app-specific `reasons` where they help. Preserve the distinction: missing
-  support is confirmed unavailable, while unverified support could not be
-  confirmed. Name **<target>** in every blocked notice, relay the report's
-  `message` and next step, and always include its `docs_url`; include
-  `support_email` when useful. Say that Nova has not uploaded anything, then
-  stop. Do not ask for upload confirmation and do not call `upload_app_to_hq`.
+- `status: "blocked"` — check the report's top-level `issue` first. When it is
+  `not-a-member`, the connected account is no longer a member of that project
+  space, so nothing about it can be checked and no upload there can go ahead,
+  whatever the app needs; `blockers` can then be empty. Relay its `message`:
+  publishing there continues once that account joins the project space again or
+  a different account is connected in Settings. Otherwise at least one required
+  capability in `blockers` is `missing` or `unverified`. Use each blocker's
+  friendly `label`, `description`, and app-specific `reasons` where they help.
+  Preserve the distinction: missing support is confirmed unavailable, while
+  unverified support could not be confirmed. Name **<target>** in every blocked
+  notice, relay the report's `message` and next step, and always include its
+  `docs_url`; include `support_email` when useful. Say that Nova has not
+  uploaded anything, then stop. Do not ask for upload confirmation and do not
+  call `upload_app_to_hq`.
+
+Beside `project_space_compatibility`, at the top level of the same response,
+the check says what the upload will ask the user to confirm, because no API
+key can read it: `plan_features` (each plan feature the app needs, with
+its `plans`, `reasons`, `consequence` and `state`), `flat_location_fixture`
+(whether the project space still sends its location list, for an app that
+reads places) and `connect_forwarder` (whether it forwards forms to CommCare
+Connect, for a Connect app). Each is `null` when the app needs none. Relay
+them with their reasons before the upload, so the user knows what they will be
+asked. One already on record reads `confirmed` with who confirmed it, and the
+upload does not ask about it again; one that reads `needs_confirmation` will
+be asked.
 
 Speak in app capabilities, not implementation settings: never show capability
 `id` values, private project-space setting names, or private setting slugs. This
@@ -113,7 +138,10 @@ blocked report, not permission to continue.
 
 For an explicit target, step 1's named space already confirmed the upload. Show
 any non-blocking performance guidance from step 4 and proceed without asking
-again.
+again, unless the app has notices (step 2) or step 4 reported an item that
+reads `needs_confirmation`. Then relay them, stop, and wait for the user's
+answer before calling `upload_app_to_hq`. Send the items they confirmed with
+the upload, as `hq_confirmation_needed` below describes.
 
 Otherwise, confirm now. Substitute real values and include any non-blocking
 performance guidance from step 4 in the same message; `<host>` is `server_url`
@@ -136,10 +164,12 @@ target explicitly.
 ## 6. Report
 
 On success the response has
-`{hq_app_id, hq_app_action, url, warnings, project_space_compatibility,
-deployment_state, deployment, setup_artifact}`. `hq_app_action` says whether
-this upload created the HQ app or updated it in place — say which happened
-(e.g. "Uploaded" for `created`, "Updated" for `updated`).
+`{hq_app_id, hq_app_action, app_preview_note, web_apps_enabled, logo_step, url,
+warnings, project_space_compatibility, deployment_state, deployment,
+setup_artifact}`. `hq_app_action` says whether this upload created the HQ app
+or updated it in place — say which happened (e.g. "Uploaded" for `created`,
+"Updated" for `updated`). `created` also covers an upload that filled the
+empty app an earlier, unfinished first upload left there.
 
 **Uploading is not releasing.** `deployment_state` is `uploaded`, which means
 the app is on the project space and is NOT yet something workers can open.
@@ -155,6 +185,18 @@ then give the two remaining steps:
 > Tell me when you have, and I'll check it.
 >
 > (If `warnings` is non-empty, list them below as a short bullet list.)
+
+Then the parts of the answer that are there only sometimes:
+
+- `app_preview_note` — when it is not `null`, relay it as it is. It says what
+  this upload means for App Preview in CommCare HQ.
+- `logo_step` — the app's logo, which an upload never sends. When its
+  `changed` is true, relay its `instructions`: the one step in CommCare HQ
+  that puts the logo in apps built there, and the plan that step needs.
+- `web_apps_enabled` — when it is `false`, the app is not in Web Apps on that
+  project space. Say so, and relay the setup artifact's Web Apps note: once the
+  project space's plan includes Web Apps, a person turns it on in the app's
+  settings in CommCare HQ. Nova never changes that setting.
 
 If `deployment.left_behind` is non-empty, name each entry. Each one is
 `{kind, hq_id, hq_name}`:
@@ -188,11 +230,13 @@ upload. A `succeeded` status means its lookup tables and places are on the
 project space and match the Nova copy; `null` means the app has neither and
 nothing was sent.
 
-A `retry_from: "resources"` does not mean nothing was created. Places go up in
-groups, one organization level at a time, and each group either lands whole or
-not at all, so the levels before the one that stopped really are on the project
-space. Lookup tables are the same: CommCare HQ writes a large table in more than
-one piece, so a table can be there even though the upload was refused. Nova
+A `retry_from: "resources"` does not mean nothing was created. On a first
+upload that got past making the app, the app itself is already there, empty,
+and the next upload fills it. Places go up in groups, one organization level at
+a time, and each group either lands whole or not at all, so the levels before
+the one that stopped really are on the project space. Lookup tables are the
+same: CommCare HQ writes a large table in more than one piece, so a table can
+be there even though the upload was refused. Nova
 records whatever it can account for, and uploading again carries on from there
 rather than making a second copy. Never tell the user nothing was created; if
 you need to be exact, call `get_deployment` and report what the record says.
@@ -223,7 +267,23 @@ the deployment as failed, refused, or moved. Nothing changed on the project
 space, and the last state you saw is still the true one.
 
 `get_deployment` reports every project space an app has been published to
-without contacting CommCare HQ.
+without contacting CommCare HQ. Each deployment it lists, and the answer from
+`refresh_deployment`, can carry two flags worth saying plainly:
+
+- `hq_app_empty: true` — the app on the project space is the empty one a first
+  upload makes before it sends the content. The next upload fills that same
+  app.
+- `hq_app_gone: true` — CommCare HQ reported the app gone. The next upload
+  makes a new one there.
+
+The same answers, and an upload's `deployment`, carry `confirmations`: what a
+person confirmed about that project space for this app (a plan feature, the
+flat location list, a Connect forwarder), each with its `label` and who
+confirmed it when. An upload there does not ask about them again. If the user
+says the project space no longer has one, for example after a plan change,
+which Nova cannot see, call `withdraw_deployment_confirmation` with
+`{app_id, domain, kind, subject}` (`subject` only for a `plan-feature`), and
+the next upload there asks again.
 
 ## 7. Offer to make workers
 
@@ -264,7 +324,9 @@ The refusals. None created an account except where said otherwise, and one
 of them (`hq_rejected_worker`) is not always a proven non-event, so relay each
 `message` rather than reading the tag alone:
 
-- `app_not_published` — upload the app to that space first.
+- `app_not_published` — upload the app to that space first. This also covers
+  a space that holds only the empty app an unfinished first upload made, or an
+  app CommCare HQ reported gone: the next upload there fills or replaces it.
 - `workers_not_provisionable` — the `message` names each reason: a username
   CommCare HQ will not take, worker information the app marks required that a
   persona has no value for, a persona standing in a place the project space
@@ -326,18 +388,26 @@ On a failed upload, surface `error_type` and `message` from the response:
   the user separately asks to change the app itself.
 - `hq_app_state_unknown` — Nova could not safely read the current HQ app before
   updating it, so it left the existing app unchanged. Relay the `message` and
-  try again only when the user asks.
+  try again only when the user asks. On a first upload it also covers an app
+  Nova has just made and then could not read, right after making it or after
+  sending the tables and places, or whose CommCare version it could not read.
+  In each of those cases the app is then on the project space, empty, and the
+  `message` says so. It also covers a linked app in CommCare HQ, which Nova
+  never updates; the `message` gives the ways forward.
 - `remote_app_missing` — the HQ app this one updates in place was deleted on
   HQ. Nothing was changed; relay the `message` (uploading again creates a
   fresh app there).
 - `hq_upload_failed` — an HQ-side rejection; show the `message` so the user
   knows what HQ rejected. This also covers CommCare HQ refusing the app's
-  Project data tables or its places, which happens before the app is sent, so
-  the app never went up either. When a deployment comes back with
-  `retry_from: "resources"`, say that retrying picks up at the data rather than
-  starting over. CommCare HQ's own sentence about a refused place arrives in
-  `message` and names the place by its site code — relay it as it is, because it
-  is more specific than anything you could infer.
+  Project data tables or its places. That happens before the app's content is
+  sent. On a first upload Nova has by then made the app on the project space,
+  empty, so `get_deployment` reports `hq_app_empty: true` and the next upload
+  fills that same app. When a deployment comes back with
+  `retry_from: "resources"`, say that retrying picks up where it stopped rather
+  than starting over: at the app on a first upload that never made it,
+  otherwise at the data. CommCare HQ's own sentence about a refused place
+  arrives in `message` and names the place by its site code — relay it as it
+  is, because it is more specific than anything you could infer.
 - `hq_resource_conflict` — the project space already holds a lookup table or a
   place under a name one of the app's uses, and Nova will not overwrite
   something it did not put there. **Nothing was uploaded**, not even the app.
@@ -350,22 +420,79 @@ On a failed upload, surface `error_type` and `message` from the response:
   them, and never send them all because they said yes to one. Retry with
   `adopt_resources` set to the `nova_resource_id` of each one they approved;
   Nova then takes over exactly those and keeps them in step with the Nova copy.
+  When a lookup table is among them, the response also carries
+  `adoption_note`, what taking a table over does to it; relay it before asking.
   If they approve none, stop: the upload cannot proceed while a clash stands.
   The other way out differs by kind — a table's export tag can be renamed in
   Project data, while a place's site code is set once, so sending a place of
   their own beside it means removing it in Organization and adding it again
   with a code that is free.
 - `hq_organization_mismatch` — the app's places do not fit the organization
-  levels the project space has, so CommCare HQ would refuse them. **Nothing was
-  uploaded.** The `message` names each place and what is wrong with it: a level
-  the project space does not have, a place whose level is not directly below its
-  parent's, two places under one parent sharing a name, or a place Nova moved to
-  the top of the organization that HQ still holds under a parent. No approval
+  levels the project space has, so CommCare HQ would refuse them. **Nothing
+  was sent**: the check before the upload finds this. (If Nova stops itself
+  during the upload because it cannot tell where a place belongs, the
+  `message` says so. A place CommCare HQ itself refuses during the upload
+  arrives as `hq_upload_failed`, above.) The `message` names each place and
+  what is wrong with it: a level the project space does not have, a place
+  whose level is not directly below its parent's, two places under one parent
+  sharing a name, or a place Nova moved to the top of the organization that HQ
+  still holds under a parent. No approval
   resolves this one — do not offer `adopt_resources`. Relay the message, and say
   the fix is either in Nova's Organization or on CommCare HQ's Organization
   Levels page. Nova cannot create levels there: HQ's API is read-only for them,
   so `setup_artifact` carries every level the app needs, in the order to make
   them.
+- `hq_confirmation_needed` — the app needs something of the project space that
+  no API key can read, and nobody has confirmed it there. Nothing was sent. The
+  response carries `confirmations_needed`, one entry per item as
+  `{kind, subject, label, plans, consequence, reasons}`: a plan feature, the
+  flat location list, or, for a Connect app, the Connect forwarder. Ask the user
+  about each one **one at a time**, with its `label`, `plans`, `consequence` and
+  `reasons`, whether the project space has it, exactly as for
+  `adopt_resources`. Never decide for them, and never send them all because
+  they said yes to one. Retry with `confirm_plan_features` (the `subject` of
+  each plan feature they confirmed), `confirm_flat_location_fixture: true` or
+  `confirm_connect_forwarder: true`, naming only what they confirmed. A
+  confirmation is kept once an upload goes ahead, so resend it with each
+  attempt until one does.
+- `hq_app_version_below_floor` — the app on CommCare HQ is set to a CommCare
+  version below the one Nova's apps need. Its content was not sent. Relay the
+  `message` and its `url`, the app's page in CommCare HQ, where the user raises
+  the CommCare version in the app's settings. Then upload again. On a first
+  upload, Nova has made the app there, empty, and read the CommCare version
+  CommCare HQ gave it; the next upload fills that same app once the version
+  is raised at `url`.
+- `hq_changed` — the app, a lookup table or a place this app publishes changed
+  in CommCare HQ since Nova last published it. Nothing was sent. The response
+  carries `remote_changes`, one entry per change as `{kind, nova_resource_id,
+  name, hq_name, parts, note, observed_digest, baseline_known}`. List every
+  entry with its `name`, `hq_name` and `parts` (when `baseline_known` is false,
+  Nova could not tell what changed; say so), relay its `note` when there is one,
+  and ask **one at a time** whether to write over it. Retry with
+  `discard_hq_changes` carrying `{kind, nova_resource_id, observed_digest}` for
+  each entry the user confirmed. Never send a digest the user did not see. When
+  `remote_changes` is empty, the change landed in CommCare HQ while this upload
+  was sending the Project data: the tables and places are already on the project
+  space and the app's content was not sent. On a first upload the empty app was
+  made too. Relay the `message`, send no `discard_hq_changes`, and upload again.
+  That upload normally comes back as an ordinary `hq_changed` with
+  `remote_changes` listed, because the change is still in CommCare HQ, and that
+  one is confirmed the usual way.
+- `hq_table_content_unsupported` — a lookup table in CommCare HQ under one of
+  this app's export tags holds what Nova cannot keep yet, so publishing over it
+  would remove it. Nothing was sent, and neither `adopt_resources` nor
+  `discard_hq_changes` resolves it. The `message` names each table; the way out
+  it gives is a new export tag in Project data, so Nova publishes its own table
+  and leaves that one alone.
+
+These refusals can come one after another: answering one lets the next check
+run, so a retry after `hq_confirmation_needed`, `hq_resource_conflict` or
+`hq_changed` can stop at another of them. A refused attempt stores nothing the
+user answered. On every retry, resend every answer they have already given in
+this upload, `confirm_plan_features`, `confirm_flat_location_fixture`,
+`confirm_connect_forwarder`, `adopt_resources` and `discard_hq_changes`
+together, plus the new one, until an upload goes ahead. Never ask the user the
+same question twice.
 
 ## Deep links after publishing
 

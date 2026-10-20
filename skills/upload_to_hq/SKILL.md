@@ -205,8 +205,8 @@ If `deployment.left_behind` is non-empty, name each entry. Each one is
   made before Nova updated apps in place, or an app replaced after the mapped
   one was deleted on HQ). `hq_id` is how the user finds it there.
 - `kind: "lookup-table"` — a table still sitting on the project space that the
-  app no longer points at, either because its tag was renamed or because the
-  last question reading it is gone. `hq_name` is the tag it still carries
+  app no longer points at, either because its tag was renamed or because
+  nothing in the app reads it any more. `hq_name` is the tag it still carries
   there, which is what the user will see on HQ's Lookup Tables screen. A table
   that was simply republished never appears here.
 - `kind: "location"` — a place still on the project space that the app

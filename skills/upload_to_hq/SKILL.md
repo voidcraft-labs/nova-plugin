@@ -112,19 +112,25 @@ Read `project_space_compatibility` literally:
 Beside `project_space_compatibility`, at the top level of the same response,
 the check says what the upload will ask the user to confirm, because no API
 key can read it: `plan_features` (each plan feature the app needs, with
-its `plans`, `reasons`, `consequence` and `state`), `flat_location_fixture`
-(whether the project space still sends its location list, for an app that
-reads places) and `connect_forwarder` (whether it forwards forms to CommCare
-Connect, for a Connect app). Each is `null` when the app needs none. Relay
-them with their reasons before the upload, so the user knows what they will be
-asked. One already on record reads `confirmed` with who confirmed it, and the
-upload does not ask about it again; one that reads `needs_confirmation` will
-be asked.
+its `plans`, `reasons`, `consequence`, `where_missing` and `state`),
+`flat_location_fixture` (whether the project space still sends its location
+list, for an app that reads places), `connect_forwarder` (whether it forwards
+forms to CommCare Connect, for a Connect app) and `form_entry_sync_off`
+(whether Sync Cases On Form Entry is turned off, for an app that runs on
+Android and has a form that works on a case chosen in a menu with Search).
+Each is `null` when the app needs none, and each carries its own
+`where_missing` beside `consequence`: what the user can do where the project
+space lacks it, or `null` when Nova has nothing to offer. Relay them with their
+reasons before the upload, so the user knows what they will be asked. One
+already on record reads `confirmed` with who confirmed it, and the upload does
+not ask about it again; one that reads `needs_confirmation` will be asked.
 
 Speak in app capabilities, not implementation settings: never show capability
 `id` values, private project-space setting names, or private setting slugs. This
 is a destination check, never a Nova authoring constraint. Do not remove, undo,
-avoid, or revise requested app functionality because of it. The upload repeats
+avoid, or revise requested app functionality because of it. When the project
+space's plan lacks Web Apps, the user may choose to set the app to Android
+only; never make that change unless they ask for it. The upload repeats
 the check immediately before its first remote write, so an earlier ready result
 cannot become stale permission to publish.
 
@@ -164,10 +170,10 @@ target explicitly.
 ## 6. Report
 
 On success the response has
-`{hq_app_id, hq_app_action, app_preview_note, web_apps_enabled, logo_step, url,
-warnings, project_space_compatibility, deployment_state, deployment,
-setup_artifact}`. `hq_app_action` says whether this upload created the HQ app
-or updated it in place — say which happened (e.g. "Uploaded" for `created`,
+`{hq_app_id, hq_app_action, app_preview_note, logo_step, url, warnings,
+project_space_compatibility, deployment_state, deployment, setup_artifact}`.
+`hq_app_action` says whether this upload created the HQ app or updated it in
+place — say which happened (e.g. "Uploaded" for `created`,
 "Updated" for `updated`). `created` also covers an upload that filled the
 empty app an earlier, unfinished first upload left there.
 
@@ -193,10 +199,6 @@ Then the parts of the answer that are there only sometimes:
 - `logo_step` — the app's logo, which an upload never sends. When its
   `changed` is true, relay its `instructions`: the one step in CommCare HQ
   that puts the logo in apps built there, and the plan that step needs.
-- `web_apps_enabled` — when it is `false`, the app is not in Web Apps on that
-  project space. Say so, and relay the setup artifact's Web Apps note: once the
-  project space's plan includes Web Apps, a person turns it on in the app's
-  settings in CommCare HQ. Nova never changes that setting.
 
 If `deployment.left_behind` is non-empty, name each entry. Each one is
 `{kind, hq_id, hq_name}`:
@@ -278,12 +280,12 @@ without contacting CommCare HQ. Each deployment it lists, and the answer from
 
 The same answers, and an upload's `deployment`, carry `confirmations`: what a
 person confirmed about that project space for this app (a plan feature, the
-flat location list, a Connect forwarder), each with its `label` and who
-confirmed it when. An upload there does not ask about them again. If the user
-says the project space no longer has one, for example after a plan change,
-which Nova cannot see, call `withdraw_deployment_confirmation` with
-`{app_id, domain, kind, subject}` (`subject` only for a `plan-feature`), and
-the next upload there asks again.
+flat location list, a Connect forwarder, Sync Cases On Form Entry turned off),
+each with its `label` and who confirmed it when. An upload there does not ask
+about them again. If the user says the project space no longer has one, for
+example after a plan change, which Nova cannot see, call
+`withdraw_deployment_confirmation` with `{app_id, domain, kind, subject}`
+(`subject` only for a `plan-feature`), and the next upload there asks again.
 
 ## 7. Offer to make workers
 
@@ -445,16 +447,37 @@ On a failed upload, surface `error_type` and `message` from the response:
 - `hq_confirmation_needed` — the app needs something of the project space that
   no API key can read, and nobody has confirmed it there. Nothing was sent. The
   response carries `confirmations_needed`, one entry per item as
-  `{kind, subject, label, plans, consequence, reasons}`: a plan feature, the
-  flat location list, or, for a Connect app, the Connect forwarder. Ask the user
-  about each one **one at a time**, with its `label`, `plans`, `consequence` and
+  `{kind, subject, label, plans, consequence, reasons, where_missing}`: a plan
+  feature, the flat location list, for a Connect app the Connect forwarder, or,
+  for an app that runs on Android and has a form that works on a case chosen in
+  a menu with Search, Sync Cases On Form Entry turned off. Ask the user about
+  each one **one at a time**, with its `label`, `plans`, `consequence` and
   `reasons`, whether the project space has it, exactly as for
-  `adopt_resources`. Never decide for them, and never send them all because
-  they said yes to one. Retry with `confirm_plan_features` (the `subject` of
-  each plan feature they confirmed), `confirm_flat_location_fixture: true` or
-  `confirm_connect_forwarder: true`, naming only what they confirmed. A
-  confirmation is kept once an upload goes ahead, so resend it with each
-  attempt until one does.
+  `adopt_resources`. When the user says the project space lacks what was asked
+  and `where_missing` is not `null`, relay it: it says what they can do there.
+  Never decide for them, and never send them all because they said yes to one.
+  Retry with `confirm_plan_features` (the `subject` of each plan feature they
+  confirmed), `confirm_flat_location_fixture: true`,
+  `confirm_connect_forwarder: true` or `confirm_form_entry_sync_off: true`,
+  naming only what they confirmed. A confirmation is kept once an upload goes
+  ahead, so resend it with each attempt until one does.
+- `hq_web_apps_change` — the app's Web App setting on CommCare HQ differs
+  from where the app runs, and every upload writes that setting from where the
+  app runs. Nothing was sent. Relay the `message`: it says which way the setting
+  would change, whether someone changed it in CommCare HQ, and what workers
+  there meet. `web_apps_change` carries `{from, to, changed_in_hq}`. Ask the
+  user whether to change it, and only when they say yes, retry with
+  `confirm_web_apps` set to `web_apps_change.to`. This answer counts for one
+  upload only, so resend it with each retry until an upload goes ahead.
+- `hq_plan_lacks_web_apps` — a first upload of an app that runs in Web Apps,
+  where CommCare HQ made the new app with Web Apps off, which it does when the
+  project space's plan doesn't include Web Apps. Only the empty app was made,
+  and the next upload fills that same app. Nova no longer counts on an earlier
+  answer that the plan includes Web Apps, so leave `web-apps` out of
+  `confirm_plan_features` until the user says the plan now includes it. Relay
+  the `message`: it offers setting the app to run on Android only where the
+  app's content allows it. Where the app runs is the user's decision; change it
+  with `update_app`'s `runs_only_on` only when they ask.
 - `hq_app_version_below_floor` — the app on CommCare HQ is set to a CommCare
   version below the one Nova's apps need. Its content was not sent. Relay the
   `message` and its `url`, the app's page in CommCare HQ, where the user raises
@@ -486,13 +509,14 @@ On a failed upload, surface `error_type` and `message` from the response:
   and leaves that one alone.
 
 These refusals can come one after another: answering one lets the next check
-run, so a retry after `hq_confirmation_needed`, `hq_resource_conflict` or
-`hq_changed` can stop at another of them. A refused attempt stores nothing the
-user answered. On every retry, resend every answer they have already given in
-this upload, `confirm_plan_features`, `confirm_flat_location_fixture`,
-`confirm_connect_forwarder`, `adopt_resources` and `discard_hq_changes`
-together, plus the new one, until an upload goes ahead. Never ask the user the
-same question twice.
+run, so a retry after `hq_confirmation_needed`, `hq_resource_conflict`,
+`hq_changed` or `hq_web_apps_change` can stop at another of them. A refused
+attempt stores nothing the user answered. On every retry, resend every answer
+they have already given in this upload, `confirm_plan_features`,
+`confirm_flat_location_fixture`, `confirm_connect_forwarder`,
+`confirm_form_entry_sync_off`, `confirm_web_apps`, `adopt_resources` and
+`discard_hq_changes` together, plus the new one, until an upload goes ahead.
+Never ask the user the same question twice.
 
 ## Deep links after publishing
 

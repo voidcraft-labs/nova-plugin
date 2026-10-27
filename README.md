@@ -123,6 +123,12 @@ stops reading them requires the paired Nova server release, in which form
 logic, form links and Connect read tables too. Publish this plugin after that
 server is live and verified.
 
+Version 2.3's publishing guidance (the Web Apps setting an upload writes from
+where the app runs, the confirmation that Sync Cases On Form Entry is turned
+off, and what a user can do where a project space lacks what the app needs)
+requires the paired Nova server release. Publish this plugin after that server
+is live and verified.
+
 A saved app is distinct from a tested workflow or a deployment to CommCare HQ.
 Publishing checks the selected target with `check_project_space_compatibility`;
 automations return setup guidance for the remaining work in HQ. Project data,

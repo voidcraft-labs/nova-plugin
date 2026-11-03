@@ -115,15 +115,21 @@ key can read it: `plan_features` (each plan feature the app needs, with
 its `plans`, `reasons`, `consequence`, `where_missing` and `state`),
 `flat_location_fixture` (whether the project space still sends its location
 list, for an app that reads places), `connect_forwarder` (whether it forwards
-forms to CommCare Connect, for a Connect app) and `form_entry_sync_off`
+forms to CommCare Connect, for a Connect app), `form_entry_sync_off`
 (whether Sync Cases On Form Entry is turned off, for an app that runs on
-Android and has a form that works on a case chosen in a menu with Search).
+Android and has a form that works on a case chosen in a menu with Search) and
+`commtrack_off` (whether CommCare Supply is turned off, for an app with an
+advanced menu that shows its case list as its own menu item, or a form whose
+text names the session's supply point).
 Each is `null` when the app needs none, and each carries its own
 `where_missing` beside `consequence`: what the user can do where the project
 space lacks it, or `null` when Nova has nothing to offer. Relay them with their
 reasons before the upload, so the user knows what they will be asked. One
 already on record reads `confirmed` with who confirmed it, and the upload does
 not ask about it again; one that reads `needs_confirmation` will be asked.
+When the Save to Case plan feature reads `needs_confirmation`,
+`placement_moves` may carry the case changes Nova can keep elsewhere so the
+app no longer needs it; relay them with that plan feature.
 
 Speak in app capabilities, not implementation settings: never show capability
 `id` values, private project-space setting names, or private setting slugs. This
@@ -166,6 +172,10 @@ Wait for confirmation. If the user declines, stop. Then call Nova's
 `upload_app_to_hq` tool with
 `{app_id: "<resolved app_id>", domain: "<target>"}`. Always pass the exact
 target explicitly.
+
+The first upload of a case change records where CommCare HQ keeps it, which
+changes the saved app. Work begun with `begin_work` before the upload must be
+begun again.
 
 ## 6. Report
 
@@ -280,7 +290,8 @@ without contacting CommCare HQ. Each deployment it lists, and the answer from
 
 The same answers, and an upload's `deployment`, carry `confirmations`: what a
 person confirmed about that project space for this app (a plan feature, the
-flat location list, a Connect forwarder, Sync Cases On Form Entry turned off),
+flat location list, a Connect forwarder, Sync Cases On Form Entry turned off,
+CommCare Supply turned off),
 each with its `label` and who confirmed it when. An upload there does not ask
 about them again. If the user says the project space no longer has one, for
 example after a plan change, which Nova cannot see, call
@@ -387,7 +398,16 @@ On a failed upload, surface `error_type` and `message` from the response:
   was uploaded in this attempt. Interpret
   `project_space_compatibility.blockers` exactly as in step 4, relay the
   report's next step, and stop. Never work around it by changing the app unless
-  the user separately asks to change the app itself.
+  the user separately asks to change the app itself. When the response carries
+  `placement_moves`, the project space drops the link between a new case and
+  the case of the same type it came from, or Nova could not check that it
+  keeps it, and Nova offers to keep those case changes in Save to Case blocks
+  instead. Show each move's `sentence`, which names its change, where it moves
+  from and where to, and ask whether to move them; only on a yes, retry with
+  `accept_placement_moves` carrying its `reason` and `digest`. Moving them
+  changes where CommCare HQ keeps those answers in every project space the app
+  is published to, and the plan then needs Save to Case, which the next attempt
+  may ask about.
 - `hq_app_state_unknown` — Nova could not safely read the current HQ app before
   updating it, so it left the existing app unchanged. Relay the `message` and
   try again only when the user asks. On a first upload it also covers an app
@@ -450,7 +470,10 @@ On a failed upload, surface `error_type` and `message` from the response:
   `{kind, subject, label, plans, consequence, reasons, where_missing}`: a plan
   feature, the flat location list, for a Connect app the Connect forwarder, or,
   for an app that runs on Android and has a form that works on a case chosen in
-  a menu with Search, Sync Cases On Form Entry turned off. Ask the user about
+  a menu with Search, Sync Cases On Form Entry turned off, or, for an app with
+  an advanced menu that shows its case list as its own menu item or a form
+  whose text names the session's supply point, CommCare Supply turned off.
+  Ask the user about
   each one **one at a time**, with its `label`, `plans`, `consequence` and
   `reasons`, whether the project space has it, exactly as for
   `adopt_resources`. When the user says the project space lacks what was asked
@@ -458,9 +481,18 @@ On a failed upload, surface `error_type` and `message` from the response:
   Never decide for them, and never send them all because they said yes to one.
   Retry with `confirm_plan_features` (the `subject` of each plan feature they
   confirmed), `confirm_flat_location_fixture: true`,
-  `confirm_connect_forwarder: true` or `confirm_form_entry_sync_off: true`,
-  naming only what they confirmed. A confirmation is kept once an upload goes
-  ahead, so resend it with each attempt until one does.
+  `confirm_connect_forwarder: true`, `confirm_form_entry_sync_off: true` or
+  `confirm_commtrack_off: true`, naming only what they confirmed. A
+  confirmation is kept once an upload goes ahead, so resend it with each
+  attempt until one does. When `placement_moves` comes with the Save to Case
+  plan feature, ask one question with two answers: the plan includes Save to
+  Case (confirm it), or move those case changes (`accept_placement_moves` with
+  its `reason` and `digest`). Never send both.
+- `hq_placement_moves_changed`: the case changes Nova offered to move changed
+  since the user agreed. Nothing was sent. Show the new `placement_moves` and
+  ask again; send only the new `digest`.
+- `app_changed_while_publishing`: the app kept changing while Nova got it
+  ready to publish. Nothing was sent. Upload again once the edits settle.
 - `hq_web_apps_change` — the app's Web App setting on CommCare HQ differs
   from where the app runs, and every upload writes that setting from where the
   app runs. Nothing was sent. Relay the `message`: it says which way the setting
@@ -514,8 +546,9 @@ run, so a retry after `hq_confirmation_needed`, `hq_resource_conflict`,
 attempt stores nothing the user answered. On every retry, resend every answer
 they have already given in this upload, `confirm_plan_features`,
 `confirm_flat_location_fixture`, `confirm_connect_forwarder`,
-`confirm_form_entry_sync_off`, `confirm_web_apps`, `adopt_resources` and
-`discard_hq_changes` together, plus the new one, until an upload goes ahead.
+`confirm_form_entry_sync_off`, `confirm_commtrack_off`, `confirm_web_apps`,
+`accept_placement_moves`, `adopt_resources` and `discard_hq_changes`
+together, plus the new one, until an upload goes ahead.
 Never ask the user the same question twice.
 
 ## Deep links after publishing

@@ -129,6 +129,11 @@ off, and what a user can do where a project space lacks what the app needs)
 requires the paired Nova server release. Publish this plugin after that server
 is live and verified.
 
+Version 2.4's publishing guidance (the CommCare Supply confirmation, the case
+changes an upload offers to move, and an upload recording where CommCare HQ
+keeps case changes) requires the paired Nova server release. Publish this
+plugin after that server is live and verified.
+
 A saved app is distinct from a tested workflow or a deployment to CommCare HQ.
 Publishing checks the selected target with `check_project_space_compatibility`;
 automations return setup guidance for the remaining work in HQ. Project data,

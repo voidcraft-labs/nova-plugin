@@ -173,3 +173,12 @@ identify the input to repair. A rejected submission retains completed preceding
 actions and returns the stopping step; a changed request needs a new request ID.
 After editing and saving an app calculation, start a fresh test so it exercises
 the new saved checkpoint.
+
+When Nova reports that a journey call ran out of time and none of its actions
+were saved, the existing test stays at its previous step. Read its retained
+observations, then retry with fewer actions and a new request ID. A network
+timeout or lost response alone does not establish rollback; retry the exact
+request with its original request ID to recover its result.
+
+Version 2.4.1's journey deadline guidance requires the paired Nova server release.
+Publish this plugin after that server is live and verified.

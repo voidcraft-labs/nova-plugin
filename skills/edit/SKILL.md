@@ -128,3 +128,9 @@ it: read the returned step and stop reason before continuing. Correct answers in
 that test when appropriate. If the saved app's calculation needs a change, edit
 and save it, then start a fresh test of the new checkpoint. Replaying an unchanged
 request returns its original result.
+
+When Nova reports that a journey call ran out of time and none of its actions
+were saved, the existing test stays at its previous step. Read its retained
+observations, then retry with fewer actions and a new request ID. A network
+timeout or lost response alone does not establish rollback; retry the exact
+request with its original request ID to recover its result.

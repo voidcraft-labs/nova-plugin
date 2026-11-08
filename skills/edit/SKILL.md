@@ -92,8 +92,8 @@ Project data, real organization records, media service writes and deployment
 have separate immediate effects; discarding app work does not undo them.
 
 
-Inline choice starting values must return only one of the question's choices
-or blank. Nova checks returned branches and the app's record writers, including
+Inline choice starting values must contain only choices the question offers,
+or be blank. Nova checks returned branches and the app's record writers, including
 later edits. A storage type alone does not prove that values fit. When a form
 asks for a new status, leave its starting value empty instead of preloading a
 record status the question does not offer. For a computed starting value, use an

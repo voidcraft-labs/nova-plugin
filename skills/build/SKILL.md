@@ -94,6 +94,17 @@ writes and deployment take effect separately; discarding app work does not undo
 them. If work remains private, include its work ID and what still needs attention.
 
 
+Inline choice starting values must contain only choices the question offers,
+or be blank. Nova checks returned branches and the app's record writers, including
+later edits. A storage type alone does not prove that values fit. When a form
+asks for a new status, leave its starting value empty instead of preloading a
+record status the question does not offer. For a computed starting value, use an
+explicit choice-valued mapping. A Preview check for an older or imported answer
+is authoring evidence: inspect the question and record, correct the source or
+choices when appropriate, and retry. Do not add a temporary option or change
+saved data merely to make the check pass; respect the intended workflow and the
+user's authority for data changes.
+
 Case-backed choices offer records already available to the worker and save exact
 record IDs. Filters do not fetch additional cases or broaden access: an
 all-clinics selector still shows only the clinics restored for that worker. Use

@@ -50,6 +50,7 @@ and [docs.commcare.app/mcp/tools](https://docs.commcare.app/mcp/tools).
 - `/nova:list` — list your apps
 - `/nova:show <app_id>` — app overview
 - `/nova:upload_to_hq <app_id or name> [project space]` — deploy to CommCare HQ (names a space to upload straight there, otherwise confirms the target first; checks whether that project space can run the app before sending anything)
+- `/nova:bring_in [project space] [app name]`: bring an app you already have in CommCare HQ in to Nova (reads it first and creates nothing until you've seen what comes in)
 
 ## Authoring guidance
 
@@ -133,6 +134,12 @@ Version 2.4's publishing guidance (the CommCare Supply confirmation, the case
 changes an upload offers to move, and an upload recording where CommCare HQ
 keeps case changes) requires the paired Nova server release. Publish this
 plugin after that server is live and verified.
+
+Version 2.5's guidance (bringing an app in from CommCare HQ with
+`/nova:bring_in`, bringing in changes made there, stopping publishing to a
+project space, lookup tables and places CommCare HQ manages, and application
+profiles) requires the paired Nova server release. Publish this plugin after
+that server is live and verified.
 
 A saved app is distinct from a tested workflow or a deployment to CommCare HQ.
 Publishing checks the selected target with `check_project_space_compatibility`;

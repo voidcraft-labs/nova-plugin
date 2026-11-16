@@ -73,11 +73,13 @@ from current saved state. Earlier checkpoints remain saved. Reuse a request ID
 only for an exact retry, including after a lost response.
 
 After saving, use the isolated app-test tools to exercise affected journeys from app
-entry through record details, submission and the next task. Start and continue
+entry through record selection, submission and the next task. Start and continue
 calls take a unique `request_id` and exactly one of `app_id` or `work_id`; both
 target the saved checkpoint, never the pending candidate. `read_app_test` is a
-shared read and takes no request ID. Follow the offered
-`routeContinue` action from Details. `routeBack` follows visited screens; it
+shared read and takes no request ID. Selecting a record opens its Details
+where the list's step shows them; a parent case a basic menu asks for goes on
+at once. From Details, follow the offered `routeContinue` action. `routeBack`
+follows visited screens; it
 does not predict the next task after a submission.
 Use `pageNext`, `pagePrevious` and the offered `section` action to check form
 pages and forward validation.

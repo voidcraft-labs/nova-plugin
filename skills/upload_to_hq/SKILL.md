@@ -152,21 +152,22 @@ reachable spaces, and ask the user to select one; never silently substitute a
 different target. A check that cannot confirm required support returns a
 blocked report, not permission to continue.
 
-Then call Nova's `get_deployment` with `{app_id}` and find the deployment whose
-`server` is the connection's `server` and whose `domain` is the target. Where
-its `ending` is not null, Nova stopped publishing this app there, and this
-upload does not update the app in CommCare HQ: it makes a new app beside it,
-and the one there stays as it is. Nothing in the upload asks about this first,
-so relay `ending.message` in the confirmation, say that this upload makes a new
-app there, and wait for the user's yes even when they named the space.
+If the check's `new_app_beside` is not null, Nova stopped publishing this app
+to the target, and this upload does not update the app in CommCare HQ: it
+makes a new app beside it, and the one there stays as it is. The upload itself
+asks nothing about this, so relay `new_app_beside` as written in the
+confirmation, and upload only if the user wants a new app there, even when
+they named the space. It is null while the app still publishes there and
+where it never has. Where the user asks who stopped publishing there and when,
+`get_deployment`'s deployment for the target carries it in `ending.message`.
 
 ## 5. Confirm and upload
 
 For an explicit target, step 1's named space already confirmed the upload. Show
 any non-blocking performance guidance from step 4 and proceed without asking
 again, unless the app has notices (step 2), step 4 reported an item that
-reads `needs_confirmation`, step 4's `first_publish` is not null, or the
-target's deployment has an `ending` (step 4). Then relay
+reads `needs_confirmation`, step 4's `first_publish` is not null, or step 4's
+`new_app_beside` is not null. Then relay
 them, stop, and wait for the user's answer before calling `upload_app_to_hq`. Send the items they confirmed with
 the upload, as `hq_confirmation_needed` below describes.
 
@@ -184,10 +185,9 @@ without the scheme:
 >
 > Upload it to **<target>** now?
 
-Where the target's deployment has an `ending` (step 4), the sentence about a
-first and a later upload is not so. Say instead: Nova stopped publishing to the
-app that's already in **<target>**, so this upload makes a new app beside it,
-and the one there stays as it is. Relay `ending.message` with it.
+Where step 4's `new_app_beside` is not null, the sentence about a first and a
+later upload is not so. Say instead `new_app_beside` as written, and that the
+app already in **<target>** stays as it is.
 
 Wait for confirmation. If the user declines, stop. Then call Nova's
 `upload_app_to_hq` tool with
@@ -646,23 +646,30 @@ sentences as written: they say what the user can do. By `kind`:
 
 - `changes`: `hq_changes` lists what bringing the changes in changes in this
   app, and `nova_changes` what that removes of the changes made in Nova since
-  then; it is empty when nothing would be removed. While `next_page` is not
-  null, call again with `page` set to it until it is. If an answer has
-  `restarted` true, the lists changed: relay `restarted_message` and start
-  them over from that answer. Show the user every line of both lists, then
+  then; it is empty when nothing would be removed. A review longer than one
+  answer comes a page at a time: while `next_page` is not null, call
+  `read_hq_changes` again with the same `app_id` and `domain` and `page` set
+  to it, until it is null. If an answer has `restarted` true, the lists
+  changed: relay `restarted_message` and start them over from that answer.
+  The pages hold, in order, the lines of `hq_changes`, then of `nova_changes`,
+  then the entries of `renamed_in_nova`, then of `tables`, then the names of
+  `made_by`, each page its share. So one page may hold only `hq_changes` lines
+  while a later one holds the renames or a table that needs a choice: read
+  `nova_changes_total`, `renamed_in_nova_total`, `tables_total` and
+  `made_by_total` for how many each holds in all, and read every page before
+  you ask the user anything. Show the user every line of both lists, then
   `made_by_line` where present, `case_data`, and `publish_changes_lead` with
   `publish_changes`, what the next upload then changes in CommCare HQ. Where
   `cut_line` is not null, this answer's one line is part `part` of `parts` of
   a line of `cut_line.list` too long for one answer: the next pages hold the
-  rest, so join the parts in order and show the whole line. A page can hold
-  only `hq_changes` lines, so read `nova_changes_total` for whether anything
-  would be removed. Where `renamed_in_nova` is not empty, relay
-  `renamed_in_nova_line`: CommCare HQ's version is not offered until those
-  case properties are renamed back in Nova. Each entry of `tables` is a lookup
-  table the changed app newly reads: show its `sentence`, or its `choice`: the
-  `title`, the `body`, and each answer's `label`, `lines` and, where it is not
-  offered, its `reason`. Ask the user for each choice, and never choose one for
-  them.
+  rest, so join the parts in order and show the whole line. Where a page's
+  `renamed_in_nova` is not empty, relay that page's `renamed_in_nova_line`,
+  which names the renames on that page: while `renamed_in_nova_total` is not
+  0, CommCare HQ's version is not offered until those case properties are
+  renamed back in Nova. Each entry of `tables` is a lookup table the changed
+  app newly reads: show its `sentence`, or its `choice`: the `title`, the
+  `body`, and each answer's `label`, `lines` and, where it is not offered, its
+  `reason`. Ask the user for each choice, and never choose one for them.
 - `nothing`: there is nothing to bring in. Where `review_digest` is not null,
   CommCare HQ saved the app without a change Nova brings in, and `next` says
   how to record that: it changes nothing in the app, and the next upload no
@@ -691,8 +698,9 @@ HQ. By `kind`:
 - `recorded`: relay `message`. The app is unchanged.
 - `changed`: nothing was brought in. Relay `message`, show `now` as an answer
   of `read_hq_changes`, and ask again; never resend old answers against it.
-  Where `next` is not null, `now` holds only the first page: follow `next`
-  and show every line before you ask again.
+  Where `next` is not null, `now` holds only the first page: call
+  `read_hq_changes` with `page` set to `now.next_page`, page on as above, and
+  show every line before you ask again.
 - `gate`: nothing was brought in, because it would leave something in the app
   that no longer works. Relay `message`, each of `findings`, and `next`.
 - `refused`: relay `message`.

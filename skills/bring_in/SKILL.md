@@ -128,7 +128,13 @@ review in this order:
    `files`.
 4. **Lookup tables**: each entry of `tables`, with its `sentence`, or its
    `choice`: the `title`, the `body`, and each answer's `label`, `lines` and,
-   where it is not offered, its `reason`.
+   where it is not offered, its `reason`. An answer holds only as many tables
+   as fit, and `review.tables_total` says how many there are in all. While
+   `review.next_page` is not null, call `read_hq_app` again with the same
+   three fields and `page` set to it, and show that page's tables too. Every
+   other part of the review is the same on every page. If an answer has
+   `restarted` true, the app changed while you were paging: relay `message`
+   and show the review again from this answer.
 5. **Places and media**: `places.sentence`, `media.sentence` and
    `media.left_out`, each where present.
 6. **What stays in CommCare HQ**: `kept.lead`, its `labels`, and `kept.note`.
@@ -157,7 +163,7 @@ Ask for:
 - **Where it runs**: one entry of `runs_on`. Its `runs_only_on` and
   `split_datetime` go to the create together.
 - **Each table choice**: one offered answer for each entry of `tables` that
-  has a `choice`, by its `tag`.
+  has a `choice`, on every page of the review, by its `tag`.
 
 ## 10. Create
 
@@ -175,7 +181,8 @@ By `status`:
 - `changed`: something changed in CommCare HQ or the Project since the review,
   and no app was created. Say what `message` says, show `reading` again from
   step 6, 7 or 8, and ask again; never resend old answers against a new
-  review.
+  review. A long `reading` is its first page: read the rest with
+  `read_hq_app` and its `next_page`, as in step 7 or 8.
 - `read_again`: a lookup table the app reads changed in the Project while Nova
   was creating the app, and no app was created. Relay `message`, call
   `read_hq_app` again, and go on from step 6, 7 or 8 with what it answers. Ask

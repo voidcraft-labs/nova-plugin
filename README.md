@@ -39,7 +39,11 @@ changes made there, and handing a lookup table between Nova and CommCare HQ
 also need HQ Import (`nova.hq.import` on an API key). A connection or key that
 already held HQ Read and HQ Write was given it. Otherwise, approve it by
 signing in again through `/mcp`, or check it under the key's scopes in
-settings.
+settings. If signing in again doesn't offer HQ Import, or fails with
+`invalid_scope`, your connection registered with Nova before that permission
+existed and keeps the set it registered with: remove the Nova server from
+Claude Code and add it again, and the fresh registration offers every
+current permission.
 
 **Working as a team?** Don't share one account. Create a shared Nova Project and
 invite your teammates — everyone signs in as themselves, and every member sees

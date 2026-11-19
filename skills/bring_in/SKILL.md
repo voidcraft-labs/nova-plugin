@@ -127,8 +127,8 @@ review in this order:
    entry of `cannot_run`: its `sentence`, its `features` as a list, and its
    `files`.
 4. **Lookup tables**: each entry of `tables`, with its `sentence`, or its
-   `choice`: the `title`, the `body`, and each answer's `label`, `lines` and,
-   where it is not offered, its `reason`. An answer holds only as many tables
+   `choice`: the `title`, the `body`, and each entry of `answers` with its
+   `label`, `lines` and, where its `offered` is false, its `reason`. An answer holds only as many tables
    as fit, and `review.tables_total` says how many there are in all. While
    `review.next_page` is not null, call `read_hq_app` again with the same
    three fields and `page` set to it, and show that page's tables too. Every
@@ -162,16 +162,19 @@ Ask for:
   empty, ask the user for a name.
 - **Where it runs**: one entry of `runs_on`. Its `runs_only_on` and
   `split_datetime` go to the create together.
-- **Each table choice**: one offered answer for each entry of `tables` that
-  has a `choice`, on every page of the review, by its `tag`.
+- **Each table choice**: for each entry of `tables` that has a `choice`, on
+  every page of the review, one of its `answers` whose `offered` is true.
+  Keep the `answer` of the one the user picks (`use-commcare-hq` or
+  `use-project`) by the table's `tag`.
 
 ## 10. Create
 
 Call Nova's `bring_in_hq_app` once, with the nine fields:
 `{project_id, domain, hq_app_id}` as sent to `read_hq_app`, `reading_id`,
 `review_digest` (`review.review_digest`), `app_name`, `runs_only_on` and
-`split_datetime` from the chosen `runs_on` entry, and `table_choices` (`{}`
-where no table has a choice). Creating changes nothing in CommCare HQ. If the
+`split_datetime` from the chosen `runs_on` entry, and `table_choices`, which
+maps each table's `tag` to the `answer` the user picked, never its `label`
+(`{}` where no table has a choice). Creating changes nothing in CommCare HQ. If the
 call ends before you get an answer, send it again with the same arguments: it
 answers the app if it was created, and creates it if it was not.
 
@@ -217,6 +220,11 @@ A refusal comes back with `error_type` and `message`:
   and a browser sign-in picks it up the next time it renews. Otherwise the
   user approves it: sign in to Nova again through `/mcp` and allow it, or,
   for an API key, check HQ Import under the key's scopes in Nova's Settings.
+  Where signing in again does not offer HQ Import, or fails with
+  `invalid_scope`, the connection registered with Nova before that
+  permission existed and keeps the set it registered with: the user removes
+  the Nova server from the client and adds it again, and the fresh
+  registration offers every current permission.
 - `hq_not_configured`: the user has not connected CommCare HQ. Point at
   commcare.app/settings and stop, as in step 2.
 - `domain_not_authorized`: the key can't reach that project space, or

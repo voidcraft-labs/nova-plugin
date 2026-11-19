@@ -37,7 +37,9 @@ The app reference may be an app id or a name search phrase.
 - Otherwise → call Nova's `search_apps` tool with `{query: "<app>"}`.
   - Zero matches → tell the user no app matched and stop.
   - Multiple matches → show them as a numbered list with
-    `<N>. **<App Name>** (<app_id>, in <project_name>) — <N> modules, <M> forms, updated <date>`
+    `<N>. **<App Name>** (<app_id>, in <project_name>), updated <date>`
+    (`name`, `app_id`, `project_name` and `updated_at` of each match; a
+    match carries no module or form counts, so never invent them)
     and ask which one. Wait for their answer before continuing. The
     Nova Project tells apart same-named apps living in different
     shared workspaces.
@@ -407,9 +409,12 @@ already gave (`adopt_personas`, `confirm_worker_levels`) with each retry:
 - `workers_not_provisionable` — the `message` names each reason: a username
   CommCare HQ will not take, worker information the app marks required that a
   persona has no value for, a persona standing in a place the project space
-  does not hold yet (upload the app there, which puts the places there), the
-  same persona or the same username named twice in one call, or a persona the
-  app no longer has. Relay it and stop; nothing was created. Where it also
+  does not hold yet (upload the app there, which puts the places there), a
+  persona standing in a place CommCare HQ manages and no longer has in that
+  project space (an upload does not put it back: the persona can stand in
+  another place, then provision again), the same persona or the same username
+  named twice in one call, or a persona the app no longer has. Relay it and
+  stop; nothing was created. Where it also
   carries `worker_levels`, ask about those levels as for
   `worker_levels_unconfirmed` below.
 - `worker_levels_unconfirmed` — CommCare HQ manages the app's places on that
@@ -464,6 +469,11 @@ the upload has already succeeded. Link to the report's `docs_url` when useful.
 
 On a failed upload, surface `error_type` and `message` from the response:
 
+- `invalid_input` whose `message` begins "This app isn't ready to upload":
+  Nova's export check found something in the app itself to fix, and nothing
+  was sent. Relay the `message`, which names each finding. The fix is in the
+  Nova app (`/nova:edit`), not the connection or the project space; upload
+  again once it is made.
 - `domain_not_authorized` — the space you passed isn't one the key can reach.
   The `message` already names every space it CAN reach, so relay that in one
   turn rather than making the user re-run the command — e.g. "`<space>` isn't
@@ -652,11 +662,23 @@ On a failed upload, surface `error_type` and `message` from the response:
   `{project_id, table_id, managed_by: "nova"}` (the app's Project, and the
   table's id as `get_lookup_tables` lists it) and no `review_digest`: that
   changes nothing and answers what the change does. Show its `title`, `lines`
-  and `apps`, and ask. Only on a yes, send the same call again with that
-  answer's `review_digest`. Where the answer's `reason` is `review-moved`,
-  nothing changed: it holds the change as it stands now, so show it and ask
-  again. Where it is `not-permitted`, relay the `message`, which names who can.
-  Then upload again.
+  and `apps`, and ask. Where its `title` is null and `lines` is empty, the
+  table is already managed in Nova: there is nothing to ask, so upload again.
+  Only on a yes, send the same call again with that answer's
+  `review_digest`. Every answer of this tool is a result, never an
+  `error_type`: read `ok` and `reason`. The change landed only where the
+  second call answers `ok: true` with `managed_by: "nova"`; relay its
+  `message`, then upload again. Where `ok` is false, nothing changed, and
+  the upload would stop the same way:
+  - `review-moved`: the answer holds the change as it stands now, with a new
+    `review_digest`, so show it and ask again.
+  - `not-permitted`: relay the `message`, which names who can.
+  - any other `reason` (such as `not-found`, `state-changed`,
+    `not-connected`, `cannot-read`, `unavailable`, `table-gone`,
+    `unsupported`, `over-cap`, `name` or `unrepresentable-text`): relay the
+    `message`, which says why and what can be done. Never report the table
+    as managed in Nova, and upload again only once the user has done what it
+    says.
 - `managed_table_handed_back`: a lookup table this app reads was handed back
   to CommCare HQ while this upload was getting ready. Nova stopped before
   sending any lookup table or the app's content. Upload again, and Nova leaves
@@ -714,8 +736,11 @@ sentences as written: they say what the user can do. By `kind`:
   0, CommCare HQ's version is not offered until those case properties are
   renamed back in Nova. Each entry of `tables` is a lookup table the changed
   app newly reads: show its `sentence`, or its `choice`: the `title`, the
-  `body`, and each answer's `label`, `lines` and, where it is not offered, its
-  `reason`. Ask the user for each choice, and never choose one for them.
+  `body`, and each entry of `answers` with its `label`, `lines` and, where its
+  `offered` is false, its `reason`. Ask the user for each choice, and never
+  choose one for them. The user picks among the answers whose `offered` is
+  true; the one they pick is sent by its `answer` (`use-commcare-hq` or
+  `use-project`), never its `label`.
 - `nothing`: there is nothing to bring in. Where `review_digest` is not null,
   CommCare HQ saved the app without a change Nova brings in, and `next` says
   how to record that: it changes nothing in the app, and the next upload no
@@ -738,9 +763,9 @@ sentences as written: they say what the user can do. By `kind`:
 Bringing the changes in is the user's choice. Call `bring_in_hq_changes` with
 `{app_id, domain, reading_id, review_digest, discard_nova_changes,
 table_choices}`, the `reading_id` and `review_digest` of the last answer, and
-`table_choices` with one answer per table that has a choice, by `tag` (`{}`
-where none has). Send `discard_nova_changes` false when `nova_changes_total`
-was 0, and true only after the user has seen every line of `nova_changes` and
+`table_choices` mapping each table that has a choice, by its `tag`, to the
+`answer` of the offered entry the user picked (`{}` where none has). Send
+`discard_nova_changes` false when `nova_changes_total` was 0, and true only after the user has seen every line of `nova_changes` and
 agreed to lose them: Nova can't put them back. Nothing is sent to CommCare
 HQ. By `kind`:
 
@@ -749,8 +774,10 @@ HQ. By `kind`:
 - `changed`: nothing was brought in. Relay `message`, show `now` as an answer
   of `read_hq_changes`, and ask again; never resend old answers against it.
   Where `next` is not null, `now` holds only the first page: call
-  `read_hq_changes` with `page` set to `now.next_page`, page on as above, and
-  show every line before you ask again.
+  `read_hq_changes` with `page` set to the `next_page` in `now`
+  (`now.next_page` where `now.kind` is `changes`, `now.account.next_page`
+  where it is `account`), page on as above, and show every line before you
+  ask again.
 - `gate`: nothing was brought in, because it would leave something in the app
   that no longer works. Relay `message`, each of `findings`, and `next`.
   `findings` holds as many as one answer does: where `findings_total` is
@@ -774,12 +801,17 @@ Both tools refuse with `error_type` and `message`:
 - `not_found`: the app is not one the user can edit. Relay the `message`.
 - `scope_missing`: the user's connection to Nova lacks the CommCare HQ access
   this needs. Relay the `message`, which names the access to grant, and stop.
-  Both tools, and `set_lookup_table_management`, need the **HQ Import**
-  permission (`nova.hq.import`). A connection or API key that already held
-  HQ Read and HQ Write was given it, and a browser sign-in picks it up the
-  next time it renews. Otherwise the user approves it: sign in to Nova again
-  through `/mcp` and allow it, or, for an API key, check HQ Import under the
-  key's scopes in Nova's Settings.
+  Both tools need the **HQ Import** permission (`nova.hq.import`), and
+  `set_lookup_table_management` needs HQ Import and HQ Write
+  (`nova.hq.write`). A connection or API key that already held HQ Read and
+  HQ Write was given HQ Import, and a browser sign-in picks it up the next
+  time it renews. Otherwise the user approves it: sign in to Nova again
+  through `/mcp` and allow it, or, for an API key, check it under the key's
+  scopes in Nova's Settings. Where signing in again does not offer HQ
+  Import, or fails with `invalid_scope`, the connection registered with Nova
+  before that permission existed and keeps the set it registered with: the
+  user removes the Nova server from the client and adds it again, and the
+  fresh registration offers every current permission.
 - `hq_not_configured`, `domain_not_authorized` or `domain_ambiguous`: the same
   Settings and reachable-space guidance as an upload (step 3). Never choose a
   project space for the user.
@@ -795,9 +827,12 @@ later upload to that project space makes a new app there, beside the one that
 stays. Nothing is sent to CommCare HQ, and it cannot be undone from Nova.
 
 Read `get_deployment` first, and call it with
-`{app_id, server, domain, hq_app_id}`: `server` is `get_hq_connection`'s
-`server`, `domain` the project space, and `hq_app_id` the one `get_deployment`
-shows for that project space, the HQ app the user decided about. Only an
+`{app_id, server, domain, hq_app_id}`, with `server`, `domain` and
+`hq_app_id` all from the `get_deployment` entry for that project space, its
+`hq_app_id` being the HQ app the user decided about. Never take `server` from `get_hq_connection`:
+the stop asks CommCare HQ nothing, so it works even where the user's key no
+longer reaches that project space or no key is connected, and a key on
+another CommCare server names a deployment that isn't there. Only an
 admin or owner of the app's Project can stop: an editor gets
 `permission_denied`, whose `message` names who can, and someone who cannot
 edit the app gets `not_found`. Relay either and stop. Where Nova isn't

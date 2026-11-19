@@ -223,6 +223,17 @@ then give the two remaining steps:
 >
 > (If `warnings` is non-empty, list them below as a short bullet list.)
 
+Relay each warning as written: one can say the app changed in CommCare HQ
+while Nova published it, so the next upload asks before writing over it, or
+that Nova didn't send the app's pictures and sounds.
+
+Where `deployment` is null, the user was removed from the app's Project, or
+the app was deleted, while the upload ran. The upload still landed and Nova
+recorded it, but there is no `deployment_state`: `sent` lists what this upload
+put on CommCare HQ, each as `{kind, nova_id, hq_id, hq_name}`. Say it landed,
+name what `sent` holds and relay `warnings`; do not go on to the release check
+or to workers, which need the app open to the user again.
+
 Then the parts of the answer that are there only sometimes:
 
 - `app_preview_note` — when it is not `null`, relay it as it is. It says what
@@ -336,12 +347,15 @@ changes made in CommCare HQ are brought in, only a revision after
 The same answers, and an upload's `deployment`, carry `confirmations`: what a
 person confirmed about that project space for this app (a plan feature, the
 flat location list, a Connect forwarder, Sync Cases On Form Entry turned off,
-CommCare Supply turned off),
-each with its `label` and who confirmed it when. An upload there does not ask
-about them again. If the user says the project space no longer has one, for
-example after a plan change, which Nova cannot see, call
-`withdraw_deployment_confirmation` with `{app_id, domain, kind, subject}`
-(`subject` only for a `plan-feature`), and the next upload there asks again.
+CommCare Supply turned off, or that an organization level takes workers),
+each with its `label` and who confirmed it when; a level's `label` names the
+level. An upload there does not ask about them again. If the user says the
+project space no longer has one, for example after a plan change, which Nova
+cannot see, call `withdraw_deployment_confirmation` with
+`{app_id, domain, kind, subject}` (`subject` only for a `plan-feature`, its
+id, or a `worker-level`, the level's code), and the next upload there asks
+again, or for a level, the next `provision_workers` that stands a worker
+there.
 
 ## 7. Offer to make workers
 
@@ -359,7 +373,8 @@ name, or pass one the user gave you.
 before anything else.** Each `workers[]` entry carries `password` for an account
 this call CREATED, and that value exists only in that answer — Nova stores no
 copy and cannot show it again. Show them even when the answer also carries an
-`error_type`: a call that stopped partway still made real accounts. An entry
+`error_type`, `not_found` included: a call that stopped partway still made
+real accounts. An entry
 with `action: "updated"` has `password: null`, because that person's password is
 untouched.
 
@@ -380,7 +395,8 @@ account, and `adopt_personas` does nothing before then.
 
 The refusals. None created an account except where said otherwise, and one
 of them (`hq_rejected_worker`) is not always a proven non-event, so relay each
-`message` rather than reading the tag alone:
+`message` rather than reading the tag alone. Resend every answer the user
+already gave (`adopt_personas`, `confirm_worker_levels`) with each retry:
 
 - `app_not_published` — upload the app to that space first. This also covers
   a space that holds only the empty app an unfinished first upload made, or an
@@ -393,7 +409,18 @@ of them (`hq_rejected_worker`) is not always a proven non-event, so relay each
   persona has no value for, a persona standing in a place the project space
   does not hold yet (upload the app there, which puts the places there), the
   same persona or the same username named twice in one call, or a persona the
-  app no longer has. Relay it and stop; nothing was created.
+  app no longer has. Relay it and stop; nothing was created. Where it also
+  carries `worker_levels`, ask about those levels as for
+  `worker_levels_unconfirmed` below.
+- `worker_levels_unconfirmed` — CommCare HQ manages the app's places on that
+  project space, and its API doesn't say which organization levels take
+  workers. Nothing was created. `worker_levels` names each level as
+  `{code, name, persona_names}`. Ask the user about each level **one at a
+  time** with its `name` and who would stand there: do places at that level
+  take workers on this project space? (CommCare HQ's Organization Levels page
+  shows it as Has Users.) Retry with `confirm_worker_levels` carrying the
+  `code` of exactly the levels they said yes to. Nova keeps that answer for
+  the project space until someone withdraws it.
 - `hq_worker_conflict` — one or more usernames already belong to accounts Nova
   did not create. `worker_conflicts` carries one entry per clash as
   `{persona_uuid, persona_name, username, hq_user_id}`. A mobile username is
@@ -401,7 +428,9 @@ of them (`hq_rejected_worker`) is not always a proven non-event, so relay each
   free on every other project space and taken only on this one, where it is
   somebody's real account. Ask the user about each one **one at a time**, and
   never decide for them or send them all because they said yes to one. Retry
-  with `adopt_personas` set to the `persona_uuid` of each one they approved. The
+  with `adopt_personas` set to the `persona_uuid` of each one they approved.
+  Taking an account over changes only the worker information and the places
+  its persona names; everything else on the account stays as it is. The
   other way out is a username nobody has yet — a username is set once when the
   account is made, so giving a persona a new one makes a second account and
   leaves the first alone, and retiring an account never gives its name back.
@@ -415,6 +444,10 @@ of them (`hq_rejected_worker`) is not always a proven non-event, so relay each
 - `hq_worker_may_exist` — CommCare HQ broke off mid-create and said nothing
   about what it made, as above. This is the one refusal that may have created
   an account; `unconfirmed_workers` carries it with its password.
+- `not_found` — the app is not one the user can edit. Where it carries
+  `workers`, the app was deleted, or the user lost edit access, after this
+  call made those accounts: they are real, so show their passwords first,
+  then relay the `message`.
 - `hq_not_configured` / `domain_not_authorized` — the same Settings and
   reachable-space guidance as an upload.
 
@@ -541,8 +574,14 @@ On a failed upload, surface `error_type` and `message` from the response:
 - `hq_placement_moves_changed`: the case changes Nova offered to move changed
   since the user agreed. Nothing was sent. Show the new `placement_moves` and
   ask again; send only the new `digest`.
-- `app_changed_while_publishing`: the app kept changing while Nova got it
-  ready to publish. Nothing was sent. Upload again once the edits settle.
+- `app_changed_while_publishing`: the app, or where it publishes, kept
+  changing while Nova got it ready, or another Nova app's publish to the same
+  HQ app is still finishing. Nothing more was sent. Relay the `message`, which
+  says when to upload again.
+- `not_found`: the app is not one the user can edit. Where the `message` says
+  the app was deleted, or the user can no longer publish it, while the upload
+  ran, CommCare HQ may hold part of what was sent and Nova recorded it. Relay
+  the `message` as it is.
 - `hq_web_apps_change` — the app's Web App setting on CommCare HQ differs
   from where the app runs, and every upload writes that setting from where the
   app runs. Nothing was sent. Relay the `message`: it says which way the setting
@@ -608,9 +647,16 @@ On a failed upload, surface `error_type` and `message` from the response:
 - `hq_managed_data_changed`: a lookup table this app reads is managed in
   CommCare HQ and changed there in a way the app depends on. Nothing was sent.
   Relay the `message`: each line names a table, what changed and what the
-  user can do, in CommCare HQ or by managing the table in Nova. Call
-  `set_lookup_table_management` only if the user chooses that, after showing
-  them what it does. Then upload again.
+  user can do, in CommCare HQ or by managing the table in Nova. Only if the
+  user chooses Nova, call `set_lookup_table_management` with
+  `{project_id, table_id, managed_by: "nova"}` (the app's Project, and the
+  table's id as `get_lookup_tables` lists it) and no `review_digest`: that
+  changes nothing and answers what the change does. Show its `title`, `lines`
+  and `apps`, and ask. Only on a yes, send the same call again with that
+  answer's `review_digest`. Where the answer's `reason` is `review-moved`,
+  nothing changed: it holds the change as it stands now, so show it and ask
+  again. Where it is `not-permitted`, relay the `message`, which names who can.
+  Then upload again.
 - `managed_table_handed_back`: a lookup table this app reads was handed back
   to CommCare HQ while this upload was getting ready. Nova stopped before
   sending any lookup table or the app's content. Upload again, and Nova leaves
@@ -674,16 +720,20 @@ sentences as written: they say what the user can do. By `kind`:
   CommCare HQ saved the app without a change Nova brings in, and `next` says
   how to record that: it changes nothing in the app, and the next upload no
   longer stops for the app's change (a lookup table or a place changed there
-  still stops it).
+  still stops it). Show the user each line of its `hq_changes`, where there
+  are any: each says where CommCare HQ now keeps something the app follows,
+  such as a form's id or a file's path.
 - `account`: CommCare HQ's version holds something Nova can't hold yet, so
   nothing can come in. Relay `message`, then the findings grouped by `place`
   with each `sentence`, its `named` where present and the label of its
   `standing`, paging by `account.next_page` as above, then `check_again`.
 - `held`, `unavailable` or `stop`: Nova can't bring the changes in. Relay
   `message`, or for `stop` its `title`, `body` and `next`. An `unavailable`
-  answer whose `reason` is `not-published`, `publishing-stopped` or
-  `app-deleted` means nothing in that project space is this app's: there is
-  no change there to bring in or to publish over.
+  answer whose `reason` is `not-published`, `publishing-stopped`,
+  `app-deleted` or `hq-app-taken` means nothing in that project space is this
+  app's: there is no change there to bring in or to publish over. Any other
+  `unavailable` answer's `message` says what the user can do instead, such as
+  publish over the change or stop publishing there.
 
 Bringing the changes in is the user's choice. Call `bring_in_hq_changes` with
 `{app_id, domain, reading_id, review_digest, discard_nova_changes,
@@ -703,6 +753,8 @@ HQ. By `kind`:
   show every line before you ask again.
 - `gate`: nothing was brought in, because it would leave something in the app
   that no longer works. Relay `message`, each of `findings`, and `next`.
+  `findings` holds as many as one answer does: where `findings_total` is
+  larger, say how many more there are.
 - `refused`: relay `message`.
 
 After `brought-in` or `recorded`, `deployment` can be null where Nova couldn't
@@ -722,6 +774,12 @@ Both tools refuse with `error_type` and `message`:
 - `not_found`: the app is not one the user can edit. Relay the `message`.
 - `scope_missing`: the user's connection to Nova lacks the CommCare HQ access
   this needs. Relay the `message`, which names the access to grant, and stop.
+  Both tools, and `set_lookup_table_management`, need the **HQ Import**
+  permission (`nova.hq.import`). A connection or API key that already held
+  HQ Read and HQ Write was given it, and a browser sign-in picks it up the
+  next time it renews. Otherwise the user approves it: sign in to Nova again
+  through `/mcp` and allow it, or, for an API key, check HQ Import under the
+  key's scopes in Nova's Settings.
 - `hq_not_configured`, `domain_not_authorized` or `domain_ambiguous`: the same
   Settings and reachable-space guidance as an upload (step 3). Never choose a
   project space for the user.
@@ -732,21 +790,27 @@ Nova's `stop_publishing` ends this app's publishing to one project space.
 Call it only when the user asked for exactly this, after telling them what it
 does: the app in CommCare HQ stays exactly as it is, this Nova app stops
 publishing to it, and that HQ app can be brought in to Nova again as a new app
-(`/nova:bring_in`). A later upload to that project space makes a new app there,
-beside the one that stays. Nothing is sent to CommCare HQ, and it cannot be
-undone from Nova.
+(`/nova:bring_in`) once any publish to it that was running has finished. A
+later upload to that project space makes a new app there, beside the one that
+stays. Nothing is sent to CommCare HQ, and it cannot be undone from Nova.
 
-Call it with `{app_id, server, domain}`: `server` is `get_hq_connection`'s
-`server`, and `domain` the project space. Only an admin or owner of the app's
-Project can stop: an editor gets `permission_denied`, whose `message` names who
-can, and someone who cannot edit the app gets `not_found`. Relay either and
-stop. Where Nova isn't publishing the app there, the `message` says there is
-nothing to stop.
+Read `get_deployment` first, and call it with
+`{app_id, server, domain, hq_app_id}`: `server` is `get_hq_connection`'s
+`server`, `domain` the project space, and `hq_app_id` the one `get_deployment`
+shows for that project space, the HQ app the user decided about. Only an
+admin or owner of the app's Project can stop: an editor gets
+`permission_denied`, whose `message` names who can, and someone who cannot
+edit the app gets `not_found`. Relay either and stop. Where Nova isn't
+publishing the app there, the `message` says there is nothing to stop.
+`deployment_changed` means the app publishes to a different HQ app there now,
+and nothing was stopped: read `get_deployment` again, show the user what it
+says, and stop that one only if they ask again.
 
 The answer is the deployment, with `state: "ended"`; relay `ending.message`.
 `setup_artifact` can be null where Nova couldn't read everything back after
-the stop landed. Publishing there has still stopped: never call
-`stop_publishing` again for it, and `get_deployment` reads it again.
+the stop landed. Publishing there has still stopped, and `get_deployment`
+reads it again. Calling `stop_publishing` again with the same `hq_app_id`
+stops nothing more: it answers the ended deployment.
 
 ## Deep links after publishing
 

@@ -192,7 +192,8 @@ By `status`:
   by yourself: nothing the user can change clears it.
 - `held`: no app was created. Relay `message` and `stop` (its `title`, `body`
   and `next`), and send the same arguments again only after the user has done
-  what `stop.next` says.
+  what `stop.next` says, or, where it says to check again in a while (Nova is
+  busy reading other apps), after that wait.
 
 ## 11. Report
 
@@ -211,6 +212,11 @@ A refusal comes back with `error_type` and `message`:
 
 - `scope_missing`: the user's connection to Nova lacks the CommCare HQ access
   this needs. Relay `message`, which names the access to grant, and stop.
+  Bringing apps in needs the **HQ Import** permission (`nova.hq.import`). A
+  connection or API key that already held HQ Read and HQ Write was given it,
+  and a browser sign-in picks it up the next time it renews. Otherwise the
+  user approves it: sign in to Nova again through `/mcp` and allow it, or,
+  for an API key, check HQ Import under the key's scopes in Nova's Settings.
 - `hq_not_configured`: the user has not connected CommCare HQ. Point at
   commcare.app/settings and stop, as in step 2.
 - `domain_not_authorized`: the key can't reach that project space, or
@@ -234,3 +240,6 @@ A refusal comes back with `error_type` and `message`:
   start.
 - `bring_in_refused`: Nova can't create the app as things stand. Relay
   `message` and stop. Do not send `bring_in_hq_app` again until the user asks.
+  Where its `refusal` is `publish_in_flight`, a publish to that HQ app is
+  still finishing: no app was created and the review stands, so offer to send
+  the same call again in a few minutes.

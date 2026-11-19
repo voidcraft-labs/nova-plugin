@@ -33,6 +33,14 @@ This uses Claude Code's [server precedence](https://code.claude.com/docs/en/mcp#
 and [environment expansion](https://code.claude.com/docs/en/mcp#environment-variable-expansion-in-mcpjson).
 Plugin-provided header helpers cannot read credential environment variables.
 
+**CommCare HQ permissions.** Uploading to CommCare HQ needs the HQ Read and HQ
+Write permissions. Bringing an app in with `/nova:bring_in`, bringing in
+changes made there, and handing a lookup table between Nova and CommCare HQ
+also need HQ Import (`nova.hq.import` on an API key). A connection or key that
+already held HQ Read and HQ Write was given it. Otherwise, approve it by
+signing in again through `/mcp`, or check it under the key's scopes in
+settings.
+
 **Working as a team?** Don't share one account. Create a shared Nova Project and
 invite your teammates — everyone signs in as themselves, and every member sees
 the Project's apps, case data, and media. Agents manage this over MCP too:
@@ -136,10 +144,11 @@ keeps case changes) requires the paired Nova server release. Publish this
 plugin after that server is live and verified.
 
 Version 2.5's guidance (bringing an app in from CommCare HQ with
-`/nova:bring_in`, bringing in changes made there, stopping publishing to a
-project space, lookup tables and places CommCare HQ manages, and application
-profiles) requires the paired Nova server release. Publish this plugin after
-that server is live and verified.
+`/nova:bring_in` and the HQ Import permission it needs, bringing in changes
+made there, stopping publishing to a project space by the HQ app's id, lookup
+tables and places CommCare HQ manages, the organization levels a worker
+stands at, and application profiles) requires the paired Nova server release.
+Publish this plugin after that server is live and verified.
 
 A saved app is distinct from a tested workflow or a deployment to CommCare HQ.
 Publishing checks the selected target with `check_project_space_compatibility`;

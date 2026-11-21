@@ -215,16 +215,10 @@ A refusal comes back with `error_type` and `message`:
 
 - `scope_missing`: the user's connection to Nova lacks the CommCare HQ access
   this needs. Relay `message`, which names the access to grant, and stop.
-  Bringing apps in needs the **HQ Import** permission (`nova.hq.import`). A
-  connection or API key that already held HQ Read and HQ Write was given it,
-  and a browser sign-in picks it up the next time it renews. Otherwise the
-  user approves it: sign in to Nova again through `/mcp` and allow it, or,
-  for an API key, check HQ Import under the key's scopes in Nova's Settings.
-  Where signing in again does not offer HQ Import, or fails with
-  `invalid_scope`, the connection registered with Nova before that
-  permission existed and keeps the set it registered with: the user removes
-  the Nova server from the client and adds it again, and the fresh
-  registration offers every current permission.
+  Checking the connection needs HQ Read. Listing, reading and bringing in
+  apps needs HQ Import (`nova.hq.import`). The user can approve the named
+  permission when prompted or sign in again through `/mcp`. For an API key,
+  they can select it under the key's scopes in Nova's Settings.
 - `hq_not_configured`: the user has not connected CommCare HQ. Point at
   commcare.app/settings and stop, as in step 2.
 - `domain_not_authorized`: the key can't reach that project space, or

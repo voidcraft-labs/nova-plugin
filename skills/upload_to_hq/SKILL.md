@@ -225,8 +225,9 @@ then give the two remaining steps:
 >
 > (If `warnings` is non-empty, list them below as a short bullet list.)
 
-Relay each warning as written: one can say the app changed in CommCare HQ
-while Nova published it, so the next upload asks before writing over it, or
+Relay each warning as written. If CommCare HQ saved the app again during
+the upload, Nova couldn't tell whether that save included another change.
+The next upload asks before writing over the app. Another warning can say
 that Nova didn't send the app's pictures and sounds.
 
 Where `deployment` is null, the user was removed from the app's Project, or
@@ -330,10 +331,10 @@ without contacting CommCare HQ. Each deployment it lists, and the answer from
 Each deployment can also carry `kept`: the settings that stay as CommCare HQ
 holds them on that project space, with the date Nova read them. Say them when
 the user asks what Nova leaves alone. `refresh_deployment` with
-`kept_values: true` reads them again and answers with a sentence instead of a
-state; relay it as it is. Where that sentence says the app changed in CommCare
-HQ, it names `read_hq_changes`, which lists what changed (see "Changes made in
-CommCare HQ" below).
+`kept_values: true` needs HQ Import as well as HQ Write. It reads the settings
+again and answers with a sentence. Relay it as written. Where it says the app
+changed in CommCare HQ, it names `read_hq_changes`, which lists what changed
+(see "Changes made in CommCare HQ" below).
 
 `brought_in`, where it is not null, says the app came from CommCare HQ on that
 project space, when and by whom. If `ending` is not null, say that Nova
@@ -469,6 +470,9 @@ the upload has already succeeded. Link to the report's `docs_url` when useful.
 
 On a failed upload, surface `error_type` and `message` from the response:
 
+- `scope_missing`: uploading needs HQ Write. Where the upload refreshes tables
+  or places managed in CommCare HQ, it also needs HQ Import. Relay the
+  permission named by the response and wait for the user to grant it.
 - `invalid_input` whose `message` begins "This app isn't ready to upload":
   Nova's export check found something in the app itself to fix, and nothing
   was sent. Relay the `message`, which names each finding. The fix is in the
@@ -665,13 +669,15 @@ On a failed upload, surface `error_type` and `message` from the response:
   and `apps`, and ask. Where its `title` is null and `lines` is empty, the
   table is already managed in Nova: there is nothing to ask, so upload again.
   Only on a yes, send the same call again with that answer's
-  `review_digest`. Every answer of this tool is a result, never an
-  `error_type`: read `ok` and `reason`. The change landed only where the
+  `review_digest`. If the tool returns an `error_type`, relay its `message`
+  and stop. Both calls need HQ Write, HQ Import and access to the Project.
+  For a table result, read `ok` and `reason`. The change landed only where the
   second call answers `ok: true` with `managed_by: "nova"`; relay its
   `message`, then upload again. Where `ok` is false, nothing changed, and
   the upload would stop the same way:
-  - `review-moved`: the answer holds the change as it stands now, with a new
-    `review_digest`, so show it and ask again.
+  - `review-moved`: where the answer holds a new `review_digest`, show the
+    current preview and ask again. Otherwise relay the message and read a
+    fresh preview before asking about another handover.
   - `not-permitted`: relay the `message`, which names who can.
   - any other `reason` (such as `not-found`, `state-changed`,
     `not-connected`, `cannot-read`, `unavailable`, `table-gone`,
@@ -784,9 +790,10 @@ HQ. By `kind`:
   larger, say how many more there are.
 - `refused`: relay `message`.
 
-After `brought-in` or `recorded`, `deployment` can be null where Nova couldn't
-read the record back; what was brought in still landed, and `get_deployment`
-reads it again. Where `deployment.first_publish` is not null, relay it before
+After `brought-in` or `recorded`, a null `deployment` still means the change
+landed. If the answer includes `next`, relay it so the user can open the
+deployment details in Nova. Otherwise `get_deployment` can read them again.
+Where `deployment.first_publish` is not null, relay it before
 the next upload as step 4 does. If this began as an upload, upload again: the
 app's change no longer stops it. Otherwise offer the upload, which goes through
 step 5's confirmation like any other.
@@ -803,15 +810,9 @@ Both tools refuse with `error_type` and `message`:
   this needs. Relay the `message`, which names the access to grant, and stop.
   Both tools need the **HQ Import** permission (`nova.hq.import`), and
   `set_lookup_table_management` needs HQ Import and HQ Write
-  (`nova.hq.write`). A connection or API key that already held HQ Read and
-  HQ Write was given HQ Import, and a browser sign-in picks it up the next
-  time it renews. Otherwise the user approves it: sign in to Nova again
-  through `/mcp` and allow it, or, for an API key, check it under the key's
-  scopes in Nova's Settings. Where signing in again does not offer HQ
-  Import, or fails with `invalid_scope`, the connection registered with Nova
-  before that permission existed and keeps the set it registered with: the
-  user removes the Nova server from the client and adds it again, and the
-  fresh registration offers every current permission.
+  (`nova.hq.write`). The user can approve the named permission when prompted
+  or sign in again through `/mcp`. For an API key, they can select it under
+  the key's scopes in Nova's Settings.
 - `hq_not_configured`, `domain_not_authorized` or `domain_ambiguous`: the same
   Settings and reachable-space guidance as an upload (step 3). Never choose a
   project space for the user.

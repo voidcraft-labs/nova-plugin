@@ -33,17 +33,18 @@ This uses Claude Code's [server precedence](https://code.claude.com/docs/en/mcp#
 and [environment expansion](https://code.claude.com/docs/en/mcp#environment-variable-expansion-in-mcpjson).
 Plugin-provided header helpers cannot read credential environment variables.
 
-**CommCare HQ permissions.** Uploading to CommCare HQ needs the HQ Read and HQ
-Write permissions. Bringing an app in with `/nova:bring_in`, bringing in
-changes made there, and handing a lookup table between Nova and CommCare HQ
-also need HQ Import (`nova.hq.import` on an API key). A connection or key that
-already held HQ Read and HQ Write was given it. Otherwise, approve it by
-signing in again through `/mcp`, or check it under the key's scopes in
-settings. If signing in again doesn't offer HQ Import, or fails with
-`invalid_scope`, your connection registered with Nova before that permission
-existed and keeps the set it registered with: remove the Nova server from
-Claude Code and add it again, and the fresh registration offers every
-current permission.
+**CommCare HQ permissions.** The upload command uses HQ Read to check the
+destination and HQ Write to publish. It also needs HQ Import when it refreshes
+tables or places managed in CommCare HQ. The bring-in command uses HQ Read to
+check the connection and HQ Import to read and bring in the app. Bringing in
+later changes needs HQ Import. Handing a lookup table between Nova and
+CommCare HQ needs both HQ Import and HQ Write.
+
+A connection or API key that held both HQ Read and HQ Write when HQ Import
+was introduced was given it too. A browser connection picks it up on its
+next renewal. To grant it to another connection, approve HQ Import when
+prompted or sign in again through `/mcp`. For an API key, select HQ Import
+(`nova.hq.import`) under the key's scopes in Nova's Settings.
 
 **Working as a team?** Don't share one account. Create a shared Nova Project and
 invite your teammates — everyone signs in as themselves, and every member sees

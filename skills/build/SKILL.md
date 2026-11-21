@@ -77,9 +77,11 @@ checkpoint. `read_app_test` is a shared read and takes no request ID.
 Use the app's saved Preview identities
 and fictional records or place assignments within the isolated test session.
 Observe selection, record details, answers, submission effects and the next task.
-Follow the offered `routeContinue` action from Details; `routeBack` revisits the
-prior screen. In a sectioned form, `pageNext` and `pagePrevious` turn form pages;
-the offered `section` action also selects a page. Answer the current page before
+Selecting a record opens its Details where the list's step shows them; a parent
+case a basic menu asks for goes on at once. From Details, follow the offered
+`routeContinue` action; `routeBack` revisits the prior screen. In a sectioned
+form, `pageNext` and `pagePrevious` turn form pages; the offered `section`
+action also selects a page. Answer the current page before
 advancing. Investigate failed behavior through ordinary authoring tools, then
 check affected journeys.
 To reuse recorded evidence, call `read_app_test` without `testId` to list recent

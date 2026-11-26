@@ -140,9 +140,9 @@ user's authority for data changes.
 When the worker needs a list in a particular order, give the first rule priority zero and add a second rule for ties. A calculation can decide the order without adding another column to Results. For example, compare an appointment number stored as text using whole numbers so appointment 2 comes before appointment 10. Give the calculation a worker-facing name if people should be able to pick it in Sort by. Try the list with both values in Preview.
 
 Case-backed choices offer records already available to the worker and save exact
-record IDs. A single-select source `{kind: "available-cases", status: "open"}`
-offers only open records across the case types restored for that worker. With
-`status` omitted, closed records still on the device can appear. For a
+record IDs. On a single-select source with `kind: "available-cases"`, set
+`status` to `open` or `closed` to filter the worker's restored records. Omit
+`status` to include both. For a
 `cases` source restricted to one type, filter with `#row/status = 'open'`
 when the worker needs only open records. Filters cannot fetch more records or
 broaden access. Test a representative worker with the intended assignments.

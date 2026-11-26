@@ -260,9 +260,9 @@ saved data merely to make the check pass; respect the intended workflow and the
 user's authority for data changes.
 
 Case-backed choices offer records already available to the worker and save exact
-record IDs. A single-select source `{kind: "available-cases", status: "open"}`
-offers only open records across the case types restored for that worker. With
-`status` omitted, closed records still on the device can appear. For a
+record IDs. On a single-select source with `kind: "available-cases"`, set
+`status` to `open` or `closed` to filter the worker's restored records. Omit
+`status` to include both. For a
 `cases` source restricted to one type, filter with `#row/status = 'open'`
 when the worker needs only open records. Filters cannot fetch more records or
 broaden access. Test a representative worker with the intended assignments.

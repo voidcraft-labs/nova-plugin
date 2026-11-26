@@ -169,6 +169,11 @@ target language where both screens are used. If source wording changes,
 compare the current effective wording with any saved translation marked out
 of date. Review or replace it explicitly.
 
+For a survey that creates one fresh case, use `ownerAfterCreate` on that
+same case change to assign a later owner when its condition holds. The
+initial owner is kept when the condition is false. Test both branches in
+the same saved workflow and check the other values the form saves.
+
 Read the resolved navigation returned by form tools. After a submission,
 Previous resumes the preceding task or record selection. That can be the same
 form's record picker or a menu for the retained records. Ordinary Back follows

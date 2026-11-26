@@ -199,6 +199,11 @@ Test the complete route and a missing connection. Keep the exact spelling of
 an Advanced connection while the change stays in an Advanced open action.
 The name must be valid in XML and readable on both Web Apps and Android.
 
+An ordinary Advanced follow-up can save a passive message to the selected case.
+A visible message contributes `OK`. When a condition hides the message, the
+previous value stays in place. Check both paths on the selected record. Use a
+question when the record needs the text the worker enters.
+
 Read the resolved navigation returned by form tools. After a submission,
 Previous resumes the preceding task or record selection. That can be the same
 form's record picker or a menu for the retained records. Ordinary Back follows

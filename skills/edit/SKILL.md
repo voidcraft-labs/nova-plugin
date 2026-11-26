@@ -157,6 +157,8 @@ lookup can use `case-list-lookup-count()` in a question calculation. The
 formula counts distinct keys the companion returned, including keys that
 match no local row. No response leaves the value blank. An empty response
 gives zero. Test those cases on the installed app with the intended companion.
+The results heading can have its own worker wording on the menu that opens
+the lookup. Verify the heading on the installed Android app.
 
 Read `detail_tabs` with `get_module`. Keep each `tabUuid` in
 `set_case_detail_tabs` and include each visible Details field once across

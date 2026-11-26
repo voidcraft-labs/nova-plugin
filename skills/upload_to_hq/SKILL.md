@@ -221,7 +221,24 @@ The first upload of a case change records where CommCare HQ keeps it, which
 changes the saved app. Work begun with `begin_work` before the upload must be
 begun again.
 
-For installation profiles, show each name, language order and practice worker supplied for this exact project space. Follow the returned review and resume phase. HQ accepts named profiles on import-create and keeps the destination's map on in-place import. Direct the person to the target app’s Releases page when Nova asks for the profile edit, then retry. A worker identifier from another project space cannot establish this space’s practice binding. For a mobile file, `compile_app` takes `installation_profile_uuid`. A profile requiring practice data needs the checked installation from that project space.
+For installation profiles, show each name, language order and practice worker supplied for this exact project space. Follow the returned review and resume phase. HQ accepts named profiles on import-create and keeps the destination's map on in-place import. Direct the person to the target app’s Releases page when Nova asks for the profile edit, then retry. A worker identifier from another project space cannot establish this space’s practice binding.
+
+For a mobile file, `compile_app` with `format: "ccz"` takes
+`installation_profile_uuid` for a named installation without practice data.
+Omit it for all app languages. The archive signs workers in and sends
+submissions to its exact published project space.
+
+For a manual import, `compile_app` with `format: "json"` returns an import
+ZIP. Follow its `nova_manual_import_guide` and the README in the ZIP. An
+app using a project-space search needs the selected server and project space
+for this format too. When the guide names practice profiles, have the person
+import the app, use Releases → Application Profiles to choose an active
+worker in that space for each named profile, then make a new version.
+For that version, choose Deploy → Download to Android → Offline
+Installation and download the archive for each required named profile.
+Open each archive on a device and check the expected language and practice
+data before the person distributes it. Compiling the import file does not
+make or release that version.
 
 ## 6. Report
 
@@ -905,7 +922,10 @@ its `requiredSelections`. Call `get_entry_point_link` with
 `{app_id, server, domain, entry_point_uuid, selections}`, using the exact
 selected server and project space. Each selection is `{module_uuid, case_ids}`;
 use external HQ case IDs, never Nova case row IDs. Preserve order and supply
-every required selection within its cardinality and maximum.
+every required selection within its cardinality and maximum. If the form
+lists case creations under `caseCreations.supplied`, also send
+`creations: [{operation_uuid, case_id}]` with a fresh external case ID for
+each supplied creation. A selected case's ID cannot also name a new case.
 
 Call the verifier again after each upload, including a failed or partial
 upload. Never reuse earlier verification as evidence for the new publish.
@@ -922,7 +942,7 @@ For named practice installations, a worker confirmation applies to one exact app
 
 When an upload change or a `read_hq_changes` result carries `requires_review: true`, present its full paged review, including changes Nova would make on the next publish. A previous agreement or an empty list of ordinary content edits does not settle that review. Use the current reading ID and review digest only after the user has considered its consequences and choices.
 
-When the original profile has been removed, present the exact destination choices in `replacement_choices`. Browse all parts of long reviews using their navigation tokens. Only the last part supplies a binding or worker confirmation. Choose the Nova installation first, then ask the person to identify the exact destination ID, languages and worker before sending the binding confirmation. For a manual HQ import, relay the guide’s steps for each named profile that needs a practice worker. Have the person choose an active worker in that project space and prepare the matching offline installation. Older apps can use Bring in changes to bring in a previously untracked profile.
+When the original profile has been removed, present the exact destination choices in `replacement_choices`. Browse all parts of long reviews using their navigation tokens. Only the last part supplies a binding or worker confirmation. Choose the Nova installation first, then ask the person to identify the exact destination ID, languages and worker before sending the binding confirmation. For a manual HQ import, relay the guide’s steps for each named profile that needs a practice worker. Follow the named-version steps in step 5. Older apps can use Bring in changes to bring in a previously untracked profile.
 
 For an unresolved or ambiguous installation, show the exact Nova installation and HQ ID pair before sending its confirmation. A new review after an unrelated app edit can choose an existing HQ row. Bring-in changes marked `requires_review` need the person’s decision, including a change that only moves the project-space worker. Show old and new names, language order and worker for each affected installation.
 

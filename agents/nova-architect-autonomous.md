@@ -93,13 +93,23 @@ saved data merely to make the check pass; respect the intended workflow and the
 user's authority for data changes.
 
 Case-backed choices offer records already available to the worker and save exact
-record IDs. Filters do not fetch additional cases or broaden access: an
-all-clinics selector still shows only the clinics restored for that worker. Use
-the shared-data authoring guide for the current source and filter syntax, and
-test a representative worker with the intended location assignments. For batch
-checklists, test selection, deselection, Back, and submission; inspect which
+record IDs. A single-select source `{kind: "available-cases", status: "open"}`
+offers only open records across the case types restored for that worker. With
+`status` omitted, closed records still on the device can appear. For a
+`cases` source restricted to one type, filter with `#row/status = 'open'`
+when the worker needs only open records. Filters cannot fetch more records or
+broaden access. Test a representative worker with the intended assignments.
+For batch checklists, test selection, deselection, Back, and submission; inspect which
 existing records changed. A retained repeating row alone does not prove final
 checklist membership.
+
+Check Search through the worker's real entry menu. Distinguish its own Search
+answers from those that selected a parent record. A shared form can open
+through separately configured menus, so exercise each route. Use Project
+table identities for Search choices and the right scope for worker and
+session values. Preview can show prompts for a search supplied by a project
+space. Verify its actual matches and claims in that space.
+
 
 Journey tests accept a configured worker language at start and a `language`
 action without clearing answers or repeat rows. Use the structured language

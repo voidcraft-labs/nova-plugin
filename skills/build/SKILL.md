@@ -110,6 +110,22 @@ A photo or file question starts empty. The worker can select or record the file 
 
 For a Search question with a date range, use `default: {from, to}` with inclusive ISO calendar dates when the dates should stay fixed. Use a text calculation when the worker supplies the dates. `get_module` returns that distinction. In a form check, pass both `name:from` and `name:to` when changing the range.
 
+Plan how the worker enters each menu before adding Search. A child form can
+read the completed parent Search as `#search/<parent module id>/<prompt name>`
+and its own menu's answer as `#search/<prompt name>`. Check both answers
+through the actual route, including any other menu that lists the same form.
+On a route that never ran the parent Search, its answer is blank.
+
+Search choices come from a Project table. Read `get_lookup_tables` before
+creating or reusing one, and use the actual column or detail selectors.
+Search defaults to ordering by label. A starting value can depend on a
+worker or session value available before record selection. A check can read
+the worker's Search answers too. Web Apps enforces those checks and can
+collapse Search headings. Android shows the ordered fields without
+headings and runs Search without those checks. Test the intended platform,
+and use the connected project space to check its own Search and claims.
+
+
 Inline choice starting values must contain only choices the question offers,
 or be blank. Nova checks returned branches and the app's record writers, including
 later edits. A storage type alone does not prove that values fit. When a form
@@ -124,11 +140,13 @@ user's authority for data changes.
 When the worker needs a list in a particular order, give the first rule priority zero and add a second rule for ties. A calculation can decide the order without adding another column to Results. For example, compare an appointment number stored as text using whole numbers so appointment 2 comes before appointment 10. Give the calculation a worker-facing name if people should be able to pick it in Sort by. Try the list with both values in Preview.
 
 Case-backed choices offer records already available to the worker and save exact
-record IDs. Filters do not fetch additional cases or broaden access: an
-all-clinics selector still shows only the clinics restored for that worker. Use
-the shared-data authoring guide for the current source and filter syntax, and
-test a representative worker with the intended location assignments. For batch
-checklists, test selection, deselection, Back, and submission; inspect which
+record IDs. A single-select source `{kind: "available-cases", status: "open"}`
+offers only open records across the case types restored for that worker. With
+`status` omitted, closed records still on the device can appear. For a
+`cases` source restricted to one type, filter with `#row/status = 'open'`
+when the worker needs only open records. Filters cannot fetch more records or
+broaden access. Test a representative worker with the intended assignments.
+For batch checklists, test selection, deselection, Back, and submission; inspect which
 existing records changed. A retained repeating row alone does not prove final
 checklist membership.
 

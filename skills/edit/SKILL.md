@@ -84,7 +84,10 @@ Use `configure_case_list` with `calculatedSorts` for a Default order rule that r
 For a saved app's case search, read `get_preview_search_settings` before
 choosing the Preview destination. Record team-confirmed settings with
 `set_preview_search_settings` and the returned revision. Leave unknown values
-unconfirmed. For a Web Apps record map, record `caseListMap` only when the team confirms whether their destination offers it. An address alone does not establish this setting. Android uses its address without this confirmation. This edit changes Preview for the Project and destination.
+unconfirmed. For a Web Apps record map, record `caseListMap` only when the
+team confirms whether their destination offers it. Android can display a map from saved
+coordinates without that Web Apps setting. This edit changes Preview for the
+Project and destination.
 A destination list and each selected target's ordered rules have pages. Follow
 `nextCursor` with the same selection until it is null. On a changed cursor,
 restart without it. Send only the confirmed fields in `changes`, for example
@@ -96,6 +99,61 @@ Reading these shared settings needs the optional `nova.preview.search.read`
 permission. Saving also needs `nova.preview.search.write`. On
 `scope_missing`, name the permission the tool requested and let the person
 approve it through the MCP connection or choose an API key with that scope.
+
+Read `get_module` before changing Search. To arrange headings in one edit,
+use `configure_case_list.searchGroups` with ordered entries containing
+`label` and `searchInputUuids`. Include each Search field once and keep the
+`groupUuid` of an existing heading so its translations follow it. Use an
+empty array for a flat list. Web Apps workers can collapse headings and keep
+their answers. Android shows the fields in order without the headings.
+
+Address search on Web Apps needs advanced case search and the Geocoder plan
+feature. Use a visible text or multiple-choice field to receive parts from an
+address field on the same Search screen. Choose the parts in order. A
+multiple-choice answer fills only when a label matches uniquely. Workers can
+change the suggested answer, and on Android they enter it themselves. Before
+removing the address field, reassign or clear its receivers. When replacing
+a receiver with `update_search_input`, keep
+`addressReceiver: {kind: "address", source, parts}` in its replacement body.
+Use the address field's UUID for `source`.
+
+When a child form reads an answer used to find its parent record, qualify it
+as `#search/<parent module id>/<prompt name>`. The child menu's own answers
+use `#search/<prompt name>`. Opening the form without that parent Search
+leaves its answer blank. Test the route through both searches, including a
+shared form through each menu that lists it. Check the actual next screen
+after submission. If Nova refuses an inline Search return that would need a
+case the form creates only sometimes, follow the refusal. Choose First menu
+after submit to keep the conditional creation, or have the form always create
+the case when the workflow calls for it.
+
+For lookup-backed Search choices, read `get_lookup_tables` for the table,
+column and detail identities. A row detail can provide the value or label.
+A value detail can qualify which column value workers see, and occurrences
+are one-based. Use each selector in the shape the served tool returns. Search
+sorts by label unless `options.sortColumnId` supplies a different selector.
+Keep worker and session values distinct from a case that has yet to be
+selected. Starting values can use declared worker information or session
+values appropriate to the expression's scope. Read the active
+`get_authoring_guide` for expressions that read worker records and sessions.
+Requiredness and checks can also use Search answers and are enforced only in
+Web Apps. Keep project-space search matching and claims for a check in the
+connected project space.
+
+Read `detail_tabs` with `get_module`. Keep each `tabUuid` in
+`set_case_detail_tabs` and include each visible Details field once across
+the tabs. A tab's display condition reads the chosen case. For a tab of
+records, choose open child cases, open cases of a declared type, a Project table,
+or visible places. Confirm the case type and row fields before editing it.
+Read each row with the expression for its source, such as `#row/status` for
+a case or `place-field('name')` for a place. An explicit `records` source
+can use `includeChildrenOfType` to ask Search for supporting children even
+when the tab displays a different collection. To change wording, use `get_translatable_content` and `update_translations` with fresh review
+values. A tab can have different titles in ordinary Details and Search result
+Details. Keep its identity when moving it and check both titles in the
+target language where both screens are used. If source wording changes,
+compare the current effective wording with any saved translation marked out
+of date. Review or replace it explicitly.
 
 Read the resolved navigation returned by form tools. After a submission,
 Previous resumes the preceding task or record selection. That can be the same
@@ -134,7 +192,14 @@ Project data, real organization records, media service writes and deployment
 have separate immediate effects; discarding app work does not undo them.
 
 
-When rearranging questions in a published form, distinguish the worker's reading order from the grouping and order of its submitted answers. Move just the screen position to keep existing reporting addresses. A submitted group move can change the addresses of all its children. Review that impact with the person before saving. A form's answer root and a hidden question's answer namespace preserve outside data contracts. Keep those names on ordinary wording edits.
+When rearranging questions in a published form, check both the worker's
+reading order and the submitted paths used for reporting. A supported answer
+placement can keep a question's value under a group in the same repeat
+entry. A group or repeat moves with its submitted children, and moving a
+nested answer to the form root is refused. CommCare HQ's form designer
+derives answer order from the layout, so a screen reorder can also change
+submitted order. Review the impact before saving. Keep the form's answer
+root and hidden value namespaces on ordinary wording edits.
 
 An HQ editing lock describes what an editor can change in that project space. Nova Project roles govern who can edit in Nova. On a reading refusal about a submitted name, use the stated recovery. An Android-only form can retain some names that Web Apps consumes as transactions.
 
@@ -152,11 +217,13 @@ saved data merely to make the check pass; respect the intended workflow and the
 user's authority for data changes.
 
 Case-backed choices offer records already available to the worker and save exact
-record IDs. Filters do not fetch additional cases or broaden access: an
-all-clinics selector still shows only the clinics restored for that worker. Use
-the shared-data authoring guide for the current source and filter syntax, and
-test a representative worker with the intended location assignments. For batch
-checklists, test selection, deselection, Back, and submission; inspect which
+record IDs. A single-select source `{kind: "available-cases", status: "open"}`
+offers only open records across the case types restored for that worker. With
+`status` omitted, closed records still on the device can appear. For a
+`cases` source restricted to one type, filter with `#row/status = 'open'`
+when the worker needs only open records. Filters cannot fetch more records or
+broaden access. Test a representative worker with the intended assignments.
+For batch checklists, test selection, deselection, Back, and submission; inspect which
 existing records changed. A retained repeating row alone does not prove final
 checklist membership.
 
@@ -228,3 +295,14 @@ When the project space supplies a menu's search, use `configure_project_search`
 to name it or reuse its UUID. Preserve existing named values and their order,
 including repeated names. Describe what will replace the ordinary matching
 rules before switching. Project space IDs belong to the selected destination.
+Read the configured service's result shape before choosing fields. A returned
+field with no known type is text. An inline search under a chosen parent
+needs the real case relationship in its results. A text column named
+`index` cannot supply that relationship. Use a native check for these results.
+
+Read the table definition before editing records that use row details or
+repeated values. Keep the returned column and detail IDs, types, exact text
+and occurrence order. Use `get_lookup_table_rows` with `readerPage` at
+offset zero before changing a shared definition an app reads. Show the
+affected apps and send the Project revision and those app IDs in `reviewed`
+with the authorized change.

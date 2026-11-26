@@ -140,6 +140,12 @@ Requiredness and checks can also use Search answers and are enforced only in
 Web Apps. Keep project-space search matching and claims for a check in the
 connected project space.
 
+A form that opens directly from one Android case list with a companion
+lookup can use `case-list-lookup-count()` in a question calculation. The
+formula counts distinct keys the companion returned, including keys that
+match no local row. No response leaves the value blank. An empty response
+gives zero. Test those cases on the installed app with the intended companion.
+
 Read `detail_tabs` with `get_module`. Keep each `tabUuid` in
 `set_case_detail_tabs` and include each visible Details field once across
 the tabs. A tab's display condition reads the chosen case. For a tab of

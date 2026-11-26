@@ -81,6 +81,10 @@ form or changing which forms the second menu lists.
 
 Use `configure_case_list` with `calculatedSorts` for a Default order rule that reads an independent value. Its priority is shared with the column rules. Keep the returned `calculatedSortUuids` for later edits. To change a rule, supply its `sortUuid` and its complete desired settings. To remove it, send the ID in `removeCalculatedSorts`. A hidden tile field can have a `sort.menuPosition` when its place among worker choices differs from its default priority. Independent choices follow the order of `calculatedSorts`. Check the worker’s order on two unequal values and a tie. Distance uses the worker’s location on Android.
 
+In a grouped tile for an app that runs on Web Apps, place map locations and
+fields marked Android-only in the group heading. Web Apps shows those values
+when they sit below the heading.
+
 For a saved app's case search, read `get_preview_search_settings` before
 choosing the Preview destination. Record team-confirmed settings with
 `set_preview_search_settings` and the returned revision. Leave unknown values

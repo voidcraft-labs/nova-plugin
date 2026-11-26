@@ -174,6 +174,12 @@ same case change to assign a later owner when its condition holds. The
 initial owner is kept when the condition is false. Test both branches in
 the same saved workflow and check the other values the form saves.
 
+A form can update a declared worker property once for each entry in one
+ordinary repeating section. Save to the worker's record through one case
+change. The same record receives the entries in order. An irrelevant answer
+leaves the earlier value in place, and a relevant blank clears it. Test an
+empty repeat and two entries with different answers.
+
 Read the resolved navigation returned by form tools. After a submission,
 Previous resumes the preceding task or record selection. That can be the same
 form's record picker or a menu for the retained records. Ordinary Back follows

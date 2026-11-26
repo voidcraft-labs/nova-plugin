@@ -117,6 +117,12 @@ a receiver with `update_search_input`, keep
 `addressReceiver: {kind: "address", source, parts}` in its replacement body.
 Use the address field's UUID for `source`.
 
+A text Search field can use project space matching over a direct parent’s
+information. Keep the field’s Nova name and the chosen parent property
+distinct. Renaming the field keeps that property. Check similar-word matches
+or cases whose parent is absent from Preview in the actual project space.
+Use a current-case Search field when a formula needs the worker’s answer.
+
 When a child form reads an answer used to find its parent record, qualify it
 as `#search/<parent module id>/<prompt name>`. The child menu's own answers
 use `#search/<prompt name>`. Opening the form without that parent Search

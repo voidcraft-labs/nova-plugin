@@ -189,6 +189,13 @@ change. The same record receives the entries in order. An irrelevant answer
 leaves the earlier value in place, and a relevant blank clears it. Test an
 empty repeat and two entries with different answers.
 
+Keep the order and declared case type of each connection in a saved case
+write. A basic follow-up can save an answer through `parent` then `user`
+when the starting record and both destinations have distinct declared
+ordinary case types.
+Test the complete route and a missing connection. Preserve a dotted case
+connection name while the change stays in an Advanced open action.
+
 Read the resolved navigation returned by form tools. After a submission,
 Previous resumes the preceding task or record selection. That can be the same
 form's record picker or a menu for the retained records. Ordinary Back follows

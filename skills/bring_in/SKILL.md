@@ -107,12 +107,28 @@ Never tell the user the list is complete: a later check may find more. Never
 soften the list, never call it an error, and never offer to bring in part of
 the app: Nova brings in an app only when it can hold all of it.
 
+Where the account names a Connect work-area request, tell the person which
+form contains it and what the receiver can accept. HQ forwards the filename
+from an inaccessible-area photo. Connect needs the image and declines every
+activity in that submission. An ordinary delivery can still reference an
+existing work area. Relay the recovery the account gives for that form.
+
 Nova keeps no list. `/nova:bring_in` again reads the app afresh.
 
 ## 8. If it is ready
 
-`state: "review"`: keep `reading_id` and `review.review_digest`. Show the
-review in this order:
+When `state` is `review`, keep the reading ID. Follow every `review.next_page` using the same Project, domain and HQ app. Only the last page of a complete review supplies the review digest for creating the app.
+
+Keep the pages together for that reading. When an answer restarts, discard
+the earlier pieces and collect the new review before asking for a decision.
+Each page can show more case types, tables, installation choices or search
+connections. When a record spans pages, group its pieces by collection and
+`item`, then join `text` in `part` order. For `case_type_parts`, the
+result is the case type name. For `table_parts` and `installation_parts`,
+parse the joined JSON to recover the complete record. Include ordinary
+entries and reconstructed entries in the same review.
+
+Show the following details.
 
 1. **The name**: `review.app_name`, CommCare HQ's name for the app. It is empty
    where CommCare HQ holds none.
@@ -123,18 +139,27 @@ review in this order:
    one Nova proposes (`preselected`). `recorded_features` are plan features
    the app already uses on that project space under that choice: Nova records
    them, so publishing asks nothing about them, and the user can withdraw any
-   of them later. Then each of `runs_on_notes`, and each
+   of them later. Relay `confirm_before_first_upload` for that choice. A
+   saved installation or practice worker can outlast a plan change. Before
+   uploading, Nova asks whether this destination still has the feature.
+   Show each of `runs_on_notes`, and each
    entry of `cannot_run`: its `sentence`, its `features` as a list, and its
    `files`.
 4. **Lookup tables**: each entry of `tables`, with its `sentence`, or its
    `choice`: the `title`, the `body`, and each entry of `answers` with its
    `label`, `lines` and, where its `offered` is false, its `reason`. An answer holds only as many tables
-   as fit, and `review.tables_total` says how many there are in all. While
-   `review.next_page` is not null, call `read_hq_app` again with the same
-   three fields and `page` set to it, and show that page's tables too. Every
-   other part of the review is the same on every page. If an answer has
-   `restarted` true, the app changed while you were paging: relay `message`
-   and show the review again from this answer.
+   as fit. `review.tables_total` gives the total. Show each page's tables and
+   each `publish_details` file-removal entry for its platform and split-date
+   choice. Join the numbered parts of a split entry in order. If the review
+   restarts, relay its message and use the new pages for the decision.
+   For each installation, show its name and profile ID, its languages in
+   default-first order, and its practice worker for this project space. Show
+   the language names with their script or region when present.
+   For each search in `project_search_details`, show its name and source
+   service ID. Group menus by `searchUuid`, and parameters and returned
+   fields by `menuUuid`. Join numbered pieces of a long name in order and
+   include each returned field’s type. The source project space supplies
+   the cases. Publishing to another space requires its own connection.
 5. **Places and media**: `places.sentence`, `media.sentence` and
    `media.left_out`, each where present.
 6. **What stays in CommCare HQ**: `kept.lead`, its `labels`, and `kept.note`.
@@ -216,7 +241,12 @@ A refusal comes back with `error_type` and `message`:
 - `scope_missing`: the user's connection to Nova lacks the CommCare HQ access
   this needs. Relay `message`, which names the access to grant, and stop.
   Checking the connection needs HQ Read. Listing, reading and bringing in
-  apps needs HQ Import (`nova.hq.import`). The user can approve the named
+  apps needs HQ Import (`nova.hq.import`). Adopting a named installation
+  or accepting changes to its destination binding also needs HQ Write. The
+  same grants apply when adoption takes back a claim from a recently deleted
+  app whose destination still holds installation bindings or a pending review.
+  This can apply even if today’s HQ app has no named installations.
+  The user can approve the named
   permission when prompted or sign in again through `/mcp`. For an API key,
   they can select it under the key's scopes in Nova's Settings.
 - `hq_not_configured`: the user has not connected CommCare HQ. Point at

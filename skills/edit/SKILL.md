@@ -34,6 +34,12 @@ with `get_work` before resuming. Otherwise call `begin_work` with
 Shared edits use that ID and a unique `request_id`; shared reads choose exactly
 one of `work_id` for the candidate or `app_id` for the saved app.
 `get_authoring_guide` explains features and expressions against that target.
+For a formula that reads Project data, `get_lookup_tables` identifies the
+table and its columns. A table can share an export name with another source
+in the app. For example, `instance('item-list:locations')/locations_list/locations/name`
+reads the table's name column and `instance('locations')/locations/location/name`
+reads the worker's places. Preserve the source shown by the field read when
+editing the formula.
 
 When the request refers to a document already in the Project's library, use
 `list_media_assets` with a focused `query` and optional `kind`, then `read_source`
@@ -49,6 +55,14 @@ MCP reads do not start preparation model calls. If the result reports
 Library preparation or retry step; do not repeatedly call an unchanged status
 or invent the missing document's contents.
 
+For a Connect opportunity, choose Android with `update_app` and explain that
+workers' submissions can include their location. Use `configure_connect` for
+the app's learning and delivery roles. Use `add_fields` to place each activity
+beside its questions. For repeated deliveries, give each recipient a distinct
+ID and exercise two rows in the saved app test. Keep published activity IDs
+when changing wording or moving questions. In the submission result, check
+which activities actually ran and the recipient or score each recorded.
+
 Form and case-operation reads, plus operation edit feedback, include
 `operationSemantics`: record targets, condition/value dependencies and possible
 read/write overlaps. Read it when changing competing actions. Native conditions
@@ -56,6 +70,30 @@ can retain an open form's initialized record view even after another form update
 the same local store; they do not compare-and-set current records at submission.
 Preview transaction reads have a separate provenance. An empty overlap inventory
 does not establish concurrency protection.
+
+When a second menu lists an existing form, read the menu and its form source
+before editing. Use `forms_from_menu` to change the source and `listed_form`
+to include or hide a form on that menu. Keep the worker's entry menu and form
+together when following the offered route. Check both entries after moving a
+form or changing which forms the second menu lists.
+
+Use `configure_case_list` with `calculatedSorts` for a Default order rule that reads an independent value. Its priority is shared with the column rules. Keep the returned `calculatedSortUuids` for later edits. To change a rule, supply its `sortUuid` and its complete desired settings. To remove it, send the ID in `removeCalculatedSorts`. A hidden tile field can have a `sort.menuPosition` when its place among worker choices differs from its default priority. Independent choices follow the order of `calculatedSorts`. Check the worker’s order on two unequal values and a tie. Distance uses the worker’s location on Android.
+
+For a saved app's case search, read `get_preview_search_settings` before
+choosing the Preview destination. Record team-confirmed settings with
+`set_preview_search_settings` and the returned revision. Leave unknown values
+unconfirmed. For a Web Apps record map, record `caseListMap` only when the team confirms whether their destination offers it. An address alone does not establish this setting. Android uses its address without this confirmation. This edit changes Preview for the Project and destination.
+A destination list and each selected target's ordered rules have pages. Follow
+`nextCursor` with the same selection until it is null. On a changed cursor,
+restart without it. Send only the confirmed fields in `changes`, for example
+`{"timeZone":"Asia/Kolkata"}`. Keep the list indexes returned by the selected
+target when inserting, removing or replacing rules. Save fewer changed rules
+together if the edit exceeds the size limit. Read the latest revision before
+retrying a conflicting edit.
+Reading these shared settings needs the optional `nova.preview.search.read`
+permission. Saving also needs `nova.preview.search.write`. On
+`scope_missing`, name the permission the tool requested and let the person
+approve it through the MCP connection or choose an API key with that scope.
 
 Read the resolved navigation returned by form tools. After a submission,
 Previous resumes the preceding task or record selection. That can be the same
@@ -94,6 +132,12 @@ Project data, real organization records, media service writes and deployment
 have separate immediate effects; discarding app work does not undo them.
 
 
+When rearranging questions in a published form, distinguish the worker's reading order from the grouping and order of its submitted answers. Move just the screen position to keep existing reporting addresses. A submitted group move can change the addresses of all its children. Review that impact with the person before saving. A form's answer root and a hidden question's answer namespace preserve outside data contracts. Keep those names on ordinary wording edits.
+
+An HQ editing lock describes what an editor can change in that project space. Nova Project roles govern who can edit in Nova. On a reading refusal about a submitted name, use the stated recovery. An Android-only form can retain some names that Web Apps consumes as transactions.
+
+For a Search question with a date range, use `default: {from, to}` with inclusive ISO calendar dates when the dates should stay fixed. Use a text calculation when the worker supplies the dates. `get_module` returns that distinction. In a form check, pass both `name:from` and `name:to` when changing the range.
+
 Inline choice starting values must contain only choices the question offers,
 or be blank. Nova checks returned branches and the app's record writers, including
 later edits. A storage type alone does not prove that values fit. When a form
@@ -113,6 +157,20 @@ test a representative worker with the intended location assignments. For batch
 checklists, test selection, deselection, Back, and submission; inspect which
 existing records changed. A retained repeating row alone does not prove final
 checklist membership.
+
+Use `update_language` with `action: "move"` and the preceding language under
+`after` to change the order workers see. The first language is their default.
+Moving a language preserves its text and translation review status.
+
+For a named installation, `get_languages` with `installations: {}` returns
+the profile UUID, name, language order and practice-data requirement. Pass
+`nextCursor` in `installations.cursor` until it is null. For each split
+profile, join its text in part order by UUID and parse the complete JSON.
+Use `update_app` with `installation_profile` to create, update or remove
+one profile. Supply structured app language identities, including any script
+and region, with the worker's initial language first. Set
+`requiresPracticeWorker` when the installation needs practice data. The
+team chooses the worker separately for each destination.
 
 Journey tests accept a configured worker language at start and a `language`
 action without clearing answers or repeat rows. Use the structured language
@@ -147,3 +205,20 @@ were saved, the existing test stays at its previous step. Read its retained
 observations, then retry with fewer actions and a new request ID. A network
 timeout or lost response alone does not establish rollback; retry the exact
 request with its original request ID to recover its result.
+
+When workers need other Android apps installed, set the ordered selection through `update_app`. Preview a missing app and a phone with every requirement installed. Start an app test with `installedAndroidApps` to name what a test phone already has.
+
+When the person wants a visit’s device location, `update_app.capture_location`
+requests it for every Android form. `create_form.capture_location` and
+`update_form.capture_location` choose it for one form. Clearing the app-wide
+choice restores each form’s own choice. Connect requests location on every
+form. A question asking the worker to choose a point records a separate answer.
+A test session can supply `locationFix` with latitude, longitude, altitude
+and accuracy, or leave it out to exercise a phone without a fix. Check the
+submission’s `submissionLocation` alongside any point answer.
+
+
+When the project space supplies a menu's search, use `configure_project_search`
+to name it or reuse its UUID. Preserve existing named values and their order,
+including repeated names. Describe what will replace the ordinary matching
+rules before switching. Project space IDs belong to the selected destination.

@@ -163,6 +163,25 @@ they named the space. It is null while the app still publishes there and
 where it never has. Where the user asks who stopped publishing there and when,
 `get_deployment`'s deployment for the target carries it in `ending.message`.
 
+### Searches supplied by this project space
+
+When the app uses a project space search, call
+`get_project_search_destination` for this app, server and space. Describe the
+menus, the values each sends and the fields each reads from its results. Where
+the answer has a `next_page`, pass it as `page` to the same read until the
+last page supplies the version. Assemble split labels and field names in
+order. If the review restarts, replace the earlier pages with the new review.
+A saved connection with no menu may still hold an ID. Clear it in the same
+reviewed change if the person wants that ID for another search. If an ID is
+missing, ask for the ID confirmed by the team managing this space. Use
+`connect_project_searches` with the version and the complete set of reviewed
+bindings. If the version changed, read the connections again. Repeat this
+check when downloading an HQ import or mobile file for another space.
+
+The ID identifies an external search whose settings and results can change
+even after release. Confirm the worker journey in the destination app. Preview
+shows where the project space takes over.
+
 ## 5. Confirm and upload
 
 For an explicit target, step 1's named space already confirmed the upload. Show
@@ -199,6 +218,8 @@ target explicitly.
 The first upload of a case change records where CommCare HQ keeps it, which
 changes the saved app. Work begun with `begin_work` before the upload must be
 begun again.
+
+For installation profiles, show each name, language order and practice worker supplied for this exact project space. Follow the returned review and resume phase. HQ accepts named profiles on import-create and keeps the destination's map on in-place import. Direct the person to the target app’s Releases page when Nova asks for the profile edit, then retry. A worker identifier from another project space cannot establish this space’s practice binding. For a mobile file, `compile_app` takes `installation_profile_uuid`. A profile requiring practice data needs the checked installation from that project space.
 
 ## 6. Report
 
@@ -470,8 +491,8 @@ the upload has already succeeded. Link to the report's `docs_url` when useful.
 
 On a failed upload, surface `error_type` and `message` from the response:
 
-- `scope_missing`: uploading needs HQ Write. Where the upload refreshes tables
-  or places managed in CommCare HQ, it also needs HQ Import. Relay the
+- `scope_missing`: uploading needs HQ Write. Managing named installation profiles or refreshing tables
+  or places managed in CommCare HQ also needs HQ Import. Relay the
   permission named by the response and wait for the user to grant it.
 - `invalid_input` whose `message` begins "This app isn't ready to upload":
   Nova's export check found something in the app itself to fix, and nothing
@@ -713,6 +734,13 @@ Never ask the user the same question twice.
 
 ## Changes made in CommCare HQ
 
+A target previously kept its ordinary app-wide automatic location setting.
+When the publish review names a change, show that target’s current value and
+the value Nova would send. Bringing the difference into Nova changes the
+shared app. A confirmed discard sends the app’s chosen value to that target.
+A Connect app requests location for every form. After disabling Connect, the
+app and form switches in Nova control the released version.
+
 Call Nova's `read_hq_changes` with `{app_id, domain: "<target>"}` after an
 `hq_changed` whose app change has `can_bring_in` true, or when the user asks
 what changed there. It changes nothing. Relay its `message` and its other
@@ -731,17 +759,26 @@ sentences as written: they say what the user can do. By `kind`:
   while a later one holds the renames or a table that needs a choice: read
   `nova_changes_total`, `renamed_in_nova_total`, `tables_total` and
   `made_by_total` for how many each holds in all, and read every page before
-  you ask the user anything. Show the user every line of both lists, then
+  you ask the user anything. Follow each returned cursor using the same account,
+  app and project space. Only the last complete page supplies the review
+  digest. To publish over a change, use the observed digest from its complete
+  review after the user has seen every removal and agreed to that choice.
+  Show the user every line of both lists, then
+  each contributor from `made_by` and `made_by_parts`. For a split name,
+  group its text by `item` and join the pieces in `part` order. Relay
   `made_by_line` where present, `case_data`, and `publish_changes_lead` with
   `publish_changes`, what the next upload then changes in CommCare HQ. Where
   `cut_line` is not null, this answer's one line is part `part` of `parts` of
   a line of `cut_line.list` too long for one answer: the next pages hold the
   rest, so join the parts in order and show the whole line. Where a page's
   `renamed_in_nova` is not empty, relay that page's `renamed_in_nova_line`,
-  which names the renames on that page: while `renamed_in_nova_total` is not
-  0, CommCare HQ's version is not offered until those case properties are
-  renamed back in Nova. Each entry of `tables` is a lookup table the changed
-  app newly reads: show its `sentence`, or its `choice`: the `title`, the
+  which names the recorded moves on that page. A positive
+  `renamed_in_nova_total` holds the option to take CommCare HQ's version.
+  Relay the recovery the review gives. A reused name may identify a different
+  property with its own saved values. Confirm the current names and saved data
+  before suggesting a reversal. For a table split across pages in `table_parts`,
+  group pieces by `item`, join `text` in `part` order and parse the JSON.
+  Each ordinary or reconstructed table is a lookup table the changed app newly reads: show its `sentence`, or its `choice`: the `title`, the
   `body`, and each entry of `answers` with its `label`, `lines` and, where its
   `offered` is false, its `reason`. Ask the user for each choice, and never
   choose one for them. The user picks among the answers whose `offered` is
@@ -819,7 +856,7 @@ Both tools refuse with `error_type` and `message`:
 
 ## Stop publishing to a project space
 
-Nova's `stop_publishing` ends this app's publishing to one project space.
+Nova's `stop_publishing` ends this app's publishing to one project space. A destination with named installation bindings or a pending installation review also needs HQ Import alongside HQ Write. A publish on a restored app settles the selected project space.
 Call it only when the user asked for exactly this, after telling them what it
 does: the app in CommCare HQ stays exactly as it is, this Nova app stops
 publishing to it, and that HQ app can be brought in to Nova again as a new app
@@ -877,3 +914,16 @@ The URL is not pinned to the checked build: HQ's recipient latest-build policy
 controls the version subsequently opened. Report the check time and observed
 build from the result, keeping that distinction clear. Do not open the link
 as a verification probe, because opening it can claim cases.
+
+
+For named practice installations, a worker confirmation applies to one exact app, project space, and review. Present the exact profile, project space and version. A Web Apps-only release runs in the browser. When Nova explicitly requests preparation to witness a practice worker, open the named version. On its Releases page choose Deploy → Download to Android → Offline Installation, use Application Profile’s first entry for all app languages or select the matching named entry below it (even if it has the same translated label as the first entry), then download that version’s CommCare_vN.ccz. For a custom secondary-language order, relay the listed defaults in order and save after each one. Resume with the user's confirmed worker only. Nova reports whether that particular build contains the worker's restore. The API key does not certify the current subscription, and refreshing status only reads existing installation details.
+
+When an upload change or a `read_hq_changes` result carries `requires_review: true`, present its full paged review, including changes Nova would make on the next publish. A previous agreement or an empty list of ordinary content edits does not settle that review. Use the current reading ID and review digest only after the user has considered its consequences and choices.
+
+When the original profile has been removed, present the exact destination choices in `replacement_choices`. Browse all parts of long reviews using their navigation tokens. Only the last part supplies a binding or worker confirmation. Choose the Nova installation first, then ask the person to identify the exact destination ID, languages and worker before sending the binding confirmation. For a manual HQ import, relay the guide’s steps for each named profile that needs a practice worker. Have the person choose an active worker in that project space and prepare the matching offline installation. Older apps can use Bring in changes to bring in a previously untracked profile.
+
+For an unresolved or ambiguous installation, show the exact Nova installation and HQ ID pair before sending its confirmation. A new review after an unrelated app edit can choose an existing HQ row. Bring-in changes marked `requires_review` need the person’s decision, including a change that only moves the project-space worker. Show old and new names, language order and worker for each affected installation.
+
+For a named installation the app brings in, relay `confirm_before_first_upload` from the selected review choice. Ask the person to confirm those features for this project space before publishing. A saved profile or practice worker in the app does not establish its plan. To adopt an installation or accept a change to its destination binding, the credential needs both HQ Import and HQ Write. A worker change on an installation removed locally affects which worker would be selected if it were restored. Show both workers before seeking agreement.
+
+If profile names look identical or a name is blank, relay the recovery from Nova. Have the person give every such row a distinct visible name in Releases → Application Profiles, keeping its languages and worker in place, then save, bring in the changes, and publish and build the new version. If Nova reports that a named installation needs a new ID, share its Releases repair before preparing any download. Read the repaired app again and follow the current version and profile instructions.

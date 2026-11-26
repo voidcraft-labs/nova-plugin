@@ -40,6 +40,11 @@ check the connection and HQ Import to read and bring in the app. Bringing in
 later changes needs HQ Import. Handing a lookup table between Nova and
 CommCare HQ needs both HQ Import and HQ Write.
 
+**Preview search and map permissions.** Reading the destinations available to a saved app,
+their search settings and Web Apps record map availability uses `nova.preview.search.read`. Changing a
+destination’s settings uses that permission and `nova.preview.search.write`.
+The change applies to apps in the Project that use the same destination.
+
 A connection or API key that held both HQ Read and HQ Write when HQ Import
 was introduced was given it too. A browser connection picks it up on its
 next renewal. To grant it to another connection, approve HQ Import when

@@ -173,6 +173,11 @@ target language where both screens are used. If source wording changes,
 compare the current effective wording with any saved translation marked out
 of date. Review or replace it explicitly.
 
+A text badge on a menu or form can have its own worker wording in each
+language. Read and update that wording unit to keep the badge's usual text
+as the fallback. For a shared form, check the badge on each menu that
+lists it.
+
 For a survey that creates one fresh case, use `ownerAfterCreate` on that
 same case change to assign a later owner when its condition holds. The
 initial owner is kept when the condition is false. Test both branches in

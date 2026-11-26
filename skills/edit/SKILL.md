@@ -21,6 +21,8 @@ Read `get_app` for app `$0`, then inspect the modules, forms or fields relevant
 to the request. If `notices` is non-empty, tell the user what each one says
 before anything else, and once they have read them, offer `dismiss_app_notice`
 with each notice's `id` as `notice_id`.
+For an Android app question, read the owning action, sent expressions and named result destinations with the form. A second question can use the same action while receiving its own answer. Preserve the existing result destinations when changing a single input.
+
 Discover those tools as needed. Preserve unrelated work, and
 consider saved data, dependent rules, translations and navigation when making
 a change. Ask about consequential intent; read existing state yourself.
@@ -205,6 +207,10 @@ were saved, the existing test stays at its previous step. Read its retained
 observations, then retry with fewer actions and a new request ID. A network
 timeout or lost response alone does not establish rollback; retry the exact
 request with its original request ID to recover its result.
+
+For a question with language-specific media, keep the shared file unless the user wants it changed for everyone. Edit the version for the intended worker language, then switch the worker language in Preview to check the picture or recording. Android displays choice media. Web Apps displays the choice text.
+
+Android Preview keeps incomplete forms and completed submissions in the current Builder tab. Turn on the corresponding home-screen buttons through `update_app` when the requested workflow needs them. A saved-form descriptor can use the same translated text as a question or a choice. In Preview, save a draft, reopen it from Incomplete forms, and check the saved answers. Repeat with the intended worker language when the descriptor is translated.
 
 When workers need other Android apps installed, set the ordered selection through `update_app`. Preview a missing app and a phone with every requirement installed. Start an app test with `installedAndroidApps` to name what a test phone already has.
 

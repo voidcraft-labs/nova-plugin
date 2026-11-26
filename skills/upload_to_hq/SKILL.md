@@ -129,6 +129,8 @@ space lacks it, or `null` when Nova has nothing to offer. Relay them with their
 reasons before the upload, so the user knows what they will be asked. One
 already on record reads `confirmed` with who confirmed it, and the upload does
 not ask about it again; one that reads `needs_confirmation` will be asked.
+Confirm the Android integration feature the publish tool returns for this project space. Built-in actions can build with Built-in Integration or External Integration Framework. An arbitrary action requires External Integration Framework. When the user cannot confirm it, they can change the question to an available action or manual entry.
+
 When the Save to Case plan feature reads `needs_confirmation`,
 `placement_moves` may carry the case changes Nova can keep elsewhere so the
 app no longer needs it; relay them with that plan feature.

@@ -106,7 +106,7 @@ them. If work remains private, include its work ID and what still needs attentio
 
 A worker-controlled repeating group starts empty. In an app test, add a row before answering its questions. In a form evaluation, give the repeat the number of rows the scenario needs. The worker can remove the last row. Give the first and later entry buttons different wording when it helps the worker. A message can ask for confirmation on Android. Web Apps acknowledges it when the worker submits. An Image question can use the face camera on Android and accepts an ordinary picture on Web Apps. Preview both platforms when the distinction matters to the request.
 
-A capture question can start with a filename. Select or record a file to send bytes with the answer. Use a validation condition and its message together when a worker needs to replace a starting answer before continuing.
+A photo or file question starts empty. The worker can select or record the file when they reach the question. Use a required condition and its message when the answer must include a file.
 
 For a Search question with a date range, use `default: {from, to}` with inclusive ISO calendar dates when the dates should stay fixed. Use a text calculation when the worker supplies the dates. `get_module` returns that distinction. In a form check, pass both `name:from` and `name:to` when changing the range.
 

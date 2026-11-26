@@ -195,9 +195,9 @@ Keep the order and declared case type of each connection in a saved case
 write. A basic follow-up can save an answer through `parent` then `user`
 when the starting record and both destinations have distinct declared
 ordinary case types.
-Test the complete route and a missing connection. Preserve the exact name of
-an Advanced connection, including periods or Latin-1 letters, while the
-change stays in an Advanced open action.
+Test the complete route and a missing connection. Keep the exact spelling of
+an Advanced connection while the change stays in an Advanced open action.
+The name must be valid in XML and readable on both Web Apps and Android.
 
 Read the resolved navigation returned by form tools. After a submission,
 Previous resumes the preceding task or record selection. That can be the same

@@ -206,6 +206,10 @@ A visible message contributes `OK`. When a condition hides the message, the
 previous value stays in place. Check both paths on the selected record. Use a
 question when the record needs the text the worker enters.
 
+Keep the submitted answer root of a form brought in from HQ when editing
+its questions. A root with non-ASCII characters needs Android. If workers
+use Web Apps, review an ASCII root before changing submitted paths.
+
 Use the case change tools for case effects. A case change brought in from HQ
 can have a position among the form's questions. Keep that position while
 editing its effect, unless the worker workflow calls for a different order.

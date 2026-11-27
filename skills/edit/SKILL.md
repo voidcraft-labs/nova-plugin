@@ -138,6 +138,11 @@ Check similar-word matches or unresolved parent links in the actual project
 space. Use a current-case Search field when a formula needs the worker’s
 answer.
 
+A date Search field in Web Apps can match the exact stored date on one
+directly linked parent. Use the declared date property on the parent and
+preserve that parent link when editing the field. Verify the returned case
+using a linked parent and a separate child with the same date.
+
 When a child form reads an answer used to find its parent record, qualify it
 as `#search/<parent module id>/<prompt name>`. The child menu's own answers
 use `#search/<prompt name>`. Opening the form without that parent Search
@@ -190,6 +195,12 @@ column `notOnList: true`, a literal text expression for an ordinary case
 opening, and `searchResultDetail` with the offered text input's UUID. An
 unanswered prompt contributes empty text. Test a submitted answer, an
 unanswered prompt, and an ordinary opening of the same case.
+
+For a Web Apps list whose only form closes its selected cases and returns to
+the app home, the case-selection maximum can be 101. The list is a single
+root menu and the form may have constant Hidden Values. Other multiple-case
+workflows support up to 100. Test ordered selection and confirm which cases
+the submitted form closes.
 
 A text badge on a menu or form can have its own worker wording in each
 language. Read and update that wording unit to keep the badge's usual text

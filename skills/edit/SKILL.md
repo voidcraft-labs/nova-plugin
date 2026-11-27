@@ -142,10 +142,11 @@ A visible text Search field's starting value can compare the worker name
 with fixed text using greater than. Both platforms read the operands as
 numbers. Preserve both operands when retaining the calculation.
 
-A date Search field in Web Apps can match the exact stored date on one
-directly linked parent. Use the declared date property on the parent and
-preserve that parent link when editing the field. Verify the returned case
-using a linked parent and a separate child with the same date.
+A date Search field in Web Apps can match the exact stored date on a
+parent or grandparent record. Keep the field’s property and each parent link
+when you change its name. Verify the returned case with different dates on
+the related record and the child. For a grandparent field, give the direct
+parent a different date too.
 
 When a child form reads an answer used to find its parent record, qualify it
 as `#search/<parent module id>/<prompt name>`. The child menu's own answers
@@ -219,8 +220,9 @@ Search and when opening the ordinary list. An ordinary opening has no Search
 value for that column.
 
 A brought-in manual Search can keep an address picker’s saved starting text
-when no other field receives its address. The picker opens blank. Test the
-request after choosing an address and check the other Search answers.
+when no other field receives its address, including a saved calculation that
+joins two fixed text pieces. The picker opens blank. Test the request after
+choosing an address and check the other Search answers.
 
 For a Web Apps list whose only form closes its selected cases and returns to
 the app home, the case-selection maximum can be 101. The list is a single

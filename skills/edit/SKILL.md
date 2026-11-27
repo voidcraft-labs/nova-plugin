@@ -209,6 +209,10 @@ column wording without changing the calculation. Check the same case after
 Search and when opening the ordinary list. An ordinary opening has no Search
 value for that column.
 
+A brought-in manual Search can keep an address picker’s saved starting text
+when no other field receives its address. The picker opens blank. Test the
+request after choosing an address and check the other Search answers.
+
 For a Web Apps list whose only form closes its selected cases and returns to
 the app home, the case-selection maximum can be 101. The list is a single
 root menu and the form may have constant Hidden Values. Other multiple-case

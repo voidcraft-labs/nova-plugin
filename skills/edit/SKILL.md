@@ -222,6 +222,14 @@ Use the case change tools for case effects. A case change brought in from HQ
 can have a position among the form's questions. Keep that position while
 editing its effect, unless the worker workflow calls for a different order.
 
+An Android Basic follow-up brought in from HQ can keep an accented property
+name such as `estado_é` when a root text answer always saves to the selected
+record. Keep the exact name in `update_case_operation` when editing other
+writes on that case change. Use ASCII names for new properties. The accented
+property is available to inspect as a definition. It is unavailable in case
+lists, Search, expressions, and property renames. Review removal of the save
+and its definition before changing the app to run in Web Apps.
+
 An Android follow-up brought in from HQ can save the calendar date of a
 Date and time answer as the selected case's external ID. Keep its direct
 answer when editing other effects. Verify an answered value, a relevant

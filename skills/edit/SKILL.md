@@ -235,11 +235,13 @@ joins two fixed text pieces or adds the signed-in worker’s username after
 a fixed prefix. The picker opens blank. Test the request after choosing an
 address and check the other Search answers.
 
-For a Web Apps list whose only form closes its selected cases and returns to
-the app home, the case-selection maximum can be 101. The list is a single
-root menu and the form may have constant Hidden Values. Other multiple-case
-workflows support up to 100. Test ordered selection and confirm which cases
-the submitted form closes.
+A single root Web Apps case list can select up to 101 cases when its only
+form closes them and returns to the app home. Test ordered selection and
+confirm which cases the submitted form closes. When its only form collects
+text answers, makes no case changes, and returns to the app home, the list
+can select up to 500 cases. Check the selected cases and confirm they remain
+unchanged after submission. Either form can use constant Hidden Values.
+The maximum for other multiple-case workflows is 100.
 
 A text badge on a menu or form can have its own worker wording in each
 language. Read and update that wording unit to keep the badge's usual text
@@ -363,9 +365,10 @@ record IDs. On a single-select source with `kind: "available-cases"`, set
 `status` to `open` or `closed` to filter the worker's restored records. Omit
 `status` to include both. Set `propertyMatch` to a property name and its exact
 stored text, such as `{property: "survey_ready", text: "yes"}`, to narrow choices
-across case types. If either of two stored values of the same property should
-qualify, add `alternateText` to `propertyMatch`. For a `cases` source restricted
-to one type, filter with `#row/status = 'open'`
+across case types. Add `alternateText` to `propertyMatch` to accept a second
+stored value. Set `alternateProperty` when that value belongs to a different
+property. For a `cases` source restricted to one type, filter with
+`#row/status = 'open'`
 when the worker needs only open records. Filters cannot fetch more records or
 broaden access. Test a representative worker with the intended assignments.
 For batch checklists, test selection, deselection, Back, and submission; inspect which

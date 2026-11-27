@@ -121,6 +121,14 @@ a receiver with `update_search_input`, keep
 `addressReceiver: {kind: "address", source, parts}` in its replacement body.
 Use the address field's UUID for `source`.
 
+A visible text field brought in from HQ may carry
+`addressReceiver: {kind: "unsubscribed-topic", topic: "home||city"}`.
+That saved topic has no matching picker. The worker enters the answer
+normally. Keep the returned topic when replacing the rest of the field.
+To fill it from an address, replace the subscription with an address
+field's UUID and the parts to try. To clear it, omit `addressReceiver`
+from the replacement body.
+
 A text Search field can use project space matching over a parent’s or
 grandparent’s information. A grandparent is reached by following the parent
 link twice. Preserve the path when editing an existing field. The field’s

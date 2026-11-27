@@ -218,8 +218,10 @@ In a standalone Web Apps menu that opens with Search, a calculated column
 can show one submitted text answer on the result's Details screen. Give the
 column `notOnList: true`, a literal text expression for an ordinary case
 opening, and `searchResultDetail` with the offered text input's UUID. An
-unanswered prompt contributes empty text. Test a submitted answer, an
-unanswered prompt, and an ordinary opening of the same case.
+unanswered prompt contributes empty text. A brought-in Details column may
+instead keep fixed text for Search results while using its original ordinary
+case text. Test answered and unanswered Search plus an ordinary opening of
+the same case.
 
 A brought-in Web Apps list can keep a Short calculated column that shows a
 text property from a row returned by its preceding inline Search. Edit the
@@ -229,8 +231,9 @@ value for that column.
 
 A brought-in manual Search can keep an address picker’s saved starting text
 when no other field receives its address, including a saved calculation that
-joins two fixed text pieces. The picker opens blank. Test the request after
-choosing an address and check the other Search answers.
+joins two fixed text pieces or adds the signed-in worker’s username after
+a fixed prefix. The picker opens blank. Test the request after choosing an
+address and check the other Search answers.
 
 For a Web Apps list whose only form closes its selected cases and returns to
 the app home, the case-selection maximum can be 101. The list is a single

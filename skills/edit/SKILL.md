@@ -184,6 +184,13 @@ target language where both screens are used. If source wording changes,
 compare the current effective wording with any saved translation marked out
 of date. Review or replace it explicitly.
 
+In a standalone Web Apps menu that opens with Search, a calculated column
+can show one submitted text answer on the result's Details screen. Give the
+column `notOnList: true`, a literal text expression for an ordinary case
+opening, and `searchResultDetail` with the offered text input's UUID. An
+unanswered prompt contributes empty text. Test a submitted answer, an
+unanswered prompt, and an ordinary opening of the same case.
+
 A text badge on a menu or form can have its own worker wording in each
 language. Read and update that wording unit to keep the badge's usual text
 as the fallback. For a shared form, check the badge on each menu that

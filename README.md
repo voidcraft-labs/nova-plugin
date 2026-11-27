@@ -160,9 +160,10 @@ tables and places CommCare HQ manages, the organization levels a worker
 stands at, and application profiles) requires the paired Nova server release.
 Publish this plugin after that server is live and verified.
 
-Version 2.6's guidance covers joined Search, shared form routes, detail tab
-wording, companion lookup counts, and named Android installations. It
-requires the paired Nova server release. Publish this plugin after that server is live and verified.
+Version 2.6's guidance covers joined Search, Search result Details, shared form
+routes, detail tab wording, companion lookup counts, and named Android
+installations. It requires the paired Nova server release. Publish this plugin
+after that server is live and verified.
 
 A saved app is distinct from a tested workflow or a deployment to CommCare HQ.
 Publishing checks the selected target with `check_project_space_compatibility`;

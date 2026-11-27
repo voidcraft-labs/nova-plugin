@@ -197,7 +197,9 @@ when the starting record and both destinations have distinct declared
 ordinary case types.
 Test the complete route and a missing connection. Keep the exact spelling of
 an Advanced connection while the change stays in an Advanced open action.
-The name must be valid in XML and readable on both Web Apps and Android.
+Use a supported ASCII name when the form runs in Web Apps. Android can
+write a supported non-ASCII name. A form can still read that connection
+from a restored record without writing it.
 
 An ordinary Advanced follow-up can save a passive message to the selected case.
 A visible message contributes `OK`. When a condition hides the message, the

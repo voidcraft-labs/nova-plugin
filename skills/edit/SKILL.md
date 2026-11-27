@@ -181,6 +181,11 @@ gives zero. Test those cases on the installed app with the intended companion.
 The results heading can have its own worker wording on the menu that opens
 the lookup. Verify the heading on the installed Android app.
 
+An ordinary top-level device list can show cases whose direct `host`
+connection leads to a case with a matching text property. Use one equality
+against a nonblank value on the `list` surface of `set_case_list_filter`.
+Check a matching host, a different host, and a case with no host link.
+
 Read `detail_tabs` with `get_module`. Keep each `tabUuid` in
 `set_case_detail_tabs` and include each visible Details field once across
 the tabs. A tab's display condition reads the chosen case. For a tab of

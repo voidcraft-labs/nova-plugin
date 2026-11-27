@@ -167,9 +167,12 @@ Keep worker and session values distinct from a case that has yet to be
 selected. Starting values can use declared worker information or session
 values appropriate to the expression's scope. Read the active
 `get_authoring_guide` for expressions that read worker records and sessions.
-Requiredness and checks can also use Search answers and are enforced only in
-Web Apps. Keep project-space search matching and claims for a check in the
-connected project space.
+Web Apps enforces Search requirements and checks that read Search answers.
+A visible field’s requirement can also count the worker’s restored cases of
+one declared type. Use `count(cases('patient')) > 0` to require the field when
+the worker has a restored patient case. Check the rule with and without a
+case of that type. Keep project-space search matching and claims for a check
+in the connected project space.
 
 Use `edit_search_filter` to order the cases the server returns. In a Search
 that opens on results for a single record type with no prompts, related

@@ -84,6 +84,8 @@ Use `configure_case_list` with `calculatedSorts` for a Default order rule that r
 In a grouped tile for an app that runs on Web Apps, place map locations and
 fields marked Android-only in the group heading. Web Apps shows those values
 when they sit below the heading.
+Use one saved connection name for the grouping, such as `parent` or
+`site.parent`. A hyphen or period can appear after the first character.
 
 For a saved app's case search, read `get_preview_search_settings` before
 choosing the Preview destination. Record team-confirmed settings with
@@ -129,10 +131,9 @@ To fill it from an address, replace the subscription with an address
 field's UUID and the parts to try. To clear it, omit `addressReceiver`
 from the replacement body.
 
-A text Search field can use project space matching over a parent’s or
-grandparent’s information. A grandparent is reached by following the parent
-link twice. Preserve the path when editing an existing field. The field’s
-Nova name can change while its chosen property and path stay the same.
+A text Search field can match records in the project space through up to three
+successive parent links. Preserve the path when editing an existing field.
+The field’s Nova name can change while its chosen property and path stay the same.
 Check similar-word matches or unresolved parent links in the actual project
 space. Use a current-case Search field when a formula needs the worker’s
 answer.

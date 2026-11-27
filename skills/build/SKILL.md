@@ -48,6 +48,14 @@ select exactly one of `work_id` for private state or `app_id` for saved state.
 Read `get_authoring_guide` against that target when a feature needs explanation; the server owns the current syntax
 and domain guidance.
 
+For a Connect opportunity, choose Android with `update_app` and explain that
+workers' submissions can include their location. Use `configure_connect` for
+the app's learning and delivery roles. Use `add_fields` to place each activity
+beside its questions. For repeated deliveries, give each recipient a distinct
+ID and exercise two rows in the saved app test. Keep published activity IDs
+when changing wording or moving questions. In the submission result, check
+which activities actually ran and the recipient or score each recorded.
+
 Form and case-operation reads, plus operation edit feedback, include
 `operationSemantics`: record targets, condition/value dependencies and possible
 read/write overlaps. Read it when designing competing actions. Native conditions
@@ -96,6 +104,30 @@ writes and deployment take effect separately; discarding app work does not undo
 them. If work remains private, include its work ID and what still needs attention.
 
 
+A worker-controlled repeating group starts empty. In an app test, add a row before answering its questions. In a form evaluation, give the repeat the number of rows the scenario needs. The worker can remove the last row. Give the first and later entry buttons different wording when it helps the worker. A message can ask for confirmation on Android. Web Apps acknowledges it when the worker submits. An Image question can use the face camera on Android and accepts an ordinary picture on Web Apps. Preview both platforms when the distinction matters to the request.
+
+A photo or file question starts empty. The worker can select or record the file when they reach the question. Use a required condition and its message when the answer must include a file.
+
+For a Search question with a date range, use `default: {from, to}` with inclusive ISO calendar dates when the dates should stay fixed. Use a text calculation when the worker supplies the dates. `get_module` returns that distinction. In a form check, pass both `name:from` and `name:to` when changing the range.
+
+Plan how the worker enters each menu before adding Search. A child form can
+read the completed parent Search as `#search/<parent module id>/<prompt name>`
+and its own menu's answer as `#search/<prompt name>`. Check both answers
+through the actual route, including any other menu that lists the same form.
+On a route that never ran the parent Search, its answer is blank.
+
+Search choices come from a Project table. Read `get_lookup_tables` before
+creating or reusing one, and use the actual column or detail selectors.
+Search defaults to ordering by label. A starting value can depend on a
+worker or session value available before record selection. A visible text
+field can use a greater-than comparison between the worker name and fixed
+text. Both platforms interpret the operands as numbers. A check can read
+the worker's Search answers too. Web Apps enforces those checks and can
+collapse Search headings. Android shows the ordered fields without
+headings and runs Search without those checks. Test the intended platform,
+and use the connected project space to check its own Search and claims.
+
+
 Inline choice starting values must contain only choices the question offers,
 or be blank. Nova checks returned branches and the app's record writers, including
 later edits. A storage type alone does not prove that values fit. When a form
@@ -107,12 +139,17 @@ choices when appropriate, and retry. Do not add a temporary option or change
 saved data merely to make the check pass; respect the intended workflow and the
 user's authority for data changes.
 
+When the worker needs a list in a particular order, give the first rule priority zero and add a second rule for ties. A calculation can decide the order without adding another column to Results. For example, compare an appointment number stored as text using whole numbers so appointment 2 comes before appointment 10. Give the calculation a worker-facing name if people should be able to pick it in Sort by. Try the list with both values in Preview.
+
 Case-backed choices offer records already available to the worker and save exact
-record IDs. Filters do not fetch additional cases or broaden access: an
-all-clinics selector still shows only the clinics restored for that worker. Use
-the shared-data authoring guide for the current source and filter syntax, and
-test a representative worker with the intended location assignments. For batch
-checklists, test selection, deselection, Back, and submission; inspect which
+record IDs. On a single-select source with `kind: "available-cases"`, set
+`status` to `open` or `closed` to filter the worker's restored records. Omit
+`status` to include both. Set `propertyMatch` to a property name and its exact
+stored text, such as `{property: "survey_ready", text: "yes"}`, to narrow choices
+across case types. For a `cases` source restricted to one type, filter with `#row/status = 'open'`
+when the worker needs only open records. Filters cannot fetch more records or
+broaden access. Test a representative worker with the intended assignments.
+For batch checklists, test selection, deselection, Back, and submission; inspect which
 existing records changed. A retained repeating row alone does not prove final
 checklist membership.
 
@@ -149,3 +186,12 @@ were saved, the existing test stays at its previous step. Read its retained
 observations, then retry with fewer actions and a new request ID. A network
 timeout or lost response alone does not establish rollback; retry the exact
 request with its original request ID to recover its result.
+
+When the person wants a visit’s device location, `update_app.capture_location`
+requests it for every Android form. `create_form.capture_location` and
+`update_form.capture_location` choose it for one form. Clearing the app-wide
+choice restores each form’s own choice. Connect requests location on every
+form. A question asking the worker to choose a point records a separate answer.
+A test session can supply `locationFix` with latitude, longitude, altitude
+and accuracy, or leave it out to exercise a phone without a fix. Check the
+submission’s `submissionLocation` alongside any point answer.

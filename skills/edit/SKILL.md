@@ -188,6 +188,11 @@ match no local row. No response leaves the value blank. An empty response
 gives zero. Test those cases on the installed app with the intended companion.
 The results heading can have its own worker wording on the menu that opens
 the lookup. Verify the heading on the installed Android app.
+For an argument that adds two fixed whole numbers, read the active
+`configure_case_list` schema and keep both operands in the sum. Android
+normally sends the result as text. In the legacy reporting-domain mode it
+sends the saved addition, such as `1 + 2`. Check the intended worker mode
+with the companion app.
 
 An ordinary top-level device list can show cases whose direct `host`
 connection leads to a case with a matching text property. Use one equality

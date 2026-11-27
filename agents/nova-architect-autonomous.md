@@ -95,8 +95,9 @@ user's authority for data changes.
 Case-backed choices offer records already available to the worker and save exact
 record IDs. A single-select source `{kind: "available-cases", status: "open"}`
 offers only open records across the case types restored for that worker. With
-`status` omitted, closed records still on the device can appear. For a
-`cases` source restricted to one type, filter with `#row/status = 'open'`
+`status` omitted, closed records still on the device can appear. Use
+`propertyMatch: {property, text}` to require an exact stored property value
+across restored case types. For a `cases` source restricted to one type, filter with `#row/status = 'open'`
 when the worker needs only open records. Filters cannot fetch more records or
 broaden access. Test a representative worker with the intended assignments.
 For batch checklists, test selection, deselection, Back, and submission; inspect which

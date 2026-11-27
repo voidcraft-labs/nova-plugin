@@ -144,8 +144,9 @@ When the worker needs a list in a particular order, give the first rule priority
 Case-backed choices offer records already available to the worker and save exact
 record IDs. On a single-select source with `kind: "available-cases"`, set
 `status` to `open` or `closed` to filter the worker's restored records. Omit
-`status` to include both. For a
-`cases` source restricted to one type, filter with `#row/status = 'open'`
+`status` to include both. Set `propertyMatch` to a property name and its exact
+stored text, such as `{property: "survey_ready", text: "yes"}`, to narrow choices
+across case types. For a `cases` source restricted to one type, filter with `#row/status = 'open'`
 when the worker needs only open records. Filters cannot fetch more records or
 broaden access. Test a representative worker with the intended assignments.
 For batch checklists, test selection, deselection, Back, and submission; inspect which

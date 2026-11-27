@@ -166,6 +166,13 @@ Requiredness and checks can also use Search answers and are enforced only in
 Web Apps. Keep project-space search matching and claims for a check in the
 connected project space.
 
+Use `edit_search_filter` to order the cases the server returns. In a Search
+that opens on results for a single record type with no prompts, related
+records or separate order, one ascending `indexed-fallback` rule replaces
+earlier Search order rules. It sorts by number, date and text in that order,
+with missing values last. Check the cases a worker receives at the result
+limit.
+
 A form that opens directly from one Android case list with a companion
 lookup can use `case-list-lookup-count()` in a question calculation. The
 formula counts distinct keys the companion returned, including keys that

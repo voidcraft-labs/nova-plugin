@@ -204,6 +204,15 @@ A visible message contributes `OK`. When a condition hides the message, the
 previous value stays in place. Check both paths on the selected record. Use a
 question when the record needs the text the worker enters.
 
+Use the case change tools for case effects. A case change brought in from HQ
+can have a position among the form's questions. Keep that position while
+editing its effect, unless the worker workflow calls for a different order.
+
+An Android follow-up brought in from HQ can save the calendar date of a
+Date and time answer as the selected case's external ID. Keep its direct
+answer when editing other effects. Verify an answered value, a relevant
+blank that clears the ID, and a hidden answer that leaves it in place.
+
 Read the resolved navigation returned by form tools. After a submission,
 Previous resumes the preceding task or record selection. That can be the same
 form's record picker or a menu for the retained records. Ordinary Back follows

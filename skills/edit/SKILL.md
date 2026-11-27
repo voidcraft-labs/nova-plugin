@@ -234,6 +234,12 @@ same case change to assign a later owner when its condition holds. The
 initial owner is kept when the condition is false. Test both branches in
 the same saved workflow and check the other values the form saves.
 
+A brought-in survey can change the type of a case it creates in the same
+submission and replace one Text property with a required Date answer. Keep
+both questions at the top level of the form, and keep the date visible and
+required. The create has no authored ID or links. Test that the new case
+keeps its ID and stores the selected date under the new type.
+
 A form can update a declared worker property once for each entry in one
 ordinary repeating section. Save to the worker's record through one case
 change. The same record receives the entries in order. An irrelevant answer
@@ -269,6 +275,10 @@ changed**, compare that date with the ID when the form opened. Verify a
 change of time on the same day, a different day, and a hidden picker. A
 visible picker left untouched still saves its displayed date and minute
 when the worker leaves the screen.
+
+With **Save only if changed**, a direct Number answer to a Text case
+property compares numerically with the stored text. Entering `7` leaves a
+stored `007` as written. A genuinely changed answer is saved as text.
 
 Read the resolved navigation returned by form tools. After a submission,
 Previous resumes the preceding task or record selection. That can be the same

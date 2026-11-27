@@ -203,6 +203,12 @@ opening, and `searchResultDetail` with the offered text input's UUID. An
 unanswered prompt contributes empty text. Test a submitted answer, an
 unanswered prompt, and an ordinary opening of the same case.
 
+A brought-in Web Apps list can keep a Short calculated column that shows a
+text property from a row returned by its preceding inline Search. Edit the
+column wording without changing the calculation. Check the same case after
+Search and when opening the ordinary list. An ordinary opening has no Search
+value for that column.
+
 For a Web Apps list whose only form closes its selected cases and returns to
 the app home, the case-selection maximum can be 101. The list is a single
 root menu and the form may have constant Hidden Values. Other multiple-case

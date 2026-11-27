@@ -138,6 +138,10 @@ Check similar-word matches or unresolved parent links in the actual project
 space. Use a current-case Search field when a formula needs the worker’s
 answer.
 
+A visible text Search field's starting value can compare the worker name
+with fixed text using greater than. Both platforms read the operands as
+numbers. Preserve both operands when retaining the calculation.
+
 A date Search field in Web Apps can match the exact stored date on one
 directly linked parent. Use the declared date property on the parent and
 preserve that parent link when editing the field. Verify the returned case

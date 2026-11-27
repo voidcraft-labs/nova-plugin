@@ -119,7 +119,9 @@ On a route that never ran the parent Search, its answer is blank.
 Search choices come from a Project table. Read `get_lookup_tables` before
 creating or reusing one, and use the actual column or detail selectors.
 Search defaults to ordering by label. A starting value can depend on a
-worker or session value available before record selection. A check can read
+worker or session value available before record selection. A visible text
+field can use a greater-than comparison between the worker name and fixed
+text. Both platforms interpret the operands as numbers. A check can read
 the worker's Search answers too. Web Apps enforces those checks and can
 collapse Search headings. Android shows the ordered fields without
 headings and runs Search without those checks. Test the intended platform,

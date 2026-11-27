@@ -259,9 +259,11 @@ can have a position among the form's questions. Keep that position while
 editing its effect, unless the worker workflow calls for a different order.
 
 An Android follow-up brought in from HQ can save the calendar date of a
-Date and time answer as the selected case's external ID. Keep its direct
-answer when editing other effects. Verify an answered value, a relevant
-blank that clears the ID, and a hidden answer that leaves it in place.
+Date and time answer as the selected case’s external ID. With **Save only if
+changed**, compare that date with the ID when the form opened. Verify a
+change of time on the same day, a different day, and a hidden picker. A
+visible picker left untouched still saves its displayed date and minute
+when the worker leaves the screen.
 
 Read the resolved navigation returned by form tools. After a submission,
 Previous resumes the preceding task or record selection. That can be the same
